@@ -225,6 +225,12 @@
         <itemExcluded>true</itemExcluded>
         <itemTool>0</itemTool>
       </item>
+      <item path="src/iface.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/iface.h">
+        <itemTool>3</itemTool>
+      </item>
       <item path="src/macrodef.h">
         <itemExcluded>true</itemExcluded>
         <itemTool>3</itemTool>
@@ -235,6 +241,12 @@
           <inheritIncValues>false</inheritIncValues>
           <inheritPreValues>false</inheritPreValues>
         </cCompilerTool>
+      </item>
+      <item path="src/messages.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/messages.h">
+        <itemTool>3</itemTool>
       </item>
       <item path="src/package.h">
         <itemExcluded>true</itemExcluded>
@@ -261,18 +273,6 @@
       </item>
       <item path="src/version.h">
         <itemExcluded>true</itemExcluded>
-        <itemTool>3</itemTool>
-      </item>
-      <item path="src/iface.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="src/iface.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="src/messages.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="src/messages.h">
         <itemTool>3</itemTool>
       </item>
       <item path="src/widget-button.c">

@@ -3,41 +3,17 @@
 /* Directory of data files */
 #undef DATA_DIR
 
-/* always defined to indicate that i18n is enabled */
-#undef ENABLE_NLS
-
 /* Package name for gettext */
 #undef GETTEXT_PACKAGE
-
-/* Define to 1 if you have the `bind_textdomain_codeset' function. */
-#undef HAVE_BIND_TEXTDOMAIN_CODESET
-
-/* Define to 1 if you have the `dcgettext' function. */
-#undef HAVE_DCGETTEXT
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
-/* Define to 1 if you have the `getpagesize' function. */
-#undef HAVE_GETPAGESIZE
-
-/* Define if the GNU gettext() function is already present or preinstalled. */
-#undef HAVE_GETTEXT
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define if your <locale.h> file defines LC_MESSAGES. */
-#undef HAVE_LC_MESSAGES
-
-/* Define to 1 if you have the <locale.h> header file. */
-#undef HAVE_LOCALE_H
-
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
-
-/* Define to 1 if you have a working `mmap' system call. */
-#undef HAVE_MMAP
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -69,9 +45,6 @@
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
 
-/* definition of PACKAGE_LOCALE_DIR */
-#undef PACKAGE_LOCALE_DIR
-
 /* Define to the full name of this package. */
 #undef PACKAGE_NAME
 
@@ -87,6 +60,9 @@
 /* definition of PREFIX */
 #undef PREFIX
 
+/* Library for terminal handling */
+#undef SCREEN_NCURSESW
+
 /* Define the shared module suffix extension on your platform. */
 #undef SHARED_SUFFIX
 
@@ -95,7 +71,3 @@
 
 /* Version number of package */
 #undef VERSION
-
-/* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
-   `char[]'. */
-#undef YYTEXT_POINTER

@@ -62,10 +62,6 @@ DISTFILES = ChangeLog Makefile.in.in POTFILES.in $(POFILES)
 EXTRA_DISTFILES = POTFILES.skip Makevars LINGUAS
 
 POTFILES = \
-
-CATALOGS=$(shell if test -n "$(PO_LINGUAS)"; then LINGUAS="$(PO_LINGUAS)"; else LINGUAS="$(ALL_LINGUAS)"; fi; for lang in $$LINGUAS; do printf "$$lang.gmo "; done)
-
-.SUFFIXES:
 .SUFFIXES: .po .pox .gmo .mo .msg .cat
 
 .po.pox:

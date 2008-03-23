@@ -13,9 +13,6 @@ REQUIRED_GETTEXT_VERSION=${REQUIRED_GETTEXT_VERSION:-0.12}
 REQUIRED_GLIB_GETTEXT_VERSION=${REQUIRED_GLIB_GETTEXT_VERSION:-2.2.0}
 REQUIRED_INTLTOOL_VERSION=${REQUIRED_INTLTOOL_VERSION:-0.30}
 REQUIRED_PKG_CONFIG_VERSION=${REQUIRED_PKG_CONFIG_VERSION:-0.14.0}
-REQUIRED_GTK_DOC_VERSION=${REQUIRED_GTK_DOC_VERSION:-1.0}
-REQUIRED_DOC_COMMON_VERSION=${REQUIRED_DOC_COMMON_VERSION:-2.3.0}
-REQUIRED_GNOME_DOC_UTILS_VERSION=${REQUIRED_GNOME_DOC_UTILS_VERSION:-0.3.2}
 
 # a list of required m4 macros.  Package can set an initial value
 REQUIRED_M4MACROS=${REQUIRED_M4MACROS:-}
@@ -230,15 +227,11 @@ check_m4macros() {
 }
 
 # try to catch the case where the macros2/ directory hasn't been cleared out.
-forbid_m4macro gnome-cxx-check.m4
-
 want_libtool=false
 want_gettext=false
 want_glib_gettext=false
 want_intltool=false
 want_pkg_config=false
-want_gtk_doc=false
-want_gnome_doc_utils=false
 
 configure_files="`find $srcdir -name '{arch}' -prune -o -name '.?*' -prune -o -name configure.ac -print -o -name configure.in -print`"
 for configure_ac in $configure_files; do
@@ -258,23 +251,6 @@ for configure_ac in $configure_files; do
     fi
     if grep "^PKG_CHECK_MODULES" $configure_ac >/dev/null; then
 	want_pkg_config=true
-    fi
-    if grep "^GTK_DOC_CHECK" $configure_ac >/dev/null; then
-	want_gtk_doc=true
-    fi
-    if grep "^GNOME_DOC_INIT" $configure_ac >/dev/null; then
-        want_gnome_doc_utils=true
-    fi
-
-    # check to make sure gnome-common macros can be found ...
-    if grep "^GNOME_COMMON_INIT" $configure_ac >/dev/null ||
-       grep "^GNOME_DEBUG_CHECK" $configure_ac >/dev/null ||
-       grep "^GNOME_MAINTAINER_MODE_DEFINES" $configure_ac >/dev/null; then
-        require_m4macro gnome-common.m4
-    fi
-    if grep "^GNOME_COMPILE_WARNINGS" $configure_ac >/dev/null ||
-       grep "^GNOME_CXX_WARNINGS" $configure_ac >/dev/null; then
-        require_m4macro gnome-compiler-flags.m4
     fi
 done
 
@@ -327,22 +303,6 @@ if $want_pkg_config; then
     version_check pkg-config PKG_CONFIG pkg-config $REQUIRED_PKG_CONFIG_VERSION \
         "'http://www.freedesktop.org/software/pkgconfig/releases/pkgconfig-$REQUIRED_PKG_CONFIG_VERSION.tar.gz" || DIE=1
     require_m4macro pkg.m4
-fi
-
-if $want_gtk_doc; then
-    version_check gtk-doc GTKDOCIZE gtkdocize $REQUIRED_GTK_DOC_VERSION \
-        "http://ftp.gnome.org/pub/GNOME/sources/gtk-doc/" || DIE=1
-    require_m4macro gtk-doc.m4
-fi
-
-if $want_gnome_doc_utils; then
-    version_check gnome-doc-utils GNOME_DOC_PREPARE gnome-doc-prepare $REQUIRED_GNOME_DOC_UTILS_VERSION \
-        "http://ftp.gnome.org/pub/GNOME/sources/gnome-doc-utils/" || DIE=1
-fi
-
-if [ "x$USE_COMMON_DOC_BUILD" = "xyes" ]; then
-    version_check gnome-common DOC_COMMON gnome-doc-common \
-        $REQUIRED_DOC_COMMON_VERSION " " || DIE=1
 fi
 
 check_m4macros || DIE=1
@@ -399,19 +359,6 @@ for configure_ac in $configure_files; do
 	    printbold "Running $INTLTOOLIZE..."
 	    $INTLTOOLIZE --force --copy --automake || exit 1
 	fi
-	if grep "^GTK_DOC_CHECK" $basename >/dev/null; then
-	    printbold "Running $GTKDOCIZE..."
-	    $GTKDOCIZE --copy || exit 1
-	fi
-
-	if [ "x$USE_COMMON_DOC_BUILD" = "xyes" ]; then
-	    printbold "Running gnome-doc-common..."
-	    gnome-doc-common --copy || exit 1
-	fi
-	if grep "^GNOME_DOC_INIT" $basename >/dev/null; then
-	    printbold "Running $GNOME_DOC_PREPARE..."
-	    $GNOME_DOC_PREPARE --force --copy || exit 1
-	fi
 
         # Now run aclocal to pull in any additional macros needed
 
@@ -423,10 +370,6 @@ for configure_ac in $configure_files; do
 	fi
 	printbold "Running $ACLOCAL..."
 	$ACLOCAL $m4dir $ACLOCAL_FLAGS || exit 1
-
-	if grep "GNOME_AUTOGEN_OBSOLETE" aclocal.m4 >/dev/null; then
-	    printerr "*** obsolete gnome macros were used in $configure_ac"
-	fi
 
 	# Now that all the macros are sorted, run autoconf and autoheader ...
 	printbold "Running $AUTOCONF..."

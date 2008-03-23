@@ -6,7 +6,7 @@ test -z "$srcdir" && srcdir=.
 
 REQUIRED_AUTOMAKE_VERSION=1.8
 
-PKG_NAME="webtester-5.0.2"
+PKG_NAME="fm-1.0.0"
 
 (test -f $srcdir/configure.in \
   && test -f $srcdir/README \

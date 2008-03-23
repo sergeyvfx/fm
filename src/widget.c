@@ -248,7 +248,7 @@ widget_shortcut_print             (scr_window_t __layout, wchar_t *__text, scr_f
       if (hot)
         scr_wnd_font (__layout, __hot_font);
 
-      scr_wnd_putch (__layout, __text[i]);
+      scr_wnd_add_wchar (__layout, __text[i]);
 
       if (hot) 
         {

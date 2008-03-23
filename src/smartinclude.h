@@ -15,10 +15,6 @@
 
 #include <config.h>
 
-// !! DEBUG !!
-// Move it to config.h
-#define SCREEN_NCURSESW
-
 #include "build-stamp.h"
 #include "package.h"
 #include "version.h"

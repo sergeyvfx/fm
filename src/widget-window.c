@@ -145,7 +145,7 @@ window_proc                       (w_window_t *__window)
       finito=FALSE;
 
       // Wait for next character from user
-      ch=scr_wnd_getch (layout);
+      scr_wnd_getch (layout, ch);
 
       // Try to manage ch by common keydown callback
       if (!window_keydown (__window, ch))

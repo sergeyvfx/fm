@@ -1,5 +1,4 @@
 AC_INIT(fm, 1.0.0)
-#AC_CONFIG_SRCDIR(src/libwebtester/includes.h)
 AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
@@ -8,13 +7,12 @@ AM_MAINTAINER_MODE
 AM_CONFIG_HEADER(config.h)
 
 AC_PROG_CC
-AC_PROG_CPP
-AM_PROG_LEX
 AM_PROG_LIBTOOL
-AC_PROG_INTLTOOL([0.31])
+
+AC_ARG_ENABLE(screen, AC_HELP_STRING([--enable-screen], [Library for terminal handling  (default=ncursesw)]),screen="$enableval",screen="ncursesw")
 
 dnl make sure we keep ACLOCAL_FLAGS around for maintainer builds to work
-AC_SUBST(ACLOCAL_AMFLAGS, "$ACLOCAL_FLAGS -I m4")
+#AC_SUBST(ACLOCAL_AMFLAGS, "$ACLOCAL_FLAGS -I m4")
 
 dnl ===================
 dnl Gettext stuff
@@ -23,7 +21,6 @@ dnl ===================
 GETTEXT_PACKAGE=webtester
 AC_SUBST(GETTEXT_PACKAGE)
 ALL_LINGUAS="en_GB"
-AM_GLIB_GNU_GETTEXT
 
 
 dnl ===================
@@ -59,7 +56,7 @@ dnl =============================
 dnl Checks for library functions
 dnl =============================
 
-AC_FUNC_MMAP
+# AC_FUNC_MMAP
 
 dnl =====================
 dnl Set stuff in config.h
@@ -74,10 +71,6 @@ else
   AC_DEFINE_UNQUOTED(PREFIX, "${prefix}", [definition of PREFIX])
 fi
 AC_SUBST(PREFIX)
-
-
-dnl Set PACKAGE_LOCALE_DIR in config.h.
-AC_DEFINE_UNQUOTED(PACKAGE_LOCALE_DIR, "${PREFIX}/${DATADIRNAME}/locale", [definition of PACKAGE_LOCALE_DIR])
 
 dnl Set DATA_DIR in config.h.
 if test "x${datadir}" = 'x${prefix}/share'; then
@@ -95,6 +88,15 @@ AC_DEFINE_UNQUOTED(HOST, "${host}", [definition of HOST])
 
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE",[Package name for gettext])
 
+case "$screen" in
+  ncursesw)
+    AC_DEFINE_UNQUOTED(SCREEN_NCURSESW,"1",[Library for terminal handling])
+  ;;
+  *)
+    AC_DEFINE_UNQUOTED(SCREEN_NCURSESW,"1",[Library for terminal handling])
+  ;;
+esac
+
 PLUGIN_LIBTOOL_FLAGS="-module -avoid-version"
 AC_SUBST(PLUGIN_LIBTOOL_FLAGS)
 
@@ -105,7 +107,6 @@ dnl =====================
 AC_OUTPUT([
 Makefile
 mk/rules.mk
-intl/Makefile
 po/Makefile.in
 src/Makefile
 ])

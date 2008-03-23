@@ -50,9 +50,11 @@
 #  define scr_wnd_clear(_wnd)                   wclear (_wnd)
 #  define scr_wnd_refresh(_wnd)                 wrefresh (_wnd)
 
-#  define scr_wnd_getch(__wnd)                  wgetch (__wnd)
+#  define scr_wnd_getch(__wnd, __ch)            wget_wch (__wnd, &__ch)
 #  define scr_wnd_putch(__wnd,__ch)             waddch (__wnd, __ch)
 #  define scr_wnd_printf(__wnd,__text,__arg...) wprintw (__wnd, __text, ##__arg)
+#  define scr_wnd_add_nstr(__wnd,__str,__n)     waddnwstr (__wnd, __str, __n)
+#  define scr_wnd_add_wchar(__wnd,__ch)         scr_wnd_add_nstr (__wnd, &__ch, 1)
 
 #  define scr_wnd_border(__wnd)                 box (__wnd, 0, 0)
 #  define scr_wnd_move_caret(__wnd,__x,__y)     wmove (__wnd, __y, __x)

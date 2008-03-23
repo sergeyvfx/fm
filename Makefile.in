@@ -38,22 +38,20 @@ build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(top_srcdir)/configure $(top_srcdir)/intl/Makefile.in \
-	$(top_srcdir)/mk/rules.mk.in $(top_srcdir)/src/Makefile.in \
-	AUTHORS COPYING ChangeLog INSTALL NEWS TODO config.guess \
-	config.rpath config.sub depcomp install-sh ltmain.sh missing \
-	mkinstalldirs
+	$(top_srcdir)/configure $(top_srcdir)/mk/rules.mk.in \
+	$(top_srcdir)/src/Makefile.in AUTHORS COPYING ChangeLog \
+	INSTALL NEWS TODO config.guess config.sub install-sh ltmain.sh \
+	missing mkinstalldirs
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/intltool.m4 \
-	$(top_srcdir)/configure.in
+am__aclocal_m4_deps = $(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = mk/rules.mk intl/Makefile src/Makefile
+CONFIG_CLEAN_FILES = mk/rules.mk src/Makefile
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -85,8 +83,6 @@ GZIP_ENV = --best
 DIST_ARCHIVES = $(distdir).tar.bz2
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
-ACLOCAL_AMFLAGS = -I m4
-ALL_LINGUAS = @ALL_LINGUAS@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
@@ -96,8 +92,6 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
-CATALOGS = @CATALOGS@
-CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = 
@@ -108,7 +102,6 @@ CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
-DATADIRNAME = @DATADIRNAME@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO = @ECHO@
@@ -121,45 +114,12 @@ F77 = @F77@
 FFLAGS = @FFLAGS@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
 GLIB_REQ = @GLIB_REQ@
-GMOFILES = @GMOFILES@
-GMSGFMT = @GMSGFMT@
 GREP = @GREP@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-INSTOBJEXT = @INSTOBJEXT@
-INTLLIBS = @INTLLIBS@
-INTLTOOL_CAVES_RULE = @INTLTOOL_CAVES_RULE@
-INTLTOOL_DESKTOP_RULE = @INTLTOOL_DESKTOP_RULE@
-INTLTOOL_DIRECTORY_RULE = @INTLTOOL_DIRECTORY_RULE@
-INTLTOOL_EXTRACT = @INTLTOOL_EXTRACT@
-INTLTOOL_ICONV = @INTLTOOL_ICONV@
-INTLTOOL_KBD_RULE = @INTLTOOL_KBD_RULE@
-INTLTOOL_KEYS_RULE = @INTLTOOL_KEYS_RULE@
-INTLTOOL_MERGE = @INTLTOOL_MERGE@
-INTLTOOL_MSGFMT = @INTLTOOL_MSGFMT@
-INTLTOOL_MSGMERGE = @INTLTOOL_MSGMERGE@
-INTLTOOL_OAF_RULE = @INTLTOOL_OAF_RULE@
-INTLTOOL_PERL = @INTLTOOL_PERL@
-INTLTOOL_PONG_RULE = @INTLTOOL_PONG_RULE@
-INTLTOOL_PROP_RULE = @INTLTOOL_PROP_RULE@
-INTLTOOL_SCHEMAS_RULE = @INTLTOOL_SCHEMAS_RULE@
-INTLTOOL_SERVER_RULE = @INTLTOOL_SERVER_RULE@
-INTLTOOL_SERVICE_RULE = @INTLTOOL_SERVICE_RULE@
-INTLTOOL_SHEET_RULE = @INTLTOOL_SHEET_RULE@
-INTLTOOL_SOUNDLIST_RULE = @INTLTOOL_SOUNDLIST_RULE@
-INTLTOOL_THEME_RULE = @INTLTOOL_THEME_RULE@
-INTLTOOL_UI_RULE = @INTLTOOL_UI_RULE@
-INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
-INTLTOOL_XAM_RULE = @INTLTOOL_XAM_RULE@
-INTLTOOL_XGETTEXT = @INTLTOOL_XGETTEXT@
-INTLTOOL_XML_NOMERGE_RULE = @INTLTOOL_XML_NOMERGE_RULE@
-INTLTOOL_XML_RULE = @INTLTOOL_XML_RULE@
 LDFLAGS = 
-LEX = @LEX@
-LEXLIB = @LEXLIB@
-LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
 LIBLDFLAGS = @LIBLDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
@@ -170,8 +130,6 @@ MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
 MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
-MKINSTALLDIRS = @MKINSTALLDIRS@
-MSGFMT = @MSGFMT@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -183,19 +141,13 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PICFLAGS = @PICFLAGS@
 PICLDFLAGS = @PICLDFLAGS@
 PLUGIN_LIBTOOL_FLAGS = @PLUGIN_LIBTOOL_FLAGS@
-POFILES = @POFILES@
-POSUB = @POSUB@
-PO_IN_DATADIR_FALSE = @PO_IN_DATADIR_FALSE@
-PO_IN_DATADIR_TRUE = @PO_IN_DATADIR_TRUE@
 PREFIX = @PREFIX@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHARED_SUFFIX = @SHARED_SUFFIX@
 SHELL = @SHELL@
 STRIP = @STRIP@
-USE_NLS = @USE_NLS@
 VERSION = @VERSION@
-XGETTEXT = @XGETTEXT@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_F77 = @ac_ct_F77@
@@ -243,6 +195,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
+ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = src
 distuninstallcheck_listfiles = find . -type f -print | grep -v scrollkeeper
 EXTRA_DIST = 
@@ -306,8 +259,6 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 distclean-hdr:
 	-rm -f config.h stamp-h1
 mk/rules.mk: $(top_builddir)/config.status $(top_srcdir)/mk/rules.mk.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-intl/Makefile: $(top_builddir)/config.status $(top_srcdir)/intl/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 src/Makefile: $(top_builddir)/config.status $(top_srcdir)/src/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
@@ -474,7 +425,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/intl $(distdir)/m4 $(distdir)/mk $(distdir)/po $(distdir)/src
+	$(mkdir_p) $(distdir)/mk $(distdir)/po $(distdir)/src
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
