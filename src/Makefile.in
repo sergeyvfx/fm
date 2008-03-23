@@ -1,0 +1,27 @@
+.SILENT:
+
+top_builddir = ..
+
+include ${top_builddir}/mk/rules.mk
+include ${top_builddir}/mk/init.mk
+
+SUBDIRS = 
+
+OBJECTIVE_BINS = fm
+
+LIBADD = -Wl,-export-dynamic -ldl -lncursesw
+CFLAGS +=  
+
+HEADERS = 
+SOURCES = \
+	main.c \
+	screen.c \
+	iface.c \
+	widget.c \
+	widget-button.c \
+	widget-window.c \
+	messages.c \
+
+OBJECTS = ${SOURCES:.c=.o}
+
+include ${top_builddir}/mk/objective.mk

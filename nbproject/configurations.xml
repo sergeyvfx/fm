@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="39">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="fm" displayName="fm" projectFiles="true">
+      <logicalFolder name="intl" displayName="intl" projectFiles="true">
+        <itemPath>intl/bindtextdom.c</itemPath>
+        <itemPath>intl/dcgettext.c</itemPath>
+        <itemPath>intl/dcigettext.c</itemPath>
+        <itemPath>intl/dcngettext.c</itemPath>
+        <itemPath>intl/dgettext.c</itemPath>
+        <itemPath>intl/dngettext.c</itemPath>
+        <itemPath>intl/eval-plural.h</itemPath>
+        <itemPath>intl/explodename.c</itemPath>
+        <itemPath>intl/finddomain.c</itemPath>
+        <itemPath>intl/gettext.c</itemPath>
+        <itemPath>intl/gettextP.h</itemPath>
+        <itemPath>intl/gmo.h</itemPath>
+        <itemPath>intl/hash-string.h</itemPath>
+        <itemPath>intl/intl-compat.c</itemPath>
+        <itemPath>intl/l10nflist.c</itemPath>
+        <itemPath>intl/loadinfo.h</itemPath>
+        <itemPath>intl/loadmsgcat.c</itemPath>
+        <itemPath>intl/localcharset.c</itemPath>
+        <itemPath>intl/localcharset.h</itemPath>
+        <itemPath>intl/localealias.c</itemPath>
+        <itemPath>intl/localename.c</itemPath>
+        <itemPath>intl/log.c</itemPath>
+        <itemPath>intl/ngettext.c</itemPath>
+        <itemPath>intl/os2compat.c</itemPath>
+        <itemPath>intl/os2compat.h</itemPath>
+        <itemPath>intl/osdep.c</itemPath>
+        <itemPath>intl/plural-exp.c</itemPath>
+        <itemPath>intl/plural-exp.h</itemPath>
+        <itemPath>intl/plural.c</itemPath>
+        <itemPath>intl/relocatable.c</itemPath>
+        <itemPath>intl/relocatable.h</itemPath>
+        <itemPath>intl/textdomain.c</itemPath>
+      </logicalFolder>
+      <logicalFolder name="src" displayName="src" projectFiles="true">
+        <itemPath>src/build-stamp.h</itemPath>
+        <itemPath>src/head.c</itemPath>
+        <itemPath>src/iface.c</itemPath>
+        <itemPath>src/iface.h</itemPath>
+        <itemPath>src/macrodef.h</itemPath>
+        <itemPath>src/main.c</itemPath>
+        <itemPath>src/messages.c</itemPath>
+        <itemPath>src/messages.h</itemPath>
+        <itemPath>src/package.h</itemPath>
+        <itemPath>src/screen.c</itemPath>
+        <itemPath>src/screen.h</itemPath>
+        <itemPath>src/smartinclude.h</itemPath>
+        <itemPath>src/types.h</itemPath>
+        <itemPath>src/version.h</itemPath>
+        <itemPath>src/widget-button.c</itemPath>
+        <itemPath>src/widget-window.c</itemPath>
+        <itemPath>src/widget.c</itemPath>
+        <itemPath>src/widget.h</itemPath>
+      </logicalFolder>
+      <itemPath>config.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+      <itemPath>src/fm/Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <compilerSet>GNU</compilerSet>
+        <cRequired>true</cRequired>
+        <cppRequired>true</cppRequired>
+        <fortranRequired>false</fortranRequired>
+        <platform>2</platform>
+      </toolsSet>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>make</buildCommand>
+          <cleanCommand>make clean</cleanCommand>
+          <executablePath>src/fm</executablePath>
+        </makeTool>
+        <requiredProjects>
+        </requiredProjects>
+      </makefileType>
+      <item path="config.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="intl/bindtextdom.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/dcgettext.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/dcigettext.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/dcngettext.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/dgettext.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/dngettext.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/eval-plural.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="intl/explodename.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/finddomain.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/gettext.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/gettextP.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="intl/gmo.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="intl/hash-string.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="intl/intl-compat.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/l10nflist.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/loadinfo.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="intl/loadmsgcat.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/localcharset.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/localcharset.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="intl/localealias.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/localename.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/log.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/ngettext.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/os2compat.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/os2compat.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="intl/osdep.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/plural-exp.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/plural-exp.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="intl/plural.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/relocatable.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="intl/relocatable.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="intl/textdomain.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/build-stamp.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/head.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/macrodef.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/main.c">
+        <itemTool>0</itemTool>
+        <cCompilerTool>
+          <inheritIncValues>false</inheritIncValues>
+          <inheritPreValues>false</inheritPreValues>
+        </cCompilerTool>
+      </item>
+      <item path="src/package.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/screen.c">
+        <itemTool>0</itemTool>
+        <cCompilerTool>
+          <inheritIncValues>false</inheritIncValues>
+          <inheritPreValues>false</inheritPreValues>
+        </cCompilerTool>
+      </item>
+      <item path="src/screen.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/smartinclude.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/types.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/version.h">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/iface.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/iface.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/messages.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/messages.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/widget-button.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/widget-window.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/widget.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/widget.h">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

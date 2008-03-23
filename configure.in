@@ -1,0 +1,126 @@
+AC_INIT(fm, 1.0.0)
+#AC_CONFIG_SRCDIR(src/libwebtester/includes.h)
+AC_CONFIG_MACRO_DIR([m4])
+
+AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
+
+AM_MAINTAINER_MODE
+AM_CONFIG_HEADER(config.h)
+
+AC_PROG_CC
+AC_PROG_CPP
+AM_PROG_LEX
+AM_PROG_LIBTOOL
+AC_PROG_INTLTOOL([0.31])
+
+dnl make sure we keep ACLOCAL_FLAGS around for maintainer builds to work
+AC_SUBST(ACLOCAL_AMFLAGS, "$ACLOCAL_FLAGS -I m4")
+
+dnl ===================
+dnl Gettext stuff
+dnl ===================
+
+GETTEXT_PACKAGE=webtester
+AC_SUBST(GETTEXT_PACKAGE)
+ALL_LINGUAS="en_GB"
+AM_GLIB_GNU_GETTEXT
+
+
+dnl ===================
+dnl Check for libraries
+dnl ===================
+
+AC_SUBST(GLIB_REQ)
+
+dnl plugin stuff
+dnl ========================
+
+dnl Ok, first we find out what flags we need to use.
+AC_MSG_CHECKING([for what extension and flags to use for plugin compilation])
+case "$target" in
+	*)
+		AC_MSG_RESULT([libdl-compatible: -fPIC -DPIC -shared, .so])
+		PICFLAGS="-fPIC -DPIC"
+		PICLDFLAGS="-fPIC -DPIC -shared"
+		LIBLDFLAGS="-fPIC -DPIC -shared"
+		AUDLDFLAGS="-Wl,-export-dynamic $RPATH_VAL"
+		SHARED_SUFFIX=".so"
+		;;
+esac
+AC_SUBST(PICFLAGS)
+AC_SUBST(PICLDFLAGS)
+AC_SUBST(LIBLDFLAGS)
+AC_SUBST(AUDLDFLAGS)
+AC_SUBST(SHARED_SUFFIX)
+AC_DEFINE_UNQUOTED(SHARED_SUFFIX, "${SHARED_SUFFIX}",
+	[Define the shared module suffix extension on your platform.])
+
+dnl =============================
+dnl Checks for library functions
+dnl =============================
+
+AC_FUNC_MMAP
+
+dnl =====================
+dnl Set stuff in config.h
+dnl =====================
+
+dnl Get the prefix
+if test "x${prefix}" = "xNONE"; then
+  PREFIX="${ac_default_prefix}"
+  AC_DEFINE_UNQUOTED(PREFIX, "${ac_default_prefix}", [definition of PREFIX])
+else
+  PREFIX="${prefix}"
+  AC_DEFINE_UNQUOTED(PREFIX, "${prefix}", [definition of PREFIX])
+fi
+AC_SUBST(PREFIX)
+
+
+dnl Set PACKAGE_LOCALE_DIR in config.h.
+AC_DEFINE_UNQUOTED(PACKAGE_LOCALE_DIR, "${PREFIX}/${DATADIRNAME}/locale", [definition of PACKAGE_LOCALE_DIR])
+
+dnl Set DATA_DIR in config.h.
+if test "x${datadir}" = 'x${prefix}/share'; then
+  if test "x${prefix}" = "xNONE"; then
+    AC_DEFINE_UNQUOTED(DATA_DIR, "${ac_default_prefix}/share/${PACKAGE}", [Directory of data files])
+  else
+    AC_DEFINE_UNQUOTED(DATA_DIR, "${prefix}/share/${PACKAGE}", [Directory of data files])
+  fi
+else
+  AC_DEFINE_UNQUOTED(DATA_DIR, "${datadir}/${PACKAGE}", [Directory of data files])
+fi
+
+# Host
+AC_DEFINE_UNQUOTED(HOST, "${host}", [definition of HOST])
+
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE",[Package name for gettext])
+
+PLUGIN_LIBTOOL_FLAGS="-module -avoid-version"
+AC_SUBST(PLUGIN_LIBTOOL_FLAGS)
+
+dnl =====================
+dnl Write some output
+dnl =====================
+
+AC_OUTPUT([
+Makefile
+mk/rules.mk
+intl/Makefile
+po/Makefile.in
+src/Makefile
+])
+
+
+echo "
+Configuration for $PACKAGE $VERSION :
+-----------------------------------
+
+  Host System Type ................ : $host
+  Compiler ........................ : $CC $CPPFLAGS
+  CFLAGS .......................... : ${PICFLAGS} ${CFLAGS}
+  LDFLAGS ......................... : ${PICLDFLAGS} ${LDFLAGS}
+  Linker .......................... : $CC $LDFLAGS ${LIBLDFLAGS} $LIBS
+
+  Now type 'make' to build $PACKAGE $VERSION,
+  and then type 'make install' for installation.
+"
