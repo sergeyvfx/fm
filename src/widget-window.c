@@ -153,6 +153,7 @@ window_proc                       (w_window_t *__window)
           switch (ch)
             {
             case KEY_ESC:
+            case KEY_ESC_ESC:
               // If window is modal, then we can close it when users hits `Esc`
               if (__window->show_mode&WSM_MODAL)
                 {

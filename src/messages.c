@@ -33,7 +33,7 @@ static btn_array_t buttons[]={
     { 1, -1, { {MR_OK,    -1, L"_Ok"} } },
     { 2, -1, { {MR_OK,    -1, L"_Ok"},      {MR_CANCEL, -1, L"_Cancel"} } },
     { 2, -1, { {MR_YES,   -1, L"_Yes"},     {MR_NO,     -1, L"_No"} } },
-    { 3, -1, { {MR_YES,   -1, L"_Yes"},     {MR_NO,     -1, L"_No"},    {MR_CANCEL, -1, L"_Отмена"} } },
+    { 3, -1, { {MR_YES,   -1, L"_Yes"},     {MR_NO,     -1, L"_No"},    {MR_CANCEL, -1, L"_Cancel"} } },
     { 2, -1, { {MR_RETRY, -1, L"_Retry"},   {MR_CANCEL, -1, L"_Cancel"} } },
     { 3, -1, { {MR_RETRY, -1, L"_Retry"},   {MR_SKIP,   -1, L"_Skip"},  {MR_CANCEL, -1, L"_Cancel"} } },
   };

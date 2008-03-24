@@ -71,7 +71,7 @@
       <toolsSet>
         <compilerSet>GNU</compilerSet>
         <cRequired>true</cRequired>
-        <cppRequired>true</cppRequired>
+        <cppRequired>false</cppRequired>
         <fortranRequired>false</fortranRequired>
         <platform>2</platform>
       </toolsSet>

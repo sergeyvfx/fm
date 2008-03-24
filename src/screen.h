@@ -104,6 +104,8 @@
 #  define KEY_RETURN    10
 #  define KEY_ESC       27
 
+#  define KEY_ESC_ESC   539 /* Excaped escape */
+
 #endif
 
 ////

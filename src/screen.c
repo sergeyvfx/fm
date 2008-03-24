@@ -18,6 +18,7 @@
 
 #ifdef SCREEN_NCURSESW
 static WINDOW *root_wnd = NULL;
+#  define MY_KEYS (KEY_MAX+1)
 #endif
 
 static int mode=0;
@@ -63,6 +64,34 @@ define_default_fonts              (void)
   sf_black_on_cyan.bold   = FALSE;
 }
 
+static void
+init_escape_keys                  (void)
+{
+#ifdef SCREEN_NCURSESW
+  short i;
+  keypad (stdscr, TRUE);
+  for (i=0; i<255; ++i)
+    {
+      char temp[10];
+      sprintf (temp, "\033%c", i);
+      define_key (temp, i+MY_KEYS);
+    }
+
+  for (i=KEY_MIN; i<KEY_MAX; ++i)
+    {
+      char *value;
+      if ((value=keybound (i, 0))!=0)
+        {
+          char *temp = malloc (strlen (value)+2);
+          sprintf (temp, "\033%s", value);
+          define_key(temp, i+MY_KEYS);
+          free (temp);
+          free (value);
+        }
+    }
+#endif
+}
+
 //////
 // User's backend
 
@@ -77,14 +106,16 @@ screen_init                       (int __mode)
 
   root_wnd=initscr ();
 
-  cbreak ();
-  noecho ();
+  cbreak ();  // take input chars one at a time, no wait for \n
+  noecho ();  // don't echo input
 
   if (__mode&SM_COLOR)
     {
       // Initialize screen in color mode
       start_color ();
     }
+  
+  init_escape_keys ();
 
 #endif
 
