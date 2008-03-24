@@ -153,7 +153,7 @@ widget_full_redraw                (void)
   screen_refresh (TRUE);
 
 #ifdef WIDGET_USE_POOL
-//  widget_redraw_pool ();
+  widget_redraw_pool ();
 #endif
 }
 
