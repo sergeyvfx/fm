@@ -107,7 +107,6 @@ dnl =====================
 AC_OUTPUT([
 Makefile
 mk/rules.mk
-po/Makefile.in
 src/Makefile
 ])
 
@@ -117,7 +116,7 @@ Configuration for $PACKAGE $VERSION :
 -----------------------------------
 
   Host System Type ................ : $host
-  Compiler ........................ : $CC $CPPFLAGS
+  Compiler ........................ : $CC
   CFLAGS .......................... : ${PICFLAGS} ${CFLAGS}
   LDFLAGS ......................... : ${PICLDFLAGS} ${LDFLAGS}
   Linker .......................... : $CC $LDFLAGS ${LIBLDFLAGS} $LIBS
