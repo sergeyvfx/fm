@@ -245,7 +245,7 @@ hide_menu                         (w_menu_t *__menu)
 
   panel_hide (__menu->submenu_panel);
   panel_hide (__menu->panel);
-  
+
   __menu->unfolded=FALSE;
 }
 
@@ -468,7 +468,12 @@ menu_mapper                       (w_menu_t *__menu)
         {
         case KEY_ESC:
         case KEY_ESC_ESC:
-          finito=TRUE;
+          if (__menu->unfolded)
+            {
+              panel_hide (__menu->submenu_panel);
+              __menu->unfolded=FALSE;
+            } else
+              finito=TRUE;
           break;
 
         // Navigation
@@ -578,6 +583,9 @@ menu_focused                      (w_menu_t *__menu)
           // Set res to 1 because we don't want default callback to
           // redraw this widget
           res=1;
+        } else {
+         panel_hide (__menu->submenu_panel);
+         __menu->unfolded=FALSE;
         }
 
       __menu->cur_submenu=0;
