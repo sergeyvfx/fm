@@ -21,6 +21,7 @@ static WINDOW *root_wnd = NULL;
 #  define MY_KEYS (KEY_MAX+1)
 #endif
 
+int ESCDELAY = 0;
 static int mode=0;
 
 scr_font_t sf_null;
