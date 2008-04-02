@@ -9,7 +9,7 @@ SUBDIRS =
 
 OBJECTIVE_BINS = fm
 
-LIBADD = -Wl,-export-dynamic -ldl -lncursesw
+LIBADD = -Wl,-export-dynamic -ldl -lncursesw -lpanel 
 CFLAGS +=  
 
 HEADERS = 
@@ -19,6 +19,7 @@ SOURCES = \
 	iface.c \
 	widget.c \
 	widget-button.c \
+	widget-menu.c \
 	widget-window.c \
 	messages.c \
 

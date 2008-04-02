@@ -1,8 +1,8 @@
 /*
  *
- * ================================================================================
+ * =============================================================================
  *  widget.h
- * ================================================================================
+ * =============================================================================
  *
  *  Widgets' library
  *
@@ -21,11 +21,6 @@
 #include "screen.h"
 
 ////////
-//
-
-#define WIDGET_USE_POOL
-
-////////
 // Constants
 
 // Widget's types
@@ -33,6 +28,7 @@
 
 #define WT_CONTAINER  0x10
 #define WT_WINDOW     (WT_CONTAINER+1)
+#define WT_MENU       (WT_CONTAINER+2)
 
 #define WT_SINGLE     0x30
 #define WT_BUTTON     (WT_SINGLE+1)
@@ -44,6 +40,14 @@
 // Button styles
 #define WBS_NONE    0x0000
 #define WBS_DEFAULT 0x0001
+
+// Menu styles
+#define WMS_NONE           0x0000
+#define WMS_HIDE_UNFOCUSED 0x0001
+
+// Sub-menu's item styles
+#define SMI_NONE           0x0000
+#define SMI_SEPARATOR      0x0001
 
 // Modal results
 #define MR_NONE   0x0000
@@ -82,11 +86,11 @@
 #define WIDGET_USER_CALLBACK(_w,_cb)  (WIDGET (_w))->user_callbacks._cb
 
 // Safe calling to callback
-#define WIDGET_CALL_CALLBACK (_w,_cb,_args...) \
+#define WIDGET_CALL_CALLBACK(_w,_cb,_args...) \
   (WIDGET_CALLBACK (_w, _cb)?WIDGET_CALLBACK (_w, _cb) (_args):0)
 
 // Call user-defined callback in deep-core callbacks
-#define WIDGET_CALL_USER_CALLBACK(_w,_cb,_args...) \
+#define _WIDGET_CALL_USER_CALLBACK(_w,_cb,_args...) \
   { \
     int res; \
     if (WIDGET_USER_CALLBACK (_w, _cb) && (res=WIDGET_USER_CALLBACK (_w, _cb) (_args))) \
@@ -134,7 +138,7 @@
 // Type defenitions
 
 typedef int (*widget_action)    (void *__widget);
-typedef int (*widget_keydown)   (void *__widget, int __ch);
+typedef int (*widget_keydown)   (void *__widget, wint_t __ch);
 
 // Position of widget
 typedef struct {
@@ -153,6 +157,7 @@ typedef struct {
 typedef struct {
   widget_keydown  keydown;
   widget_action   shortcut;
+  widget_action   focused;
 } widget_callbacks_t;
 
 // Callbacks' structure for user's bindings
@@ -160,6 +165,7 @@ typedef struct {
   widget_keydown  keydown;
   widget_action   clicked;
   widget_action   shortcut;
+  widget_action   focused;
 } widget_user_callbacks_t;
 
 // Basic widget's members
@@ -200,7 +206,9 @@ typedef struct {
   // Inherit from widget container
   WIDGET_CONTAINER_MEMBERS
 
-  scr_font_t      *font;   // Font for text on window
+  panel_t            panel; // Panel of layout to manipulate with visibility
+
+  scr_font_t        *font;   // Font for text on window
 
   struct {
     wchar_t         *text;  // Text of caption
@@ -222,31 +230,72 @@ typedef struct {
   scr_font_t         *font;             // Font for normal style
   scr_font_t         *focused_font;     // Font for hotkey in normal state
 
-  scr_font_t         *hot_font;         // Font for default style
+  scr_font_t         *hot_font;         // Font for shortcut style
   scr_font_t         *hot_focused_font; // Font for hotkey in normal state
 
   unsigned int      style;
   unsigned short    modal_result;       // Modal result code for window
 } w_button_t;
 
+////
+// Menus
+
+struct w_menu_t_entry;
+typedef int (*menu_item_callback) (void);
+
+typedef struct {
+  wchar_t                *caption;  // Caption of sub-menu
+  wchar_t                shortcut;
+
+  struct {
+    struct {
+      wchar_t            *caption; // Caption of item
+      wchar_t            shortcut;
+      unsigned int       flags;
+      menu_item_callback callback;
+    } *data;
+    short length;
+  } items;
+
+  struct w_menu_t_entry  *menu;     // Menu which owns this submenu
+  short                  index;     // Index of submenu in parent's container
+  widget_position_t      position;  // Position of sub-menu
+  short                  cur_item_index; // Index of currently selected item
+} w_sub_menu_t;
+
+typedef struct w_menu_t_entry {
+  // Inherit from widget
+  WIDGET_MEMBERS
+
+  panel_t            panel; // Panel of layout to manipulate with visibility
+
+  scr_font_t         *font;               // Font to draw menu line
+  scr_font_t         *hot_font;           // Font to draw shortcut
+  scr_font_t         *focused_font;       // Font to draw submenu caption in case
+                                          // it's focused
+  scr_font_t         *hot_focused_font;   // Font to draw focused shortcut
+
+  unsigned int       style;               // Style of menu
+
+  struct {
+    w_sub_menu_t *data;
+    int          length;
+  } sub_menus;
+
+  ////
+  // Internal usage
+  w_sub_menu_t       *cur_submenu; // Pointer to currently selected submenu
+
+  scr_window_t       submenu_layout; // Layout to draw a submemu's items
+  panel_t            submenu_panel;  // Panel to manipulate with submenu's layout
+  BOOL               unfolded;       // Shows if any sub-menu is unfolded
+} w_menu_t;
+
 ////////////////
 //
 
 //////
 // Deep-core stuff
-
-#ifdef WIDGET_USE_POOL
-
-void
-widget_register_in_pool           (widget_t *__widget);
-
-void
-widget_unregister_from_pool       (widget_t *__widget);
-
-void
-widget_redraw_pool                (void);
-
-#endif
 
 // Code to operate with non-modal windows
 /*void           // Set widget where to send messages from user
@@ -264,6 +313,9 @@ widget_destroy                    (widget_t *__widget);
 void           // Draw widget on screen
 widget_draw                       (widget_t *__widget);
 
+void           // Redraw widget on screen
+widget_redraw                     (widget_t *__widget);
+
 void           // Totally redraw all widgets
 widget_full_redraw                (void);
 
@@ -279,7 +331,8 @@ int           // Length of text with shortcuts
 widget_shortcut_length            (wchar_t *__text);
 
 void           // Print text with highlighted shortcut key
-widget_shortcut_print             (scr_window_t __layout, wchar_t *__text, scr_font_t __font, scr_font_t __hot_font);
+widget_shortcut_print             (scr_window_t __layout, wchar_t *__text,
+                                   scr_font_t __font, scr_font_t __hot_font);
 
 void
 widget_set_focus                  (widget_t *__widget);
@@ -311,10 +364,12 @@ w_window_end_modal                (w_window_t *__window, int __modal_result);
 
 //
 w_window_t*    // Creates new window
-widget_create_window              (wchar_t *__caption, int __x, int __y, int __w, int __h);
+widget_create_window              (wchar_t *__caption,
+                                   int __x, int __y,
+                                   int __w, int __h);
 
-/*void           //  Show normal window
-w_window_show                     (w_window_t *__window);*/
+void           //  Show window
+w_window_show                     (w_window_t *__window);
 
 int            //  Show modal window
 w_window_show_modal               (w_window_t *__window);
@@ -322,11 +377,9 @@ w_window_show_modal               (w_window_t *__window);
 void           // Hide window
 w_window_hide                     (w_window_t *__window);
 
-void           // Returns window from hidden state
-w_window_display                  (w_window_t *__window);
-
 void
-w_window_set_fonts                (w_window_t *__window, scr_font_t *__font, scr_font_t *__caption_font);
+w_window_set_fonts                (w_window_t *__window, scr_font_t *__font,
+                                   scr_font_t *__caption_font);
 
 ////
 // Button
@@ -337,7 +390,23 @@ widget_create_button              (w_container_t *__parent, wchar_t *__caption,
 
 void
 w_button_set_fonts                (w_button_t *__button,
-                                   scr_font_t *__font,     scr_font_t *__focused_font,
-                                   scr_font_t *__hot_font, scr_font_t *__hot_focused_font);
+                                   scr_font_t *__font,
+                                   scr_font_t *__focused_font,
+                                   scr_font_t *__hot_font,
+                                   scr_font_t *__hot_focused_font);
+
+////
+// Menus
+w_menu_t*
+widget_create_menu                (unsigned int __style);
+
+w_sub_menu_t*
+w_menu_append_submenu             (w_menu_t *__menu, wchar_t *__caption);
+
+void
+w_submenu_append_item             (w_sub_menu_t *__sub_menu,
+                                   wchar_t *__caption,
+                                   menu_item_callback __callback,
+                                   unsigned int __flags);
 
 #endif

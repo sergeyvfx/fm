@@ -52,6 +52,7 @@
         <itemPath>src/types.h</itemPath>
         <itemPath>src/version.h</itemPath>
         <itemPath>src/widget-button.c</itemPath>
+        <itemPath>src/widget-menu.c</itemPath>
         <itemPath>src/widget-window.c</itemPath>
         <itemPath>src/widget.c</itemPath>
         <itemPath>src/widget.h</itemPath>
@@ -276,6 +277,9 @@
         <itemTool>3</itemTool>
       </item>
       <item path="src/widget-button.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/widget-menu.c">
         <itemTool>0</itemTool>
       </item>
       <item path="src/widget-window.c">

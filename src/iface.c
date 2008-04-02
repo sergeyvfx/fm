@@ -1,8 +1,8 @@
 /*
  *
- * ================================================================================
+ * =============================================================================
  *  iface.h
- * ================================================================================
+ * =============================================================================
  *
  *  Written (by Nazgul) under General Public License.
  *
@@ -17,12 +17,14 @@
 #include <stdlib.h>
 #include <signal.h>
 
+// Functions for test core stuff
 static int
 test_clicked                      (w_button_t *__btn)
 {
   wchar_t buf[1024]={0};
 
-  int res=message_box (L"Critical", L"Some very long text for debug\nNew line", MB_YESNOCANCEL|MB_CRITICAL);
+  int res=message_box (L"Critical", L"Some very long text for debug\nNew line",
+    MB_YESNOCANCEL|MB_CRITICAL);
 
   swprintf  (buf, 1024, L"Modal result is %d\n", res);
   message_box (L"Information", buf, 0);
@@ -33,7 +35,8 @@ test_clicked                      (w_button_t *__btn)
 static int
 exit_clicked                      (w_button_t *__btn)
 {
-  if (message_box (L"fm", L"Are you sure you want to quit?", MB_YESNO|MB_DEFBUTTON_1)==MR_YES)
+  if (message_box (L"fm", L"Are you sure you want to quit?",
+    MB_YESNO|MB_DEFBUTTON_1)==MR_YES)
     {
       iface_done ();
       printf ("Good bye!\n");
@@ -42,24 +45,75 @@ exit_clicked                      (w_button_t *__btn)
   return TRUE;
 }
 
+static int
+menu_clicked                      (w_button_t *__btn)
+{
+  widget_set_focus (WIDGET (WIDGET_USER_DATA (__btn)));
+  return 0;
+}
+
+static int
+menu_exit_clicked                 (void)
+{
+  exit_clicked (0);
+  return 0;
+}
+
+static int
+menu_rus_clicked                  (void)
+{
+  message_box (L"fm", L":)", MB_OK);
+  return 0;
+}
+
 // Just for testing and debugging
 static void
 test                              (void)
 {
   w_window_t *wnd;
   w_button_t *btn;
+  w_menu_t *menu;
+  w_sub_menu_t *sm;
 
-  wnd=widget_create_window (L"My Window 1", 4, 1, 31, 10);
+  wnd=widget_create_window (L"My Window 1", 4, 2, 32, 10);
+
+  menu=widget_create_menu (WMS_HIDE_UNFOCUSED);
 
   btn=widget_create_button (WIDGET_CONTAINER (wnd), L"_Test", 2, 2, WBS_DEFAULT);
   WIDGET_USER_CALLBACK (btn, clicked)=(widget_action)test_clicked;
 
-  btn=widget_create_button (WIDGET_CONTAINER (wnd), L"_Exit", 13, 2, 0);
+  btn=widget_create_button (WIDGET_CONTAINER (wnd), L"_Menu", 13, 2, 0);
+  WIDGET_USER_DATA (btn) = menu;
+  WIDGET_USER_CALLBACK (btn, clicked)=(widget_action)menu_clicked;
+
+  btn=widget_create_button (WIDGET_CONTAINER (wnd), L"_Exit", 22, 2, 0);
   WIDGET_USER_CALLBACK (btn, clicked)=(widget_action)exit_clicked;
 
+  sm=w_menu_append_submenu (menu, L"_File");
+  w_submenu_append_item (sm, L"_New", 0, 0);
+  w_submenu_append_item (sm, L"_Open...", 0, 0);
+  w_submenu_append_item (sm, L"_Русский", menu_rus_clicked, 0);
+  w_submenu_append_item (sm, 0, 0, SMI_SEPARATOR);
+  w_submenu_append_item (sm, L"_Exit", menu_exit_clicked, 0);
+
+  sm=w_menu_append_submenu (menu, L"_Edit");
+  w_submenu_append_item (sm, 0, 0, SMI_SEPARATOR);
+  w_submenu_append_item (sm, L"_Undo", 0, 0);
+  w_submenu_append_item (sm, L"_Redo", 0, 0);
+  w_submenu_append_item (sm, 0, 0, SMI_SEPARATOR);
+  w_submenu_append_item (sm, L"_Cut", 0, 0);
+  w_submenu_append_item (sm, L"C_opy", 0, 0);
+  w_submenu_append_item (sm, L"_Paste", 0, 0);
+  w_submenu_append_item (sm, 0, 0, SMI_SEPARATOR);
+  w_submenu_append_item (sm, 0, 0, SMI_SEPARATOR);
+
+  sm=w_menu_append_submenu (menu, L"_Help");
+  w_submenu_append_item (sm, L"_About", 0, 0);
+  
   w_window_show_modal (wnd);
 
   widget_destroy (WIDGET (wnd));
+  widget_destroy (WIDGET (menu));
 }
 
 #ifdef SIGWINCH
@@ -73,7 +127,12 @@ sig_winch                         (int sig ATTR_UNUSED)
 ////////
 // User's backend
 
-int            // Initialize interface
+/**
+ * Initializes interface
+ *
+ * @return zero on success, non-zero on failure
+ */
+int
 iface_init                        (void)
 {
   int res;
@@ -92,7 +151,10 @@ iface_init                        (void)
   return 0;
 }
 
-void           // Uninitialize interface
+/**
+ * Uninitializes interface
+ */
+void
 iface_done                        (void)
 {
   screen_done ();

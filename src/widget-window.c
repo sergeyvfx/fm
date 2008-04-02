@@ -1,8 +1,8 @@
 /*
  *
- * ================================================================================
+ * =============================================================================
  *  widget-window.c
- * ================================================================================
+ * =============================================================================
  *
  *  Implementation file for widget `window`
  *
@@ -28,11 +28,24 @@
 ///////
 //
 
+/**
+ * Destroys a window widget
+ *
+ * @param __window - window to be destroyed
+ * @return zero on seccess, non-zero on failure
+ */
 static int
 window_destructor                 (w_window_t *__window)
 {
   if (!__window)
-    return 0;
+    return -1;
+
+  // Hide window to reduce blinks
+  w_window_hide (__window);
+
+  // Delete panel associated with layout
+  if (__window->panel)
+    panel_del (__window->panel);
 
   // Destroy screen layout
   if (WIDGET_LAYOUT (__window))
@@ -40,28 +53,26 @@ window_destructor                 (w_window_t *__window)
 
   if (__window->caption.text)
     free (__window->caption.text);
-  
+
   // Call deter inherited from container
   WIDGET_CONTAINER_DELETER (__window);
 
   free (__window);
 
-#ifdef WIDGET_USE_POOL
-  widget_unregister_from_pool (WIDGET (__window));
-#endif
-
-  // Need this because some strange troubles with refreshing screen.
-  // Actually, not all needed windows are refshed when we calls scr_refresh()
-  widget_full_redraw ();
-
   return 0;
 }
 
+/**
+ * Draws a window
+ *
+ * @param __window - a window to be drawed
+ * @return zero on success, non-zero on failure
+ */
 static int
 window_drawer                     (w_window_t *__window)
 {
-  if (!WIDGET_VISIBLE (__window))
-    return 0;
+  if (!WIDGET_VISIBLE (__window) || !WIDGET_LAYOUT (__window))
+    return -1;
 
   scr_window_t layout=WIDGET_LAYOUT (__window);
 
@@ -72,7 +83,8 @@ window_drawer                     (w_window_t *__window)
   if (__window->caption.text)
     {
       // Draw caption
-      scr_wnd_move_caret (layout, (__window->position.width-wcslen (__window->caption.text)-4)/2, 0);
+      scr_wnd_move_caret (layout,
+        (__window->position.width-wcslen (__window->caption.text)-4)/2, 0);
       scr_wnd_putch (layout, CH_RTEE);
 
       scr_wnd_font   (layout, *__window->caption.font);
@@ -88,13 +100,21 @@ window_drawer                     (w_window_t *__window)
   return 0;
 }
 
+/**
+ * Handles a keydown callback
+ *
+ * @param __window - window received a callback
+ * @param __ch - received character
+ * @return zero if callback hasn't handled received character
+ *   non-zero otherwise
+ */
 static int
-window_keydown                    (w_window_t *__window, int __ch)
+window_keydown                    (w_window_t *__window, wint_t __ch)
 {
   widget_t *focused;
 
   // Call to user's callback
-  WIDGET_CALL_USER_CALLBACK (__window, keydown, __window, __ch);
+  _WIDGET_CALL_USER_CALLBACK (__window, keydown, __window, __ch);
 
   // If user's callback hadn't processed this callback,
   // make this stuff
@@ -103,7 +123,8 @@ window_keydown                    (w_window_t *__window, int __ch)
     {
       // If there is focused widget, try to redirect callback to it
       int res=0;
-      if (WIDGET_CALLBACK (focused, keydown) && (res=WIDGET_CALLBACK (focused, keydown) (focused, __ch)))
+      if (WIDGET_CALLBACK (focused, keydown) &&
+          (res=WIDGET_CALLBACK (focused, keydown) (focused, __ch)))
         return res;
     }
 
@@ -123,7 +144,8 @@ window_keydown                    (w_window_t *__window, int __ch)
 
     default:
       {
-        WIDGET_CONTAINER_ACTION_ITERONLY (__window, SHORTCUT_CHECKER, towlower (__ch));
+        WIDGET_CONTAINER_ACTION_ITERONLY (__window, SHORTCUT_CHECKER,
+          towlower (__ch));
         break;
       }
     }
@@ -131,6 +153,12 @@ window_keydown                    (w_window_t *__window, int __ch)
   return FALSE;
 }
 
+/**
+ * Main window procedure which caughting messages from user and
+ * manipulates with them
+ *
+ * @param __window - window for which messages from user should be caughted
+ */
 static int
 window_proc                       (w_window_t *__window)
 {
@@ -158,7 +186,8 @@ window_proc                       (w_window_t *__window)
               if (__window->show_mode&WSM_MODAL)
                 {
                   // Suggest that non-zero modal_result means that
-                  // somebody wants to return this modal_result instead of MR_CANCEL
+                  // somebody wants to return this modal_result
+                  // instead of MR_CANCEL
                   if (!__window->modal_result)
                     __window->modal_result=MR_CANCEL;
                   finito=TRUE;
@@ -174,13 +203,22 @@ window_proc                       (w_window_t *__window)
   return 0;
 }
 
+/**
+ * Default part of window showing stuff
+ *
+ * @param __window - window to be shown
+ * @param _show_mode - mode in which window have to be shown.
+ *   Possible values:
+ *     WSM_NORLAM - Normal window
+ *     WSM_MODAL  - Modal window
+ * @return zero or modal result of window on success.
+ *   Less-zero value on failure.
+ */
 static int
 window_show_entry                 (w_window_t *__window, int __show_mode)
 {
    if (!__window)
      return -1;
-
-   widget_position_t pos=WIDGET_POSITION (__window); // For small time optimization
 
    // Window is now visible
    WIDGET_POSITION (__window).z=1;
@@ -190,11 +228,9 @@ window_show_entry                 (w_window_t *__window, int __show_mode)
 
   // widget_set_current_widget (WIDGET (__window));
 
-  // Create layout for window
-  __window->layout=scr_create_window (pos.x, pos.y, pos.width, pos.height);
-
   // Set focus to first widget in window
-  if (WIDGET_CONTAINER_LENGTH (__window) && !WIDGET_CONTAINER_FOCUSED (__window))
+  if (WIDGET_CONTAINER_LENGTH (__window) &&
+      !WIDGET_CONTAINER_FOCUSED (__window))
     widget_set_focus (WIDGET_CONTAINER_DATA (__window)[0]);
 
   // Draw window
@@ -213,8 +249,17 @@ window_show_entry                 (w_window_t *__window, int __show_mode)
 //////
 // User's backend
 
-w_window_t*    // Creates new window
-widget_create_window              (wchar_t *__caption, int __x, int __y, int __w, int __h)
+/**
+ * Creates new window with specified caprtion and position
+ *
+ * @param __caption - caption of window
+ * @param __x, __y - coordinates of winddow
+ * @param __w, __h - width and height of window
+ * @return a pointer to window object
+ */
+w_window_t*
+widget_create_window              (wchar_t *__caption,
+                                   int __x, int __y, int __w, int __h)
 {
   w_window_t *res;
 
@@ -230,7 +275,10 @@ widget_create_window              (wchar_t *__caption, int __x, int __y, int __w
   if (__caption)
     res->caption.text=wcsdup (__caption);
 
-  //res->layout=scr_create_window (__x, __y, __w, __h);
+  // Create layout for window
+  res->layout=scr_create_window (__x, __y, __w, __h);
+
+  res->panel=panel_new (res->layout);
 
   res->position.x      = __x;
   res->position.y      = __y;
@@ -243,26 +291,44 @@ widget_create_window              (wchar_t *__caption, int __x, int __y, int __w
 
   WIDGET_CALLBACK (res, keydown)=(widget_keydown)window_keydown;
 
-#ifdef WIDGET_USE_POOL
-  widget_register_in_pool (WIDGET (res));
-#endif
-
   return res;
 }
 
-/*void           //  Show normal window
-w_window_show                     (w_window_t *__window)
-{
-  window_show_entry (__window, WSM_DEFAULT);
-}*/
-
-int            //  Show modal window
+/**
+ * Shows modal window
+ *
+ * @param __window - window to be shown modally
+ * @return modal result
+ */
+int
 w_window_show_modal               (w_window_t *__window)
 {
   return window_show_entry (__window, WSM_MODAL);
 }
 
-void           // Hide window
+/**
+ * Shows window
+ *
+ * @param __window - window to be shown
+ */
+void
+w_window_show                     (w_window_t *__window)
+{
+  if (!__window || !WIDGET_LAYOUT (__window))
+    return;
+
+  // Window is now visible
+  WIDGET_POSITION (__window).z=1;
+
+  panel_show (__window->panel);
+}
+
+/**
+ * Hides window
+ *
+ * @param __window - window to be hided
+ */
+void
 w_window_hide                     (w_window_t *__window)
 {
   if (!__window || !WIDGET_LAYOUT (__window))
@@ -271,33 +337,21 @@ w_window_hide                     (w_window_t *__window)
   // Window is now unvisible
   WIDGET_POSITION (__window).z=0;
 
-  // widget_set_current_widget (__window->w_prev_callback);
-
-  // Destroy layout for window
-  scr_destroy_window (WIDGET_LAYOUT (__window));
-  WIDGET_LAYOUT (__window)=0;
-
-  // Redraw all windows
-  widget_full_redraw ();
+  panel_hide (__window->panel);
 }
 
-void           // Returns window from hidden state
-w_window_display                  (w_window_t *__window)
-{
-   widget_position_t pos=WIDGET_POSITION (__window); // For small optimization
-
-   // Window is now visible
-   WIDGET_POSITION (__window).z=1;
-
-  // Create layout for window
-   __window->layout=scr_create_window (pos.x, pos.y, pos.width, pos.height);
-
-  // Redraw all windows
-  widget_full_redraw ();
-}
-
+/**
+ * Sets font of window
+ *
+ * @param __window - for which window change fonts
+ * @param __font - font determines background of window and
+ *   color of lonely text on window
+ * @param __caption_font - font for caption
+ */
 void
-w_window_set_fonts                (w_window_t *__window, scr_font_t *__font, scr_font_t *__caption_font)
+w_window_set_fonts                (w_window_t *__window,
+                                   scr_font_t *__font,
+                                   scr_font_t *__caption_font)
 {
   if (!__window)
     return;
@@ -309,6 +363,11 @@ w_window_set_fonts                (w_window_t *__window, scr_font_t *__font, scr
 ////
 // Deep-core stuff
 
+/**
+ * Closes modally shown window
+ *
+ * @param __window - window to be closed
+ */
 void
 w_window_end_modal                (w_window_t *__window, int __modal_result)
 {

@@ -1,8 +1,8 @@
 /*
  *
- * ================================================================================
+ * =============================================================================
  *  messages.h
- * ================================================================================
+ * =============================================================================
  *
  *  Written (by Nazgul) under General Public License.
  *
@@ -29,6 +29,7 @@
 #define MB_RETRYCANCEL     0x0400
 #define MB_RETRYSKIPCANCEL 0x0500
 
+// Determines an index of initially focused button
 #define MB_DEFBUTTON_0     0x0000
 #define MB_DEFBUTTON_1     0x1000
 #define MB_DEFBUTTON_2     0x2000

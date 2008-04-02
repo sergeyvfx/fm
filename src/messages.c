@@ -1,8 +1,8 @@
 /*
  *
- * ================================================================================
+ * =============================================================================
  *  messages.h
- * ================================================================================
+ * =============================================================================
  *
  *  Written (by Nazgul) under General Public License.
  *
@@ -29,6 +29,7 @@ typedef struct {
   } buttons[MAX_BUTTONS];
 } btn_array_t;
 
+// Posibile sets of buttons
 static btn_array_t buttons[]={
     { 1, -1, { {MR_OK,    -1, L"_Ok"} } },
     { 2, -1, { {MR_OK,    -1, L"_Ok"},      {MR_CANCEL, -1, L"_Cancel"} } },
@@ -41,6 +42,15 @@ static btn_array_t buttons[]={
 ////////
 //
 
+/**
+ * Returns position of message (x,y-cooddinates and width/height)
+ *
+ * @param __caption - caption of message window
+ * @param __text - text to display in message
+ * @param - additional configuration flags of message's window
+ * @params - array of buttons
+ * @return position of message's window
+ */
 static widget_position_t
 msg_wnd_pos                       (wchar_t *__caption, wchar_t *__text, unsigned int __flags, btn_array_t *__buttons)
 {
@@ -68,27 +78,51 @@ msg_wnd_pos                       (wchar_t *__caption, wchar_t *__text, unsigned
   return res;
 }
 
+/**
+ * Returns array of buttons used in message window, determined by __flags
+ *
+ * @param __flags - flags which determenine's message's window
+ * @return array of buttons for message
+ */
 static btn_array_t
 get_buttons                       (unsigned int __flags)
 {
   int i;
+  
+  // Get button set from default list
   btn_array_t res=buttons[MB_BUTTON_CODE (__flags)];
+  
+  //
+  // TODO:
+  //  Add localisation stuff here
+  //
+
+  // Calculate summary width of button set
   res.width=0;
   for (i=0; i<res.count; ++i)
       res.width+=(res.buttons[i].width=widget_shortcut_length (res.buttons[i].caption)+4);
+
   return res;
 }
 
+/**
+ * Draws a message's window
+ *
+ * @param __window - window of message
+ * @return
+ */
 static int
 msg_window_drawer                 (w_window_t *__window)
 {
   wchar_t *text=WIDGET_USER_DATA (__window);
   int i, n, prev, j, m, line, width;
   scr_window_t layout=WIDGET_LAYOUT (__window);
-  
+
+  // Call to default window drawer
   if (old_drawer)
     old_drawer (__window);
 
+  // Draw text of message
   line=1;
   width=__window->position.width;
 
@@ -109,8 +143,23 @@ msg_window_drawer                 (w_window_t *__window)
 }
 
 ////////
-//
+// End-user stuff
 
+/**
+ * Shows a message box
+ *
+ * @param __caption - caption of message
+ * @param __text - text of message
+ * @params __flags - other flags whish determines feel&look of message box.
+ *  MB_CRITICAL - determines message is critical
+  * This flags determines a set of buttons:
+ *   MB_OK, MB_OKCANCEL, MB_YESNO, MB_YESNOCANCEL,
+ *   MB_RETRYCANCEL, MB_RETRYSKIPCANCEL
+ * This flagse determines an index of initially focused button:
+ *   MB_DEFBUTTON_0, MB_DEFBUTTON_1, MB_DEFBUTTON_2
+ *
+ * @return modal result of message
+ */
 int
 message_box                       (wchar_t *__caption, wchar_t *__text, unsigned int __flags)
 {
@@ -124,9 +173,10 @@ message_box                       (wchar_t *__caption, wchar_t *__text, unsigned
 
   wnd=widget_create_window (__caption, pos.x, pos.y, pos.width, pos.height);
 
+  // Reset default fonts if message is critical
   if ((critical=__flags&MB_CRITICAL))
     w_window_set_fonts (wnd, &sf_white_on_red, &sf_yellow_on_red);
-  
+
   WIDGET_USER_DATA(wnd)=__text;
 
   // Replace default drawer
@@ -154,7 +204,7 @@ message_box                       (wchar_t *__caption, wchar_t *__text, unsigned
 
   // Show message in modal state
   res=w_window_show_modal (wnd);
-  
+
   widget_destroy (WIDGET (wnd));
 
   return res;

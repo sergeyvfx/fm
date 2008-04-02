@@ -1,8 +1,8 @@
 /*
  *
- * ================================================================================
+ * =============================================================================
  *  screen.c
- * ================================================================================
+ * =============================================================================
  *
  *  Screen abstration layer
  *
@@ -26,7 +26,8 @@ static int mode=0;
 scr_font_t sf_null;
 scr_font_t sf_black_on_white, sf_blue_on_white, sf_yellow_on_white;
 scr_font_t sf_white_on_red, sf_yellow_on_red;
-scr_font_t sf_black_on_cyan, sf_blue_on_cyan;
+scr_font_t sf_black_on_cyan, sf_blue_on_cyan, sf_yellow_on_cyan;
+scr_font_t sf_yellow_on_black, sf_white_on_black;
 
 #ifdef SCREEN_NCURSESW
 #  define INIT_COLOR(__font,__pair_no,__fore,__back,__bold) \
@@ -38,6 +39,9 @@ __font.bold          = __bold;
 //////
 //
 
+/**
+ *  Initializes default fonts
+ */
 static void
 define_default_fonts              (void)
 {
@@ -55,6 +59,10 @@ define_default_fonts              (void)
 
   INIT_COLOR (sf_black_on_cyan,   CP_BLACK_ON_CYAN,    COLOR_BLACK,   COLOR_CYAN,  FALSE);
   INIT_COLOR (sf_blue_on_cyan,    CP_BLUE_ON_CYAN,     COLOR_BLUE,    COLOR_CYAN,  FALSE);
+  INIT_COLOR (sf_yellow_on_cyan,  CP_YELLOW_ON_CYAN,   COLOR_YELLOW,  COLOR_CYAN,  TRUE);
+
+  INIT_COLOR (sf_yellow_on_black, CP_YELLOW_ON_BLACK,  COLOR_YELLOW,  COLOR_BLACK, TRUE);
+  INIT_COLOR (sf_white_on_black,  CP_WHITE_ON_BLACK,   COLOR_WHITE,   COLOR_BLACK, TRUE);
 
   sf_null.color_pair            = CP_NULL;
 
@@ -64,6 +72,9 @@ define_default_fonts              (void)
   sf_black_on_cyan.bold   = FALSE;
 }
 
+/**
+ * Initializes smart handling of escaped characters (i.e. Esc-^[)
+ */
 static void
 init_escape_keys                  (void)
 {
@@ -95,7 +106,13 @@ init_escape_keys                  (void)
 //////
 // User's backend
 
-int            // Initialize screen stuff
+/**
+ * Initializes screen stuff
+ *
+ * @param __mode - mode of screen to be initialized
+ * @return a zero in successful
+ */
+int
 screen_init                       (int __mode)
 {
 
@@ -127,7 +144,10 @@ screen_init                       (int __mode)
   return 0;
 }
 
-void           // Uninitialize screen stuff
+/**
+ * Uninitializes screen stuff
+ */
+void
 screen_done                       (void)
 {
 #ifdef SCREEN_NCURSESW
@@ -135,12 +155,22 @@ screen_done                       (void)
 #endif
 }
 
+/**
+ * Returns a root window
+ *
+ * @return a root window
+ */
 scr_window_t
 screen_root_wnd                   (void)
 {
   return root_wnd;
 }
 
+/**
+ * Refreshs screen
+ * 
+ * @param __full_refresh - should a full screen will be refreshed?
+ */
 void
 screen_refresh                    (BOOL __full_refresh)
 {
