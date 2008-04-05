@@ -11,6 +11,8 @@
 */
 
 #include "screen.h"
+#include "hotkeys.h"
+
 #include <locale.h>
 
 ////
@@ -82,6 +84,7 @@ init_escape_keys                  (void)
 #ifdef SCREEN_NCURSESW
   short i;
   keypad (stdscr, TRUE);
+
   for (i=0; i<255; ++i)
     {
       char temp[10];
@@ -97,6 +100,7 @@ init_escape_keys                  (void)
           char *temp = malloc (strlen (value)+2);
           sprintf (temp, "\033%s", value);
           define_key(temp, i+MY_KEYS);
+          
           free (temp);
           free (value);
         }
@@ -180,4 +184,36 @@ screen_refresh                    (BOOL __full_refresh)
     touchwin (stdscr);
   refresh ();
 #endif
+}
+
+/**
+ * Returns character from window
+ *
+ * @param __window - from which window expects a character
+ * @return caugthed character
+ */
+wchar_t
+scr_wnd_getch                     (scr_window_t __window)
+{
+  //
+  // TODO:
+  //  Need this function to look after all caucghted characters
+  //  and do hotkeys stuff here
+  //
+
+  wint_t ch;
+
+  for (;;)
+    {
+
+  // Read next character from window
+#ifdef SCREEN_NCURSESW
+      wget_wch (__window, &ch);
+#endif
+
+      if (!hotkey_push_character (ch))
+        break;
+    }
+
+  return ch;
 }

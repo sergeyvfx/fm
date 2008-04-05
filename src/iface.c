@@ -12,6 +12,7 @@
 #include "screen.h"
 #include "widget.h"
 #include "messages.h"
+#include "hotkeys.h"
 
 #include <wchar.h>
 #include <stdlib.h>
@@ -66,14 +67,26 @@ menu_rus_clicked                  (void)
   return 0;
 }
 
+w_menu_t *menu;
+
+void
+menu_hotkey_callback              (void)
+{
+  widget_set_focus (WIDGET (menu));
+}
+
 // Just for testing and debugging
 static void
 test                              (void)
 {
   w_window_t *wnd;
   w_button_t *btn;
-  w_menu_t *menu;
   w_sub_menu_t *sm;
+
+  hotkey_register (L"F9", menu_hotkey_callback);
+  hotkey_register (L"^a M-a M-^B", menu_hotkey_callback);
+
+  hotkey_realise (L"^a M-a M-^B");
 
   wnd=widget_create_window (L"My Window 1", 4, 2, 32, 10);
 

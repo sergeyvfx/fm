@@ -289,44 +289,6 @@ submenu_position                  (w_sub_menu_t *__sub_menu)
 }
 
 /**
- * Unfolds sub menu
- *
- * @param __sub_menu - submenu is to be unfolded
- */
-static void
-unfold_submenu                    (w_sub_menu_t *__sub_menu)
-{
-  if (!__sub_menu)
-    return;
-
-  w_menu_t *menu=__sub_menu->menu;
-  widget_position_t pos=__sub_menu->position=submenu_position (__sub_menu);
-  
-  // Create a layout and panel (if neccessary)
-  scr_window_t tmp=scr_create_window (pos.x, pos.y, pos.width, pos.height);
-  if (!menu->submenu_layout)
-    {
-      menu->submenu_layout=tmp;
-      menu->submenu_panel=panel_new (menu->submenu_layout);
-    } else {
-      // There is no stuff to resize panels,
-      // So, we have just to replace layout
-      scr_window_t old=menu->submenu_layout;
-      menu->submenu_layout=tmp;
-      panel_replace (menu->submenu_panel, tmp);
-      scr_destroy_window (old);
-      panel_show (menu->submenu_panel);
-    }
-
-  panel_move (menu->submenu_panel, pos.x, pos.y);
-
-  // Now menu is unfolded
-  menu->unfolded=TRUE;
-
-  draw_submenu (__sub_menu);
-}
-
-/**
  * Returns index of first focusable item in submenus
  *
  * @param __sub_menu - sub-menu where to find first focusable item
@@ -407,6 +369,46 @@ submenu_item_prev                 (w_sub_menu_t *__sub_menu)
 }
 
 /**
+ * Unfolds sub menu
+ *
+ * @param __sub_menu - submenu is to be unfolded
+ */
+static void
+unfold_submenu                    (w_sub_menu_t *__sub_menu)
+{
+  if (!__sub_menu)
+    return;
+
+  w_menu_t *menu=__sub_menu->menu;
+  widget_position_t pos=__sub_menu->position=submenu_position (__sub_menu);
+
+  __sub_menu->cur_item_index=submenu_item_first (__sub_menu);
+
+  // Create a layout and panel (if neccessary)
+  scr_window_t tmp=scr_create_window (pos.x, pos.y, pos.width, pos.height);
+  if (!menu->submenu_layout)
+    {
+      menu->submenu_layout=tmp;
+      menu->submenu_panel=panel_new (menu->submenu_layout);
+    } else {
+      // There is no stuff to resize panels,
+      // So, we have just to replace layout
+      scr_window_t old=menu->submenu_layout;
+      menu->submenu_layout=tmp;
+      panel_replace (menu->submenu_panel, tmp);
+      scr_destroy_window (old);
+      panel_show (menu->submenu_panel);
+    }
+
+  panel_move (menu->submenu_panel, pos.x, pos.y);
+
+  // Now menu is unfolded
+  menu->unfolded=TRUE;
+
+  draw_submenu (__sub_menu);
+}
+
+/**
  * Sets __sub_menu as current submenu of __menu
  *
  * @param __menu - base menu
@@ -417,9 +419,7 @@ switch_to_submenu                 (w_sub_menu_t *__sub_menu)
 {
   __sub_menu->menu->cur_submenu=__sub_menu;
   widget_redraw (WIDGET (__sub_menu->menu));
-  
-  __sub_menu->cur_item_index=submenu_item_first (__sub_menu);
-  
+
   if (__sub_menu->menu->unfolded)
     unfold_submenu (__sub_menu);
 }
@@ -462,7 +462,7 @@ menu_mapper                       (w_menu_t *__menu)
   for (;;)
     {
       // Wait for next character from user
-      scr_wnd_getch (layout, ch);
+      ch=scr_wnd_getch (layout);
       
       switch (ch)
         {

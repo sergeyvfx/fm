@@ -53,7 +53,9 @@
 #  define scr_wnd_clear(_wnd)                   wclear (_wnd)
 #  define scr_wnd_refresh(_wnd)                 wrefresh (_wnd)
 
+/*
 #  define scr_wnd_getch(__wnd, __ch)            wget_wch (__wnd, &__ch)
+*/
 #  define scr_wnd_putch(__wnd,__ch)             waddch (__wnd, __ch)
 #  define scr_wnd_printf(__wnd,__text,__arg...) wprintw (__wnd, __text, ##__arg)
 #  define scr_wnd_add_nstr(__wnd,__str,__n)     waddnwstr (__wnd, __str, __n)
@@ -108,6 +110,14 @@
 #  define CH_BTEE  ACS_BTEE
 #  define CH_TTEE  ACS_TTEE
 
+#ifndef CTRL
+#  define CTRL(x)  (((x)=='m'||(x)=='M')?10:(x)&0x1f)
+#endif
+
+#ifndef ALT
+#  define ALT(x)  ((x) | 0x200)
+#endif
+
 //Keys
 #  define KEY_TAB       9
 #  define KEY_RETURN    10
@@ -123,8 +133,8 @@
 #define panel_new(_layout)     new_panel (_layout);
 #define panel_del(_p)          { panel_hide (_p); del_panel (_p); }
 
-#define panel_show(_p)    { show_panel (_p); panels_doupdate (); }
-#define panel_hide(_p)    { hide_panel (_p); panels_doupdate (); }
+#define panel_show(_p)         { show_panel (_p); panels_doupdate (); }
+#define panel_hide(_p)         { hide_panel (_p); panels_doupdate (); }
 
 #define panel_move(_p,_x,_y)   { move_panel (_p,_y,_x); panels_doupdate (); }
 #define panels_update()        update_panels ()
@@ -165,5 +175,8 @@ screen_root_wnd                   (void);
 
 void
 screen_refresh                    (BOOL __full_refresh);
+
+wchar_t
+scr_wnd_getch                     (scr_window_t __window);
 
 #endif
