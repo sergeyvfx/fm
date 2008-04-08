@@ -52,15 +52,22 @@ static btn_array_t buttons[]={
  * @return position of message's window
  */
 static widget_position_t
-msg_wnd_pos                       (wchar_t *__caption, wchar_t *__text, unsigned int __flags, btn_array_t *__buttons)
+msg_wnd_pos                       (wchar_t *__caption, wchar_t *__text,
+                                   unsigned int __flags,
+                                   btn_array_t *__buttons)
 {
   int i, n, len;
   widget_position_t res={0, 0, 0, 3, 0};
 
+  // Initially width of window is fit to caption.
+  // 6 = 2 spaces + 2 of | + 2 for border's corner
   res.width=wcslen (__caption)+6;
 
+  // Is buttons are wider than caption
+  // 4 = 2 spaces for boprder + 2 spaces for padding
   res.width=MAX (res.width, __buttons->width+4);
 
+  // Check is there is a wider line of text
   for (i=len=0, n=wcslen (__text); i<n; ++i)
     {
       if (__text[i]=='\n' || i==n-1)
@@ -72,6 +79,7 @@ msg_wnd_pos                       (wchar_t *__caption, wchar_t *__text, unsigned
           len++;
     }
 
+  // Centration
   res.x=(SCREEN_WIDTH-res.width)/2;
   res.y=(SCREEN_HEIGHT-res.height)/2;
 
@@ -100,7 +108,8 @@ get_buttons                       (unsigned int __flags)
   // Calculate summary width of button set
   res.width=0;
   for (i=0; i<res.count; ++i)
-      res.width+=(res.buttons[i].width=widget_shortcut_length (res.buttons[i].caption)+4);
+      res.width+=(res.buttons[i].width=
+        widget_shortcut_length (res.buttons[i].caption)+4);
 
   return res;
 }
@@ -161,7 +170,8 @@ msg_window_drawer                 (w_window_t *__window)
  * @return modal result of message
  */
 int
-message_box                       (wchar_t *__caption, wchar_t *__text, unsigned int __flags)
+message_box                       (wchar_t *__caption, wchar_t *__text,
+                                   unsigned int __flags)
 {
   w_window_t *wnd;
   w_button_t *cur_btn;
@@ -177,27 +187,30 @@ message_box                       (wchar_t *__caption, wchar_t *__text, unsigned
   if ((critical=__flags&MB_CRITICAL))
     w_window_set_fonts (wnd, &sf_white_on_red, &sf_yellow_on_red);
 
+  // Use USER_DATA to tell window its text
   WIDGET_USER_DATA(wnd)=__text;
 
   // Replace default drawer
   old_drawer=WIDGET_METHOD (wnd, draw);
   WIDGET_METHOD (wnd, draw)=(widget_action)msg_window_drawer;
 
- 
-  // Create buttons
+   // Create buttons
   x=(pos.width-btn_arr.width-btn_arr.count+1)/2;
   for (i=0; i<btn_arr.count; i++)
     {
-      cur_btn=widget_create_button(WIDGET_CONTAINER (wnd), btn_arr.buttons[i].caption,
-        x, pos.height-2, 0);
+      cur_btn=widget_create_button(WIDGET_CONTAINER (wnd),
+        btn_arr.buttons[i].caption, x, pos.height-2, 0);
 
+      // Current button is default
       if (i==defbutton)
         widget_set_focus (WIDGET (cur_btn));
 
       WIDGET_BUTTON_MODALRESULT (cur_btn)=btn_arr.buttons[i].modal_result;
 
+      // If message is critical we should set another fonts to buttons
       if (critical)
-        w_button_set_fonts (cur_btn, &sf_white_on_red, &sf_black_on_white, &sf_yellow_on_red, &sf_yellow_on_white);
+        w_button_set_fonts (cur_btn, &sf_white_on_red, &sf_black_on_white,
+         &sf_yellow_on_red, &sf_yellow_on_white);
 
       x+=btn_arr.buttons[i].width+1;
     }

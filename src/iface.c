@@ -150,15 +150,17 @@ iface_init                        (void)
 {
   int res;
 
+  // Initialise terminal control
   if ((res=screen_init (SM_COLOR)))
     return res;
 
 #ifdef SIGWINCH
+  // For caughting terminal resizing
   signal (SIGWINCH, sig_winch);
 #endif
 
   scr_hide_curser ();
-  
+
   test ();
 
   return 0;
@@ -170,5 +172,6 @@ iface_init                        (void)
 void
 iface_done                        (void)
 {
+  // We don't need screen now!
   screen_done ();
 }

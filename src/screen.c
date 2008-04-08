@@ -23,9 +23,10 @@ static WINDOW *root_wnd = NULL;
 #  define MY_KEYS (KEY_MAX+1)
 #endif
 
-int ESCDELAY = 0;
-static int mode=0;
+int ESCDELAY = 0;  // Disable pause when escape is pressed
+static int mode=0; // Mode of screen
 
+// Default fonts
 scr_font_t sf_null;
 scr_font_t sf_black_on_white, sf_blue_on_white, sf_yellow_on_white;
 scr_font_t sf_white_on_red, sf_yellow_on_red;
@@ -71,7 +72,6 @@ define_default_fonts              (void)
 
 #endif
  
-
   sf_black_on_cyan.bold   = FALSE;
 }
 
@@ -120,7 +120,6 @@ init_escape_keys                  (void)
 int
 screen_init                       (int __mode)
 {
-
   mode=__mode;
   
 #ifdef SCREEN_NCURSESW

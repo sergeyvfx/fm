@@ -41,7 +41,8 @@
 //////
 //
 
-int
-message_box                       (wchar_t *__caption, wchar_t *__text, unsigned int __flags);
+int            // Show a message box
+message_box                       (wchar_t *__caption, wchar_t *__text,
+                                   unsigned int __flags);
 
 #endif

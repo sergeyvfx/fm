@@ -17,8 +17,17 @@
 // Length of maximum sequence for hotkey
 #define MAX_SEQUENCE_LENGTH  3
 
+// Queue of incoming characters
 static wchar_t queue[MAX_SEQUENCE_LENGTH]={0};
 static short queue_ptr=0;
+
+// List of all registered hot-keys
+
+//
+// TODO:
+//  We'd better use some typy of hashing to make
+//  findning a hotkey faster.
+//
 
 static struct {
   wchar_t         *sequence;
@@ -44,6 +53,8 @@ check_iterator                    (wchar_t *__sequence, short __len)
 {
   short i=0, j=queue_ptr-__len;
 
+  // Just compare all characters in sequence with
+  // characters from queue
   for (i=0; i<__len; i++)
     if (__sequence[i]!=queue[j++]) {
       return 0;
@@ -63,10 +74,13 @@ check                             (void)
 {
   short i;
 
+  // Go through all registered hot-keys and
+  // check if any is in queue
   for (i=0; i<hotkey_count; i++)
     {
       if (check_iterator (hotkeys[i].sequence, hotkeys[i].length))
         {
+          // Hot-key sequence is in queue.
           hotkeys[i].callback ();
           return 1;
         }
@@ -94,10 +108,11 @@ parse_sequence                    (wchar_t *__sequence, wchar_t *__res)
       // Sequence is too long
       if (len>=MAX_SEQUENCE_LENGTH)
         return -1;
-    
+
       // Reset state
       ctrl=alt=FALSE;
 
+      ////
       // Parse optional prefixes
 
       // Alt
@@ -118,6 +133,7 @@ parse_sequence                    (wchar_t *__sequence, wchar_t *__res)
               return -1; /* Invalid CONTROL prefix */
         }
 
+      ////
       // Check for function-key
       if (i<n-1 && __sequence[i]=='F' &&
           __sequence[i+1]>='0' && __sequence[i+1]<='9')
@@ -129,8 +145,9 @@ parse_sequence                    (wchar_t *__sequence, wchar_t *__res)
           
           dummy=KEY_F(f);
         } else
-          dummy=__sequence[i++];
+          dummy=__sequence[i++]; // Simple character
 
+      ////
       // Apply prefixes
       if (ctrl)
         dummy=CTRL (dummy);
@@ -165,8 +182,11 @@ hotkey_register                   (wchar_t *__sequence,
   wchar_t dummy[MAX_SEQUENCE_LENGTH];
   short len;
 
+  // Prepare sequence
   if ((len=parse_sequence (__sequence, dummy))>0)
     {
+      // Sequence is good, so we can allocate new hot-key descriptor
+      // and fill it in.
       hotkeys=realloc (hotkeys, sizeof (*hotkeys)*(hotkey_count+1));
 
       hotkeys[hotkey_count].sequence=malloc (sizeof (wchar_t)*len);
@@ -182,7 +202,7 @@ hotkey_register                   (wchar_t *__sequence,
 }
 
 /**
- * Realises a hot-key
+ * Realises a hot-key.
  *
  * @param __sequence - hot-key sequence to realise
  */
@@ -197,6 +217,8 @@ hotkey_realise                    (wchar_t *__sequence)
       short i, j;
       BOOL eq;
 
+      // Go through all registered hot-keys and
+      // compare with sequence to realise.
       for (i=0; i<hotkey_count; i++)
         {
           // Check is sequences are equal
@@ -207,9 +229,10 @@ hotkey_realise                    (wchar_t *__sequence)
                 eq=FALSE;
                 break;
               }
-          
+
           if (eq)
             {
+              // Sequences are equal, so just destroy it.
               free (hotkeys[i].sequence);
 
               // Shift registered hotkeys
@@ -245,6 +268,7 @@ hotkey_push_character             (wchar_t __ch)
       queue_ptr=MAX_SEQUENCE_LENGTH-1;
     }
 
+  // Store character in queue
   queue[queue_ptr++]=__ch;
 
   return check ();

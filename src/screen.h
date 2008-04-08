@@ -170,13 +170,13 @@ screen_init                       (int __mode);
 void           // Uninitialize screen stuff
 screen_done                       (void);
 
-scr_window_t
+scr_window_t   // Get root window
 screen_root_wnd                   (void);
 
-void
+void           // Refresh screen
 screen_refresh                    (BOOL __full_refresh);
 
-wchar_t
+wchar_t       // Return character from window
 scr_wnd_getch                     (scr_window_t __window);
 
 #endif

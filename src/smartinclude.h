@@ -22,6 +22,8 @@
 #include "types.h"
 #include "macrodef.h"
 
+// Some definitions to tell compiler use
+// specified stuff
 #define __USE_GNU
 #define __USE_ISOC99
 #define USE_WIDEC_SUPPORT

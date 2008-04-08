@@ -29,6 +29,7 @@ button_destructor                 (w_button_t *__button)
   
   if (__button->caption)
     free (__button->caption);
+
   free (__button);
   return 0;
 }
@@ -43,7 +44,8 @@ static int
 button_drawer                     (w_button_t *__button)
 {
   // Inherit layout from parent
-  scr_window_t layout=WIDGET_LAYOUT (__button)=WIDGET_LAYOUT (__button->parent);
+  scr_window_t layout=WIDGET_LAYOUT (__button)=
+    WIDGET_LAYOUT (__button->parent);
 
   // Widget is invisible or there is no layout
   if (!WIDGET_VISIBLE (__button) || !layout)
