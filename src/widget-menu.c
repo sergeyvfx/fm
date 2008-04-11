@@ -661,6 +661,7 @@ w_menu_append_submenu             (w_menu_t *__menu, wchar_t *__caption)
       (__menu->sub_menus.length+1)*sizeof (*__menu->sub_menus.data));
 
   res=&__menu->sub_menus.data[__menu->sub_menus.length];
+  memset(res, 0, sizeof(*res));
 
   if (__caption)
     {
