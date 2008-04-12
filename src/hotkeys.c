@@ -202,12 +202,12 @@ hotkey_register                   (wchar_t *__sequence,
 }
 
 /**
- * Realises a hot-key.
+ * Release a hot-key.
  *
  * @param __sequence - hot-key sequence to realise
  */
 void
-hotkey_realise                    (wchar_t *__sequence)
+hotkey_release                    (wchar_t *__sequence)
 {
   wchar_t dummy[MAX_SEQUENCE_LENGTH];
   short len;

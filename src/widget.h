@@ -254,7 +254,7 @@ typedef struct {
       unsigned int       flags;
       menu_item_callback callback;
     } *data;
-    short length;
+    unsigned short length;
   } items;
 
   struct w_menu_t_entry  *menu;     // Menu which owns this submenu
@@ -279,7 +279,7 @@ typedef struct w_menu_t_entry {
 
   struct {
     w_sub_menu_t *data;
-    int          length;
+    unsigned int length;
   } sub_menus;
 
   ////

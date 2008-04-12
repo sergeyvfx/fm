@@ -148,8 +148,8 @@ widget_create_button              (w_container_t *__parent, wchar_t *__caption,
 {
   w_button_t *res;
 
-  // Parent is not a contaier-based widget
-  if (!WIDGET_IS_CONTAINER (__parent))
+  // There is no parent or caption is null, so we can't create button
+  if (!__parent || !__caption)
     return 0;
 
   // Allocate and free memory for new window
@@ -172,8 +172,7 @@ widget_create_button              (w_container_t *__parent, wchar_t *__caption,
 
   WIDGET_SHORTCUT (res)=widget_shortcut_key (__caption);
 
-  if (__caption)
-    res->caption=wcsdup (__caption);
+  res->caption=wcsdup (__caption);
 
   res->style=__style;
 

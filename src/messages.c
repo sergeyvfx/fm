@@ -96,10 +96,10 @@ static btn_array_t
 get_buttons                       (unsigned int __flags)
 {
   int i;
-  
+
   // Get button set from default list
   btn_array_t res=buttons[MB_BUTTON_CODE (__flags)];
-  
+
   //
   // TODO:
   //  Add localisation stuff here
@@ -188,7 +188,8 @@ message_box                       (wchar_t *__caption, wchar_t *__text,
     w_window_set_fonts (wnd, &sf_white_on_red, &sf_yellow_on_red);
 
   // Use USER_DATA to tell window its text
-  WIDGET_USER_DATA(wnd)=__text;
+  if (__text)
+    WIDGET_USER_DATA(wnd)=wcsdup (__text);
 
   // Replace default drawer
   old_drawer=WIDGET_METHOD (wnd, draw);
@@ -218,6 +219,7 @@ message_box                       (wchar_t *__caption, wchar_t *__text,
   // Show message in modal state
   res=w_window_show_modal (wnd);
 
+  SAFE_FREE (WIDGET_USER_DATA(wnd));
   widget_destroy (WIDGET (wnd));
 
   return res;

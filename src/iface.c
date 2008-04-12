@@ -86,7 +86,7 @@ test                              (void)
   hotkey_register (L"F9", menu_hotkey_callback);
   hotkey_register (L"^a M-a M-^B", menu_hotkey_callback);
 
-  hotkey_realise (L"^a M-a M-^B");
+  hotkey_release (L"^a M-a M-^B");
 
   wnd=widget_create_window (L"My Window 1", 4, 2, 32, 10);
 

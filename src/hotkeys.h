@@ -22,7 +22,7 @@ hotkey_register                   (wchar_t *__sequence,
                                    hotkey_callback __callback);
 
 void           // Realise registered hot-key
-hotkey_realise                    (wchar_t *__sequence);
+hotkey_release                    (wchar_t *__sequence);
 
 short          // Put new character to sequence
 hotkey_push_character             (wchar_t __ch);
