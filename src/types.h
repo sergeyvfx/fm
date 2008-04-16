@@ -40,6 +40,11 @@ typedef unsigned int       __u16_t;
 typedef unsigned long      __u32_t;
 typedef unsigned long long __u64_t;
 
+typedef signed char      __s8_t;
+typedef signed int       __s16_t;
+typedef signed long      __s32_t;
+typedef signed long long __s64_t;
+
 typedef struct timeval timeval_t;
 
 #endif
