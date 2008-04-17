@@ -10,6 +10,7 @@ AC_PROG_CC
 AM_PROG_LIBTOOL
 
 AC_ARG_ENABLE(screen, AC_HELP_STRING([--enable-screen], [Library for terminal handling  (default=ncursesw)]),screen="$enableval",screen="ncursesw")
+AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [Compile code for debugging (default=false)]),debug="yes",debug="no")
 
 dnl make sure we keep ACLOCAL_FLAGS around for maintainer builds to work
 #AC_SUBST(ACLOCAL_AMFLAGS, "$ACLOCAL_FLAGS -I m4")
@@ -97,6 +98,19 @@ case "$screen" in
   ;;
 esac
 
+str_debug="no"
+if test "x${debug}" = 'xyes'; then
+  str_debug="yes"
+  AC_DEFINE_UNQUOTED(DEBUG,1,[Compile information for debugging])
+  CFLAGS="-g -O0"
+  CXXFLAGS="-g -O0"
+fi
+
+str_screen="{unknown}"
+if test "x${screen}" = 'xncursesw'; then
+  str_screen="ncursesw"
+fi
+
 PLUGIN_LIBTOOL_FLAGS="-module -avoid-version"
 AC_SUBST(PLUGIN_LIBTOOL_FLAGS)
 
@@ -110,7 +124,6 @@ mk/rules.mk
 src/Makefile
 ])
 
-
 echo "
 Configuration for $PACKAGE $VERSION :
 -----------------------------------
@@ -120,6 +133,8 @@ Configuration for $PACKAGE $VERSION :
   CFLAGS .......................... : ${PICFLAGS} ${CFLAGS}
   LDFLAGS ......................... : ${PICLDFLAGS} ${LDFLAGS}
   Linker .......................... : $CC $LDFLAGS ${LIBLDFLAGS} $LIBS
+  Screen library .................. : ${str_screen}
+  Debug information ............... : ${str_debug}
 
   Now type 'make' to build $PACKAGE $VERSION,
   and then type 'make install' for installation.

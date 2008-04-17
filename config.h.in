@@ -3,6 +3,9 @@
 /* Directory of data files */
 #undef DATA_DIR
 
+/* Compile information for debugging */
+#undef DEBUG
+
 /* Package name for gettext */
 #undef GETTEXT_PACKAGE
 
