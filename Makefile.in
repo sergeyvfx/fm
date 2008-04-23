@@ -39,9 +39,9 @@ host_triplet = @host@
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure $(top_srcdir)/mk/rules.mk.in \
-	$(top_srcdir)/src/Makefile.in AUTHORS COPYING ChangeLog \
-	INSTALL NEWS TODO config.guess config.sub install-sh ltmain.sh \
-	missing mkinstalldirs
+	$(top_srcdir)/po/Makefile.in $(top_srcdir)/src/Makefile.in \
+	AUTHORS COPYING ChangeLog INSTALL NEWS TODO config.guess \
+	config.sub install-sh ltmain.sh missing mkinstalldirs
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.in
@@ -51,7 +51,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = mk/rules.mk src/Makefile
+CONFIG_CLEAN_FILES = mk/rules.mk src/Makefile po/Makefile
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -196,7 +196,7 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = src
+SUBDIRS = src po
 distuninstallcheck_listfiles = find . -type f -print | grep -v scrollkeeper
 EXTRA_DIST = 
 DISTCLEANFILES = 
@@ -261,6 +261,8 @@ distclean-hdr:
 mk/rules.mk: $(top_builddir)/config.status $(top_srcdir)/mk/rules.mk.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 src/Makefile: $(top_builddir)/config.status $(top_srcdir)/src/Makefile.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+po/Makefile: $(top_builddir)/config.status $(top_srcdir)/po/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
@@ -425,7 +427,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/mk $(distdir)/src
+	$(mkdir_p) $(distdir)/mk $(distdir)/po $(distdir)/src
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

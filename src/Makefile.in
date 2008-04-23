@@ -22,7 +22,8 @@ SOURCES = \
 	widget-menu.c \
 	widget-window.c \
 	messages.c \
-	hotkeys.c
+	hotkeys.c \
+	i18n.c
 
 OBJECTS = ${SOURCES:.c=.o}
 

@@ -11,6 +11,7 @@
 #include "messages.h"
 #include "widget.h"
 #include "screen.h"
+#include "i18n.h"
 
 ////////
 //
@@ -100,17 +101,15 @@ get_buttons                       (unsigned int __flags)
   // Get button set from default list
   btn_array_t res=buttons[MB_BUTTON_CODE (__flags)];
 
-  //
-  // TODO:
-  //  Add localisation stuff here
-  //
-
-  // Calculate summary width of button set
+  // Localization and calculate summary width of button set
   res.width=0;
-  for (i=0; i<res.count; ++i)
-      res.width+=(res.buttons[i].width=
-        widget_shortcut_length (res.buttons[i].caption)+4);
+  for (i = 0; i < res.count; ++i)
+  {
+      res.buttons[i].caption = _(res.buttons[i].caption);
 
+      res.buttons[i].width = widget_shortcut_length (res.buttons[i].caption)+4;
+      res.width += res.buttons[i].width;
+  }
   return res;
 }
 

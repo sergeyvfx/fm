@@ -122,6 +122,7 @@ AC_OUTPUT([
 Makefile
 mk/rules.mk
 src/Makefile
+po/Makefile
 ])
 
 echo "

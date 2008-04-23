@@ -1,0 +1,26 @@
+version=@version@
+top_srcdir=@top_srcdir@
+top_builddir=..
+srcdir=@srcdir@
+SHELL=/bin/sh
+
+localedir=@localedir@
+
+all: install
+
+.PHONY: clean install
+
+clean:
+	rm -fr locale/
+
+distclean: clean
+
+# msgfmt -c -v -o .mo .po
+install:
+	for POFILE in `find *.po -maxdepth 1`; do \
+		LANG_NAME=`basename $${POFILE} .po`; \
+		LOCALE_DIR="locale/$${LANG_NAME}/LC_MESSAGES/"; \
+		`mkdir -p $${LOCALE_DIR}`; \
+		`msgfmt -c -v -o $${LOCALE_DIR}/fm.mo $${POFILE}`; \
+	done
+
