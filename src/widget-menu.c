@@ -1,12 +1,14 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  widget-menu.c
- * =============================================================================
+ * Implementation file for widget `menu`
  *
- *  Written (by Nazgul) under General Public License.
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #include "widget.h"
 
@@ -153,7 +155,8 @@ menu_drawer                       (w_menu_t *__menu)
  * @param __index - index of item to draw
  */
 void
-draw_submenu_item                 (w_sub_menu_t *__sub_menu, short __index)
+draw_submenu_item                 (const w_sub_menu_t *__sub_menu,
+                                   short               __index)
 {
   if (!__sub_menu || __index<0 || __index>=__sub_menu->items.length)
     return;
@@ -193,7 +196,7 @@ draw_submenu_item                 (w_sub_menu_t *__sub_menu, short __index)
  * @param __sub_menu - sub-menu to be drawed
  */
 void
-draw_submenu                      (w_sub_menu_t *__sub_menu)
+draw_submenu                      (const w_sub_menu_t *__sub_menu)
 {
   if (!__sub_menu)
     return;
@@ -256,7 +259,7 @@ hide_menu                         (w_menu_t *__menu)
  * @return a position of specified sub-menu
  */
 static widget_position_t
-submenu_position                  (w_sub_menu_t *__sub_menu)
+submenu_position                  (const w_sub_menu_t *__sub_menu)
 {
   int i, n;
   widget_position_t res={0, 0, 0, 0};
@@ -295,7 +298,7 @@ submenu_position                  (w_sub_menu_t *__sub_menu)
  * @return index of first focusable element
  */
 static short
-submenu_item_first                (w_sub_menu_t *__sub_menu)
+submenu_item_first                (const w_sub_menu_t *__sub_menu)
 {
   if (!__sub_menu->items.length)
     return -1;
@@ -316,7 +319,7 @@ submenu_item_first                (w_sub_menu_t *__sub_menu)
  * @return index of next focusable element
  */
 static short
-submenu_item_next                 (w_sub_menu_t *__sub_menu)
+submenu_item_next                 (const w_sub_menu_t *__sub_menu)
 {
   if (!__sub_menu->items.length)
     return -1;
@@ -344,7 +347,7 @@ submenu_item_next                 (w_sub_menu_t *__sub_menu)
  * @return index of previous focusable element
  */
 static short
-submenu_item_prev                 (w_sub_menu_t *__sub_menu)
+submenu_item_prev                 (const w_sub_menu_t *__sub_menu)
 {
   if (!__sub_menu->items.length)
     return -1;
@@ -566,6 +569,11 @@ menu_focused                      (w_menu_t *__menu)
   // When menu is fosued we should map all input signals
   // (a.k.a focused menu is a type of modal window)
 
+  if (__menu->active)
+    return 1;
+
+  __menu->active=TRUE;
+
   // IDK what to di if tehere is no submenus
   if (__menu->sub_menus.length)
     {
@@ -592,6 +600,8 @@ menu_focused                      (w_menu_t *__menu)
       
     }
 
+  __menu->active=FALSE;
+  
   return res;
 }
 
@@ -650,7 +660,7 @@ widget_create_menu                (unsigned int __style)
  * @return pointer to new submenu
  */
 w_sub_menu_t*
-w_menu_append_submenu             (w_menu_t *__menu, wchar_t *__caption)
+w_menu_append_submenu             (w_menu_t *__menu, const wchar_t *__caption)
 {
   w_sub_menu_t *res;
 
@@ -688,10 +698,10 @@ w_menu_append_submenu             (w_menu_t *__menu, wchar_t *__caption)
  * @param __callback - callback to be called wgen user activates this item
  */
 void
-w_submenu_append_item             (w_sub_menu_t *__sub_menu,
-                                   wchar_t *__caption,
+w_submenu_append_item             (w_sub_menu_t      *__sub_menu,
+                                   const wchar_t     *__caption,
                                    menu_item_callback __callback,
-                                   unsigned int __flags)
+                                   unsigned int       __flags)
 {
   short index; // For some optimization of deferences
 

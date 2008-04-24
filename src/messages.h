@@ -1,12 +1,14 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  messages.h
- * =============================================================================
+ * Messages' displaying stuff
  *
- *  Written (by Nazgul) under General Public License.
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #ifndef _messages_h_
 #define _messages_h_
@@ -42,7 +44,8 @@
 //
 
 int            // Show a message box
-message_box                       (wchar_t *__caption, wchar_t *__text,
-                                   unsigned int __flags);
+message_box                       (const wchar_t *__caption,
+                                   const wchar_t *__text,
+                                   unsigned int   __flags);
 
 #endif

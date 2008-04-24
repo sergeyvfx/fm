@@ -1,14 +1,14 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  screen.c
- * =============================================================================
+ * terminal handling abstraction layer
  *
- *  Screen abstration layer
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
- *  Written (by Nazgul) under General Public License.
- *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #include "screen.h"
 #include "hotkeys.h"
@@ -32,6 +32,8 @@ scr_font_t sf_black_on_white, sf_blue_on_white, sf_yellow_on_white;
 scr_font_t sf_white_on_red, sf_yellow_on_red;
 scr_font_t sf_black_on_cyan, sf_blue_on_cyan, sf_yellow_on_cyan;
 scr_font_t sf_yellow_on_black, sf_white_on_black;
+scr_font_t sf_gray_on_blue, sf_lblue_on_blue, sf_cyan_on_blue,
+           sf_lcyan_on_blue, sf_white_on_blue, sf_yellow_on_blue;
 
 #ifdef SCREEN_NCURSESW
 #  define INIT_COLOR(__font,__pair_no,__fore,__back,__bold) \
@@ -67,6 +69,13 @@ define_default_fonts              (void)
 
   INIT_COLOR (sf_yellow_on_black, CP_YELLOW_ON_BLACK,  COLOR_YELLOW,  COLOR_BLACK, TRUE);
   INIT_COLOR (sf_white_on_black,  CP_WHITE_ON_BLACK,   COLOR_WHITE,   COLOR_BLACK, TRUE);
+
+  INIT_COLOR (sf_gray_on_blue ,   CP_GRAY_ON_BLUE,     COLOR_WHITE,   COLOR_BLUE,  FALSE);
+  INIT_COLOR (sf_lblue_on_blue ,  CP_LBLUE_ON_BLUE,    COLOR_BLUE,    COLOR_BLUE,  TRUE);
+  INIT_COLOR (sf_cyan_on_blue ,   CP_CYAN_ON_BLUE,     COLOR_CYAN,    COLOR_BLUE,  FALSE);
+  INIT_COLOR (sf_lcyan_on_blue ,  CP_LCYAN_ON_BLUE,    COLOR_CYAN,    COLOR_BLUE,  TRUE);
+  INIT_COLOR (sf_white_on_blue ,  CP_WHITE_ON_BLUE,    COLOR_WHITE,   COLOR_BLUE,  TRUE);
+  INIT_COLOR (sf_yellow_on_blue , CP_YELLOW_ON_BLUE,   COLOR_YELLOW,  COLOR_BLUE,  TRUE);
 
   sf_null.color_pair            = CP_NULL;
 

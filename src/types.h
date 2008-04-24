@@ -1,12 +1,14 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  types.h
- * =============================================================================
+ * Different type's defenitions
  *
- *  Written (by Nazgul) under General Public License.
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #ifndef _types_h_
 #define _types_h_

@@ -1,7 +1,7 @@
 /**
  * ${project-name} - a GNU/Linux console-based file manager
  *
- * Version definition
+ * Different helpers
  *
  * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
  * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
@@ -10,9 +10,14 @@
  * See the file COPYING.
  */
 
-#ifndef _version_h_
-#define _version_h_
+#ifndef _util_h_
+#define _util_h_
 
-#define CORE_VERSION "1.0.0"
+#include "smartinclude.h"
+
+#include <wchar.h>
+
+wchar_t*       // Fit string to specified length
+wcsfit                            (const wchar_t *__str, size_t __len);
 
 #endif

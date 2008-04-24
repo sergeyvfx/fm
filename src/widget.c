@@ -1,14 +1,14 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  widget.c
- * =============================================================================
+ * Common widgets' stuff
  *
- *  Common widgets' stuff
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
- *  Written (by Nazgul) under General Public License.
- *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #include "widget.h"
 
@@ -36,7 +36,7 @@
  * @return - next/prev widget
  */
 static widget_t*
-get_focused_entry                 (widget_t *__widget, short __dir)
+get_focused_entry                 (const widget_t *__widget, short __dir)
 {
   int index;
   if (!__widget || !__widget->parent || !WIDGET_IS_CONTAINER (__widget->parent))
@@ -100,13 +100,13 @@ widget_destroy                    (widget_t *__widget)
  *
  * @param __widget - widget to bew drawn
  */
-void
+int
 widget_draw                       (widget_t *__widget)
 {
   if (!__widget || !__widget->methods.draw)
-    return;
+    return -1;
 
-  __widget->methods.draw (__widget);
+  return __widget->methods.draw (__widget);
 }
 
 /**
@@ -187,7 +187,7 @@ widget_set_focus                  (widget_t *__widget)
  * @return extracted shortcut
  */
 wchar_t
-widget_shortcut_key               (wchar_t *__text)
+widget_shortcut_key               (const wchar_t *__text)
 {
   int i, n;
 
@@ -211,7 +211,7 @@ widget_shortcut_key               (wchar_t *__text)
  * @return length of text
  */
 int
-widget_shortcut_length            (wchar_t *__text)
+widget_shortcut_length            (const wchar_t *__text)
 {
   int len=0, i, n;
 
@@ -241,7 +241,8 @@ widget_shortcut_length            (wchar_t *__text)
  * @param __hot_font - font of shortcutted character
  */
 void
-widget_shortcut_print             (scr_window_t __layout, wchar_t *__text,
+widget_shortcut_print             (scr_window_t __layout,
+                                   const wchar_t *__text,
                                    scr_font_t __font, scr_font_t __hot_font)
 {
   int i, n;
@@ -289,7 +290,7 @@ widget_shortcut_print             (scr_window_t __layout, wchar_t *__text,
  * @return wanted widget
  */
 widget_t *
-widget_next_focused               (widget_t *__widget)
+widget_next_focused               (const widget_t *__widget)
 {
   return get_focused_entry (__widget, 1);
 }
@@ -302,7 +303,7 @@ widget_next_focused               (widget_t *__widget)
  * @return wanted widget
  */
 widget_t *
-widget_prev_focused               (widget_t *__widget)
+widget_prev_focused               (const widget_t *__widget)
 {
   return get_focused_entry (__widget, -1);
 }
@@ -345,7 +346,8 @@ w_container_append_child          (w_container_t *__container,
  *   with such tab order
  */
 widget_t*
-w_container_widget_by_tab_order   (w_container_t *__container, int __tab_order)
+w_container_widget_by_tab_order   (const w_container_t *__container,
+                                   int __tab_order)
 {
   int i, n;
   // `__container` is not a contaier-based widget

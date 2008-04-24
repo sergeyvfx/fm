@@ -1,14 +1,14 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  macrodef.h
- * =============================================================================
+ * Deifferent MACRO defenitions
  *
- *  Deifferent MACRO defenitions
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
- *  Written (by Nazgul) under GPL
- *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #ifndef _macrodef_h_
 #define _macrodef_h_
@@ -45,5 +45,9 @@
   va_start (ap, __text);\
   vsnprintf (__buf, __size, __text, ap); \
   va_end (ap);
+
+#define SET_FLAG(__flags, __f)   (__flags)|=(__f)
+#define TEST_FLAG(__flags, __f)  ((__flags)&(__f))
+#define CLEAR_FLAG(__flags, __f) ((__flags)&=~(__f))
 
 #endif

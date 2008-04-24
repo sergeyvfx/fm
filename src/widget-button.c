@@ -1,14 +1,14 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  widget-button.c
- * =============================================================================
+ * Implementation file for widget `button`
  *
- *  Implementation file for widget `button`
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
- *  Written (by Nazgul) under General Public License.
- *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #include "widget.h"
 
@@ -143,8 +143,10 @@ button_shortcut                   (w_button_t *__button)
  * @return a pointer to button object
  */
 w_button_t*
-widget_create_button              (w_container_t *__parent, wchar_t *__caption,
-                                   int __x, int __y, unsigned int __style)
+widget_create_button              (w_container_t *__parent,
+                                   const wchar_t *__caption,
+                                   int __x, int __y,
+                                   unsigned int __style)
 {
   w_button_t *res;
 

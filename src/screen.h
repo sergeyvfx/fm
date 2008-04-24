@@ -1,14 +1,14 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  screen.h
- * =============================================================================
+ * terminal handling abstraction layer
  *
- *  Screen abstration layer
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
- *  Written (by Nazgul) under General Public License.
- *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #ifndef _screen_h_
 #define _screen_h_
@@ -20,6 +20,10 @@
 
 // Screen modes
 #define SM_COLOR    0x0001
+
+// Maximal dimensions of screen
+#define MAX_SCREEN_WIDTH  2048
+#define MAX_SCREEN_HEIGHT 1024
 
 #ifdef SCREEN_NCURSESW
 
@@ -94,13 +98,23 @@
 #  define CP_BLACK_ON_WHITE    1
 #  define CP_BLUE_ON_WHITE     2
 #  define CP_YELLOW_ON_WHITE   3
+
 #  define CP_WHITE_ON_RED      4
 #  define CP_YELLOW_ON_RED     5
+
 #  define CP_BLACK_ON_CYAN     6
 #  define CP_YELLOW_ON_CYAN    7
 #  define CP_BLUE_ON_CYAN      8
-#  define CP_YELLOW_ON_BLACK   9
-#  define CP_WHITE_ON_BLACK    10
+
+#  define CP_YELLOW_ON_BLACK   10
+#  define CP_WHITE_ON_BLACK    11
+
+#  define CP_GRAY_ON_BLUE      12
+#  define CP_LBLUE_ON_BLUE     13
+#  define CP_CYAN_ON_BLUE      14
+#  define CP_LCYAN_ON_BLUE     15
+#  define CP_WHITE_ON_BLUE     16
+#  define CP_YELLOW_ON_BLUE    17
 
 #  define COLOR_PAIR_USER   20
 
@@ -160,6 +174,8 @@ extern scr_font_t sf_black_on_white, sf_blue_on_white, sf_yellow_on_white;
 extern scr_font_t sf_white_on_red,   sf_yellow_on_red;
 extern scr_font_t sf_black_on_cyan,  sf_blue_on_cyan, sf_yellow_on_cyan;
 extern scr_font_t sf_yellow_on_black, sf_white_on_black;
+extern scr_font_t sf_gray_on_blue, sf_lblue_on_blue, sf_cyan_on_blue,
+       sf_lcyan_on_blue, sf_white_on_blue, sf_yellow_on_blue;
 
 ////////
 //

@@ -1,14 +1,14 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  widget-window.c
- * =============================================================================
+ * Implementation file for widget `window`
  *
- *  Implementation file for widget `window`
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
- *  Written (by Nazgul) under General Public License.
- *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #include "widget.h"
 
@@ -258,7 +258,7 @@ window_show_entry                 (w_window_t *__window, int __show_mode)
  * @return a pointer to window object
  */
 w_window_t*
-widget_create_window              (wchar_t *__caption,
+widget_create_window              (const wchar_t *__caption,
                                    int __x, int __y, int __w, int __h)
 {
   w_window_t *res;

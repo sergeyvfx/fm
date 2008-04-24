@@ -23,7 +23,12 @@ SOURCES = \
 	widget-window.c \
 	messages.c \
 	hotkeys.c \
-	i18n.c
+	i18n.c \
+	file_panel.c \
+	file_panel-defact.c \
+	file.c \
+	dir.c \
+	util.c
 
 OBJECTS = ${SOURCES:.c=.o}
 

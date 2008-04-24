@@ -1,12 +1,14 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  hotkeys.c
- * =============================================================================
+ * Stuff providing support of hotkeys
  *
- *  Written (by Nazgul) under General Public License.
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #include "hotkeys.h"
 #include "screen.h"
@@ -49,7 +51,8 @@ static short hotkey_count=0;
  * @return non-zero if sequence is a hot-key
  */
 static short
-check_iterator                    (wchar_t *__sequence, short __len)
+check_iterator                    (const wchar_t *__sequence,
+                                   short __len)
 {
   short i=0, j=queue_ptr-__len;
 
@@ -97,7 +100,8 @@ check                             (void)
  * @return length of sequence if succseed, -1 otherwise
  */
 static short
-parse_sequence                    (wchar_t *__sequence, wchar_t *__res)
+parse_sequence                    (const wchar_t *__sequence,
+                                   wchar_t *__res)
 {
   short i=0, n=wcslen (__sequence), len=0;
   BOOL ctrl, alt;
@@ -176,8 +180,8 @@ parse_sequence                    (wchar_t *__sequence, wchar_t *__res)
  * @return zero on success
  */
 short
-hotkey_register                   (wchar_t *__sequence,
-                                   hotkey_callback __callback)
+hotkey_register                   (const wchar_t   *__sequence,
+                                   hotkey_callback  __callback)
 {
   wchar_t dummy[MAX_SEQUENCE_LENGTH];
   short len;
@@ -207,7 +211,7 @@ hotkey_register                   (wchar_t *__sequence,
  * @param __sequence - hot-key sequence to realise
  */
 void
-hotkey_release                    (wchar_t *__sequence)
+hotkey_release                    (const wchar_t *__sequence)
 {
   wchar_t dummy[MAX_SEQUENCE_LENGTH];
   short len;

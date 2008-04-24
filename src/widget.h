@@ -1,14 +1,12 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  widget.h
- * =============================================================================
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
- *  Widgets' library
- *
- *  Written (by Nazgul) under General Public License.
- *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #ifndef _widget_h_
 #define _widget_h_
@@ -24,7 +22,7 @@
 // Constants
 
 // Widget's types
-#define WT_NONE    0x00
+#define WT_NONE       0x00
 
 #define WT_CONTAINER  0x10
 #define WT_WINDOW     (WT_CONTAINER+1)
@@ -133,7 +131,6 @@
 // Deep-core macroses
 #define WIDGET_SAFE_SET_FONT(_w,_font,_val) if (_val) _w->_font=_val;
 
-
 ////////
 // Type defenitions
 
@@ -206,7 +203,7 @@ typedef struct {
   // Inherit from widget container
   WIDGET_CONTAINER_MEMBERS
 
-  panel_t            panel; // Panel of layout to manipulate with visibility
+  panel_t            panel;  // Panel of layout to manipulate with visibility
 
   scr_font_t        *font;   // Font for text on window
 
@@ -289,6 +286,7 @@ typedef struct w_menu_t_entry {
   scr_window_t       submenu_layout; // Layout to draw a submemu's items
   panel_t            submenu_panel;  // Panel to manipulate with submenu's layout
   BOOL               unfolded;       // Shows if any sub-menu is unfolded
+  BOOL               active;         // Is menu activate?
 } w_menu_t;
 
 ////////////////
@@ -310,7 +308,7 @@ widget_main_loop                  (void);*/
 void           // Totally destroing of widget
 widget_destroy                    (widget_t *__widget);
 
-void           // Draw widget on screen
+int            // Draw widget on screen
 widget_draw                       (widget_t *__widget);
 
 void           // Redraw widget on screen
@@ -325,23 +323,24 @@ widget_on_scr_resize              (void);
 // Some helpers
 
 wchar_t       // Extracts shortcut key from etxt
-widget_shortcut_key               (wchar_t *__text);
+widget_shortcut_key               (const wchar_t *__text);
 
 int           // Length of text with shortcuts
-widget_shortcut_length            (wchar_t *__text);
+widget_shortcut_length            (const wchar_t *__text);
 
 void           // Print text with highlighted shortcut key
-widget_shortcut_print             (scr_window_t __layout, wchar_t *__text,
+widget_shortcut_print             (scr_window_t __layout,
+                                   const wchar_t *__text,
                                    scr_font_t __font, scr_font_t __hot_font);
 
 void
 widget_set_focus                  (widget_t *__widget);
 
 widget_t *
-widget_next_focused               (widget_t *__widget);
+widget_next_focused               (const widget_t *__widget);
 
 widget_t *
-widget_prev_focused               (widget_t *__widget);
+widget_prev_focused               (const widget_t *__widget);
 
 /////
 // Per-widget stuff
@@ -350,10 +349,12 @@ widget_prev_focused               (widget_t *__widget);
 // Container
 
 void
-w_container_append_child          (w_container_t *__container, widget_t *__widget);
+w_container_append_child          (w_container_t *__container,
+                                   widget_t *__widget);
 
 widget_t*
-w_container_widget_by_tab_order   (w_container_t *__container, int __tab_order);
+w_container_widget_by_tab_order   (const w_container_t *__container,
+                                   int __tab_order);
 
 ////
 // Window
@@ -364,7 +365,7 @@ w_window_end_modal                (w_window_t *__window, int __modal_result);
 
 //
 w_window_t*    // Creates new window
-widget_create_window              (wchar_t *__caption,
+widget_create_window              (const wchar_t *__caption,
                                    int __x, int __y,
                                    int __w, int __h);
 
@@ -385,8 +386,10 @@ w_window_set_fonts                (w_window_t *__window, scr_font_t *__font,
 // Button
 
 w_button_t*
-widget_create_button              (w_container_t *__parent, wchar_t *__caption,
-                                   int __x, int __y, unsigned int __style);
+widget_create_button              (w_container_t *__parent,
+                                   const wchar_t *__caption,
+                                   int __x, int __y,
+                                   unsigned int __style);
 
 void
 w_button_set_fonts                (w_button_t *__button,
@@ -401,12 +404,12 @@ w_menu_t*
 widget_create_menu                (unsigned int __style);
 
 w_sub_menu_t*
-w_menu_append_submenu             (w_menu_t *__menu, wchar_t *__caption);
+w_menu_append_submenu             (w_menu_t *__menu, const wchar_t *__caption);
 
 void
-w_submenu_append_item             (w_sub_menu_t *__sub_menu,
-                                   wchar_t *__caption,
-                                   menu_item_callback __callback,
-                                   unsigned int __flags);
+w_submenu_append_item             (w_sub_menu_t       *__sub_menu,
+                                   const wchar_t      *__caption,
+                                   menu_item_callback  __callback,
+                                   unsigned int        __flags);
 
 #endif

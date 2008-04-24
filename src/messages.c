@@ -1,12 +1,14 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  messages.h
- * =============================================================================
+ * Messages' displaying stuff
  *
- *  Written (by Nazgul) under General Public License.
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #include "messages.h"
 #include "widget.h"
@@ -53,9 +55,10 @@ static btn_array_t buttons[]={
  * @return position of message's window
  */
 static widget_position_t
-msg_wnd_pos                       (wchar_t *__caption, wchar_t *__text,
-                                   unsigned int __flags,
-                                   btn_array_t *__buttons)
+msg_wnd_pos                       (const wchar_t     *__caption,
+                                   const wchar_t     *__text,
+                                   unsigned int       __flags,
+                                   const btn_array_t *__buttons)
 {
   int i, n, len;
   widget_position_t res={0, 0, 0, 3, 0};
@@ -169,8 +172,9 @@ msg_window_drawer                 (w_window_t *__window)
  * @return modal result of message
  */
 int
-message_box                       (wchar_t *__caption, wchar_t *__text,
-                                   unsigned int __flags)
+message_box                       (const wchar_t *__caption,
+                                   const wchar_t *__text,
+                                   unsigned int   __flags)
 {
   w_window_t *wnd;
   w_button_t *cur_btn;

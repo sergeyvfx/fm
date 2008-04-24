@@ -1,23 +1,24 @@
-/*
+/**
+ * ${project-name} - a GNU/Linux console-based file manager
  *
- * =============================================================================
- *  iface.h
- * =============================================================================
+ * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
+ * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
- *  Written (by Nazgul) under General Public License.
- *
-*/
+ * This program can be distributed under the terms of the GNU GPL.
+ * See the file COPYING.
+ */
 
 #include "iface.h"
 #include "screen.h"
 #include "widget.h"
 #include "messages.h"
 #include "hotkeys.h"
-
+#include "file_panel.h"
 #include "i18n.h"
 
 #include <wchar.h>
 #include <stdlib.h>
+#include <dir.h>
 #include <signal.h>
 
 // Functions for test core stuff
@@ -123,8 +124,11 @@ test                              (void)
 
   sm=w_menu_append_submenu (menu, _(L"_Help"));
   w_submenu_append_item (sm, _(L"_About"), 0, 0);
-  
-  w_window_show_modal (wnd);
+
+  file_panels_init ();
+  file_panels_done ();
+
+//  w_window_show_modal (wnd);
 
   widget_destroy (WIDGET (wnd));
   widget_destroy (WIDGET (menu));
