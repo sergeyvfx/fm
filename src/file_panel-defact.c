@@ -91,8 +91,8 @@ get_file_panel_item_font          (const file_panel_t  *__panel,
   if (S_ISDIR (item.file->stat.st_mode) &&
       wcscmp (item.file->name, L".."))
     return &sf_white_on_blue;
-  
-  return &sf_lcyan_on_blue;
+
+  return __panel->widget->font;
 }
 
 /**
@@ -127,9 +127,6 @@ print_column_string               (scr_window_t    __layout,
   str=wcsfit (__str, __width);
   len=wcslen (str);
 
-  // Backup layput attributes
-  scr_wnd_attr_backup (__layout);
-
   // Draw string
   if (__string_font)
     scr_wnd_font (__layout, *__string_font);
@@ -159,9 +156,6 @@ print_column_string               (scr_window_t    __layout,
       scr_wnd_putch (__layout, ACS_VLINE);
     }
 
-  // Restore attributes
-  scr_wnd_attr_restore (__layout);
-  
   free (str);
 }
 
@@ -384,8 +378,6 @@ draw_brief_row                    (const file_panel_t *__panel,
     } else
       item_font=__panel->widget->font;
 
-  scr_wnd_font (layout, *item_font);
-
   // Get number of current column
   column_number=(__index-start)/per_column;
   if (column_number)
@@ -415,7 +407,7 @@ draw_brief_row                    (const file_panel_t *__panel,
 
   // Print name of file
   print_column_string (layout, pchar, width,
-    !last_column, 0, __panel->widget->font, 0);
+    !last_column, item_font, __panel->widget->border_font, 0);
 
   // If tehere is the first item in column,
   // we should print a cption of column
@@ -425,13 +417,13 @@ draw_brief_row                    (const file_panel_t *__panel,
 
       print_column_string (layout, L"Name", width,
         !last_column,
-        __panel->widget->caption_font, __panel->widget->font,
+        __panel->widget->caption_font, __panel->widget->border_font,
         CF_ALIGN_CENTER);
 
       // Draw tee enclusers
       if (column_number)
         {
-          // Setf border's font
+          // Set border's font
           scr_wnd_font (layout, *__panel->widget->border_font);
 
           // Top enclosing
@@ -444,8 +436,6 @@ draw_brief_row                    (const file_panel_t *__panel,
         }
     }
 
-  // We haven't been here :)
-  scr_wnd_font (layout, *__panel->widget->font);
   return 0;
 }
 
@@ -515,6 +505,7 @@ draw_full_file_panel_items        (const file_panel_t *__panel)
     draw_full_row (__panel, i+start, TRUE);
 
   // Draw footer
+  scr_wnd_font (layout, *__panel->widget->border_font);
   encluse_columns (layout, &__panel->columns, ACS_BTEE, per_page+2);
 
   return 0;
@@ -533,7 +524,7 @@ draw_brief_file_panel_items       (const file_panel_t *__panel)
   file_panel_widget_t *widget;
   unsigned short       column_count;
 
-  unsigned long        i, n,
+  unsigned long        i,
                        start, per_page;
 
   // Get layput of widget
@@ -551,12 +542,11 @@ draw_brief_file_panel_items       (const file_panel_t *__panel)
     column_count=COLUMNS_PER_MEDIUM;
 
   // Draw all items avaliable for currect scrolling offset
-  for (i=0, n=MIN (per_page, __panel->items.length-start); i<n; i++)
-    draw_brief_row (__panel, i+start, FALSE, column_count);
-
-  scr_wnd_font (layout, *__panel->widget->font);
-  for (i=n; i<per_page; i++)
-    draw_brief_row (__panel, i+start, TRUE, column_count);
+  for (i=0; i<per_page; i++)
+    {
+      scr_wnd_font (layout, *__panel->widget->font);
+      draw_brief_row (__panel, i+start, i+start>=__panel->items.length, column_count);
+    }
 
   widget=__panel->widget;
 
