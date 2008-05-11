@@ -13,8 +13,6 @@
 #include "screen.h"
 #include "hotkeys.h"
 
-#include <locale.h>
-
 ////
 //
 
@@ -132,8 +130,6 @@ screen_init                       (int __mode)
   mode=__mode;
   
 #ifdef SCREEN_NCURSESW
-  setlocale (LC_ALL, "");
-
   root_wnd=initscr ();
 
   cbreak ();  // take input chars one at a time, no wait for \n
@@ -144,7 +140,7 @@ screen_init                       (int __mode)
       // Initialize screen in color mode
       start_color ();
     }
-  
+
   init_escape_keys ();
 
 #endif
@@ -225,3 +221,29 @@ scr_wnd_getch                     (scr_window_t __window)
 
   return ch;
 }
+
+#ifdef SCREEN_NCURSESW
+
+/**
+ * Checks is specified character is a code of
+ * ncurses's function key.
+ *
+ * This function is neccessary because most of functional keys' codes
+ * in ncurses have codes from extended Latin range of Unicode
+ *
+ * @param __ch - character which has to be checked
+ * @return zero if character is not a ncurses's functional key,
+ * non-zero otherwise.
+ */
+int
+is_ncurses_funckey                (wchar_t __ch)
+{
+  //
+  // TODO:
+  //  But maybe it'll be better if we replace this function with makros like
+  //  #define is_ncurses_funckey (__ch>=KEY_MIN && __ch<=KEY_MAX) ?
+  //
+
+  return __ch>=KEY_MIN && __ch<=KEY_MAX;
+}
+#endif

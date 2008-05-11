@@ -21,6 +21,7 @@ SOURCES = \
 	widget-button.c \
 	widget-menu.c \
 	widget-window.c \
+	widget-edit.c \
 	messages.c \
 	hotkeys.c \
 	i18n.c \

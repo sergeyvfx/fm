@@ -26,7 +26,7 @@ button_destructor                 (w_button_t *__button)
 {
   if (!__button)
     return -1;
-  
+
   if (__button->caption)
     free (__button->caption);
 
@@ -35,7 +35,7 @@ button_destructor                 (w_button_t *__button)
 }
 
 /**
- *  Draws a button
+ * Draws a button
  *
  * @param __button - button to be drawed
  * @return zero on success, non-zero on failure
@@ -84,10 +84,10 @@ button_drawer                     (w_button_t *__button)
  * @return zero if callback hasn't handled received character
  */
 static int
-button_keydown                    (w_button_t *__button, int __ch)
+button_keydown                    (w_button_t *__button, wint_t __ch)
 {
   _WIDGET_CALL_USER_CALLBACK (__button, keydown, __button, __ch);
-  
+
   switch (__ch)
     {
     case KEY_RETURN:
@@ -124,9 +124,7 @@ button_shortcut                   (w_button_t *__button)
   _WIDGET_CALL_USER_CALLBACK (__button, shortcut, __button);
 
   // .. if we are still here emulate clicking in the button
-  button_keydown (__button, KEY_RETURN);
-  
-  return 0;
+  return button_keydown (__button, KEY_RETURN);
 }
 
 //////
@@ -154,7 +152,7 @@ widget_create_button              (w_container_t *__parent,
   if (!__parent || !__caption)
     return 0;
 
-  // Allocate and free memory for new window
+  // Allocate and zerolize memory for new button
   MALLOC_ZERO (res, sizeof (w_button_t));
 
   res->type=WT_BUTTON;
@@ -171,6 +169,8 @@ widget_create_button              (w_container_t *__parent,
   // Set callbacks
   WIDGET_CALLBACK (res, keydown)  = (widget_keydown)button_keydown;
   WIDGET_CALLBACK (res, shortcut) = (widget_action)button_shortcut;
+  WIDGET_CALLBACK (res, focused)  = (widget_action)widget_focused;
+  WIDGET_CALLBACK (res, blured)   = (widget_action)widget_blured;
 
   WIDGET_SHORTCUT (res)=widget_shortcut_key (__caption);
 
@@ -200,7 +200,7 @@ widget_create_button              (w_container_t *__parent,
 /**
  * Sets fonts used in button
  *
- * @param __button - for whisch button fonts are to be set
+ * @param __button - for which button fonts are to be set
  * @param __font - font of default text in normal state
  * @param __focused_font - font of default text in focused state
  * @param __font - font of highlighted text (i.e. shortcut) in normal state
@@ -221,4 +221,6 @@ w_button_set_fonts                (w_button_t *__button,
   WIDGET_SAFE_SET_FONT (__button, focused_font,     __focused_font);
   WIDGET_SAFE_SET_FONT (__button, hot_font,         __hot_font);
   WIDGET_SAFE_SET_FONT (__button, hot_focused_font, __hot_focused_font);
+
+  widget_redraw (WIDGET (__button));
 }

@@ -136,6 +136,7 @@
 #  define KEY_TAB       9
 #  define KEY_RETURN    10
 #  define KEY_ESC       27
+#  define KEY_DELETE    KEY_DC
 
 #  define KEY_ESC_ESC   539 /* Excaped escape */
 
@@ -194,5 +195,12 @@ screen_refresh                    (BOOL __full_refresh);
 
 wchar_t       // Return character from window
 scr_wnd_getch                     (scr_window_t __window);
+
+#ifdef SCREEN_NCURSESW
+
+int
+is_ncurses_funckey                (wchar_t __ch);
+
+#endif
 
 #endif

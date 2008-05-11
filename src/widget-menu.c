@@ -566,6 +566,9 @@ menu_focused                      (w_menu_t *__menu)
 {
   int res=0;
 
+  // Call to user-defined handler of focused callback
+  _WIDGET_CALL_USER_CALLBACK (__menu, focused, __menu);
+
   // When menu is fosued we should map all input signals
   // (a.k.a focused menu is a type of modal window)
 
@@ -583,6 +586,9 @@ menu_focused                      (w_menu_t *__menu)
 
       widget_redraw (WIDGET (__menu));
       menu_mapper (__menu);
+
+      // After mapper finished, menu losts focus
+      WIDGET_CALL_CALLBACK (__menu, blured, __menu);
 
       if (__menu->style&WMS_HIDE_UNFOCUSED)
         {
@@ -628,6 +634,7 @@ widget_create_menu                (unsigned int __style)
   res->methods.draw    = (widget_action)menu_drawer;
 
   WIDGET_CALLBACK (res, focused) = (widget_action)menu_focused;
+  WIDGET_CALLBACK (res, blured)  = (widget_action)widget_blured;
 
   res->layout=scr_create_window (0, 0, SCREEN_WIDTH, 1);
   res->panel=panel_new (res->layout);

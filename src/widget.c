@@ -162,8 +162,13 @@ widget_set_focus                  (widget_t *__widget)
       w_container_t *cnt=WIDGET_CONTAINER (__widget->parent);
       if (cnt->focused_widget)
         {
-          cnt->focused_widget->focused=FALSE;
-          widget_draw (cnt->focused_widget);
+          widget_t *w=cnt->focused_widget;
+          w->focused=FALSE;
+
+          // Blure da previous focused widget
+          WIDGET_CALL_CALLBACK (w, blured, w);
+
+          widget_draw (w);
         }
       cnt->focused_widget=__widget;
     }
@@ -360,4 +365,30 @@ w_container_widget_by_tab_order   (const w_container_t *__container,
       return WIDGET_CONTAINER_DATA (__container)[i];
 
   return NULL;
+}
+
+/**
+ * Handler of `focused` callback (system-based)
+ *
+ * @param __widget - widget which caucghted this callback
+ * @return zero if callback hasn't handled callback
+ */
+int
+widget_focused                    (widget_t *__widget)
+{
+  _WIDGET_CALL_USER_CALLBACK (__widget, focused, __widget);
+  return 0;
+}
+
+/**
+ * Handler of `blured` callback (system-based)
+ *
+ * @param __widget - widget which caucghted this callback
+ * @return zero if callback hasn't handled callback
+ */
+int
+widget_blured                     (widget_t *__widget)
+{
+  _WIDGET_CALL_USER_CALLBACK (__widget, blured, __widget);
+  return 0;
 }

@@ -18,6 +18,7 @@
 #include <wchar.h>
 
 wchar_t*       // Fit string to specified length
-wcsfit                            (const wchar_t *__str, size_t __len);
+wcsfit                            (const wchar_t *__str, size_t __len,
+                                   const wchar_t *__suffix);
 
 #endif

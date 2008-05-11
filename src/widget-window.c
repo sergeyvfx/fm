@@ -228,6 +228,10 @@ window_show_entry                 (w_window_t *__window, int __show_mode)
 
   // widget_set_current_widget (WIDGET (__window));
 
+  // Is it okay if we think that showing of window
+  // is the same as focusing of window?
+  WIDGET_CALL_CALLBACK (__window, focused, __window);
+
   // Set focus to first widget in window
   if (WIDGET_CONTAINER_LENGTH (__window) &&
       !WIDGET_CONTAINER_FOCUSED (__window))
@@ -271,6 +275,9 @@ widget_create_window              (const wchar_t *__caption,
   // Set methods
   res->methods.destroy = (widget_action)window_destructor;
   res->methods.draw    = (widget_action)window_drawer;
+
+  WIDGET_CALLBACK (res, focused)  = (widget_action)widget_focused;
+  WIDGET_CALLBACK (res, blured)   = (widget_action)widget_blured;
 
   if (__caption)
     res->caption.text=wcsdup (__caption);
@@ -321,6 +328,8 @@ w_window_show                     (w_window_t *__window)
   WIDGET_POSITION (__window).z=1;
 
   panel_show (__window->panel);
+
+  WIDGET_CALL_CALLBACK (__window, focused, __window);
 }
 
 /**
@@ -334,7 +343,9 @@ w_window_hide                     (w_window_t *__window)
   if (!__window || !WIDGET_LAYOUT (__window))
     return;
 
-  // Window is now unvisible
+  WIDGET_CALL_CALLBACK (__window, blured, __window);
+
+  // Window is now invisible
   WIDGET_POSITION (__window).z=0;
 
   panel_hide (__window->panel);
@@ -358,6 +369,8 @@ w_window_set_fonts                (w_window_t *__window,
 
   WIDGET_SAFE_SET_FONT (__window, font,         __font);
   WIDGET_SAFE_SET_FONT (__window, caption.font, __caption_font);
+
+  widget_redraw (WIDGET (__window));
 }
 
 ////

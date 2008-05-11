@@ -38,12 +38,17 @@
 #define FILE_PANEL_CLEAR_FLAG(__panel, __flag) \
   CLEAR_FLAG((__panel)->flags, __flag)
 
-// Draw a panel on the screen
 #define SET_PANEL_ACTION(__panel, __action, __val) \
   __panel->actions.__action=(file_panel_action)__val
 
 #define SET_PANEL_DATA_ACTION(__panel, __action, __val) \
   __panel->actions.__action=(file_panel_data_action)__val
+
+#define FILE_PANEL_ACTION_CALL(__panel, __action) \
+  (__panel->actions.__action?__panel->actions.__action (__panel):-1)
+
+#define FILE_PANEL_DATA_ACTION_CALL(__panel, __action, __data) \
+  (__panel->actions.__action?__panel->actions.__action (__panel, __data):-1)
 
 ////////
 // Type defenitins
@@ -144,6 +149,8 @@ typedef struct {
     file_panel_action      on_refresh;     // Action after re-filling item list
                                            // and before drawing a panel
     file_panel_data_action keydown_handler;// Handles keyboard input
+    file_panel_data_action scroll_to_item; // Set cursor to item and
+                                           // scroll to view
   } actions;
 } file_panel_t;
 
@@ -213,5 +220,8 @@ file_panel_defact_on_refresh      (file_panel_t *__panel);
 
 int
 file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch);
+
+void
+file_panel_defact_scroll_to_item  (file_panel_t *__panel, wchar_t *__name);
 
 #endif

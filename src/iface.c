@@ -84,6 +84,7 @@ test                              (void)
   w_window_t *wnd;
   w_button_t *btn;
   w_sub_menu_t *sm;
+  w_edit_t *edt;
 
   hotkey_register (L"F9", menu_hotkey_callback);
   hotkey_register (L"^a M-a M-^B", menu_hotkey_callback);
@@ -103,6 +104,13 @@ test                              (void)
 
   btn=widget_create_button (WIDGET_CONTAINER (wnd), _(L"_Exit"), 22, 2, 0);
   WIDGET_USER_CALLBACK (btn, clicked)=(widget_action)exit_clicked;
+
+  edt=widget_create_edit (WIDGET_CONTAINER (wnd), 2, 5, 20);
+  w_edit_set_text (edt, L"Test");
+
+  edt=widget_create_edit (WIDGET_CONTAINER (wnd), 2, 7, 20);
+  w_edit_set_text (edt, L"Test2");
+  w_edit_set_fonts (edt, &sf_yellow_on_black);
 
   sm=w_menu_append_submenu (menu, _(L"_File"));
   w_submenu_append_item (sm, _(L"_New"), 0, 0);
@@ -125,10 +133,10 @@ test                              (void)
   sm=w_menu_append_submenu (menu, _(L"_Help"));
   w_submenu_append_item (sm, _(L"_About"), 0, 0);
 
-  file_panels_init ();
-  file_panels_done ();
+  //file_panels_init ();
+  //file_panels_done ();
 
-//  w_window_show_modal (wnd);
+  w_window_show_modal (wnd);
 
   widget_destroy (WIDGET (wnd));
   widget_destroy (WIDGET (menu));

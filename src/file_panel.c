@@ -285,8 +285,11 @@ set_default_actions               (file_panel_t *__panel)
   SET_PANEL_ACTION (__panel, item_user_data_deleter, 0);
   SET_PANEL_ACTION (__panel, draw_items,     file_panel_defact_draw_item_list);
   SET_PANEL_ACTION (__panel, on_refresh,     file_panel_defact_on_refresh);
+
   SET_PANEL_DATA_ACTION (__panel, keydown_handler,
     file_panel_defact_keydown_handler);
+  SET_PANEL_DATA_ACTION (__panel, scroll_to_item,
+    file_panel_defact_scroll_to_item);
 }
 
 /**

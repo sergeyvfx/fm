@@ -33,8 +33,9 @@
 
 #define CF_UNCOLORED_DELIMETER 0x0100
 
-#define DIR_CAPTION         L"<Dir>"
-#define UPDIR_CAPTION       L"<Up--Dir>"
+#define DIR_CAPTION            L"<Dir>"
+#define UPDIR_CAPTION          L"<Up--Dir>"
+#define COLUMN_TEXT_TRUNCATOR  L"..."
 
 // Default Formats of date strings for recent and older dates
 #define DEFAULT_DATE_FORMAT     L"%b %d %H:%M"
@@ -124,7 +125,7 @@ print_column_string               (scr_window_t    __layout,
     return;
 
   // Get string which will be fit to width of column
-  str=wcsfit (__str, __width);
+  str=wcsfit (__str, __width, COLUMN_TEXT_TRUNCATOR);
   len=wcslen (str);
 
   // Draw string
@@ -264,8 +265,20 @@ draw_full_row                     (const file_panel_t *__panel,
                   wcscpy (pchar, UPDIR_CAPTION);
               } else {
                 flags=CF_ALIGN_RIGHT;
-                swprintf (pchar, MAX_SCREEN_WIDTH, L"%ld",
+
+                //
+                // TODO:
+                //  Add adding converting to human-readable
+                //  format (i.e. 1000M, 900G) here
+                //
+
+#ifdef __USE_FILE_OFFSET64
+                swprintf (pchar, MAX_SCREEN_WIDTH, L"%lld",
                   item->file->lstat.st_size);
+#else
+                swprintf (pchar, MAX_SCREEN_WIDTH, L"%lld",
+                  item->file->lstat.st_size);
+#endif
               }
             break;
             case COLUMN_TIME:
@@ -629,10 +642,10 @@ cwd_sink                          (file_panel_t  *__panel,
                                    const wchar_t *__sub_dir)
 {
   wchar_t *new_cwd;
-  
+
   if (!__panel || !__panel->widget)
     return -1;
-  
+
   // Get name of new CWD
   new_cwd=wcdircatsubdir (__panel->cwd.data, __sub_dir);
 
@@ -672,14 +685,7 @@ cwd_sink                          (file_panel_t  *__panel,
 
       if (fn)
         {
-          unsigned long index;
-          index=file_panel_item_index_by_name (__panel, fn, 0);
-          if (index<0)
-            index=0;
-
-          __panel->items.current=index;
-          centralize_current_item (__panel);
-          file_panel_draw (__panel);
+          FILE_PANEL_DATA_ACTION_CALL (__panel, scroll_to_item, fn);
           free (fn);
         }
 
@@ -1086,4 +1092,23 @@ file_panel_defact_walk            (file_panel_t *__panel, short __direction)
   //  It would be better if we redraw only changed items
   //
   widget_redraw (WIDGET (__panel->widget));
+}
+
+/**
+ * Sets cursor and scrolls to view item with specified name
+ *
+ * @paarm __panel - panel to operate with
+ * @param __name - name of item to select
+ */
+void
+file_panel_defact_scroll_to_item  (file_panel_t *__panel, wchar_t *__name)
+{
+  unsigned long index;
+  index=file_panel_item_index_by_name (__panel, __name, 0);
+  if (index<0)
+    index=0;
+
+  __panel->items.current=index;
+  centralize_current_item (__panel);
+  file_panel_draw (__panel);
 }

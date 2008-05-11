@@ -30,6 +30,7 @@
 
 #define WT_SINGLE     0x30
 #define WT_BUTTON     (WT_SINGLE+1)
+#define WT_EDIT       (WT_SINGLE+2)
 
 // Window show modes
 #define WSM_DEFAULT 0x00
@@ -155,6 +156,7 @@ typedef struct {
   widget_keydown  keydown;
   widget_action   shortcut;
   widget_action   focused;
+  widget_action   blured;
 } widget_callbacks_t;
 
 // Callbacks' structure for user's bindings
@@ -163,6 +165,7 @@ typedef struct {
   widget_action   clicked;
   widget_action   shortcut;
   widget_action   focused;
+  widget_action   blured;
 } widget_user_callbacks_t;
 
 // Basic widget's members
@@ -233,6 +236,23 @@ typedef struct {
   unsigned int      style;
   unsigned short    modal_result;       // Modal result code for window
 } w_button_t;
+
+// Edit box
+typedef struct {
+  // Inherit from widget
+  WIDGET_MEMBERS
+
+  struct {
+    wchar_t         *data;              // Caption in edit box
+    size_t          allocated;          // Allocated bufefr size
+  } text;
+
+  size_t            scrolled;           // How much characters where scrolled
+                                        // due to widget's width is limited
+  size_t            caret_pos;          // Position of caret
+
+  scr_font_t         *font;             // Font for normal style
+} w_edit_t;
 
 ////
 // Menus
@@ -342,6 +362,14 @@ widget_next_focused               (const widget_t *__widget);
 widget_t *
 widget_prev_focused               (const widget_t *__widget);
 
+////
+// Deep-core common stuff
+int
+widget_focused                    (widget_t *__widget);
+
+int
+widget_blured                     (widget_t *__widget);
+
 /////
 // Per-widget stuff
 
@@ -411,5 +439,20 @@ w_submenu_append_item             (w_sub_menu_t       *__sub_menu,
                                    const wchar_t      *__caption,
                                    menu_item_callback  __callback,
                                    unsigned int        __flags);
+
+////
+// Edit boxes
+w_edit_t*
+widget_create_edit                (w_container_t *__parent,
+                                   int __x, int __y, int __width);
+
+void
+w_edit_set_text                   (w_edit_t* __exit, wchar_t *__text);
+
+wchar_t*
+w_edit_get_text                   (w_edit_t* __edit);
+
+void
+w_edit_set_fonts                  (w_edit_t *__edit, scr_font_t *__font);
 
 #endif
