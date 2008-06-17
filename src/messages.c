@@ -188,7 +188,8 @@ message_box                       (const wchar_t *__caption,
 
   // Reset default fonts if message is critical
   if ((critical=__flags&MB_CRITICAL))
-    w_window_set_fonts (wnd, &sf_white_on_red, &sf_yellow_on_red);
+    w_window_set_fonts (wnd,
+      &FONT (CID_WHITE, CID_RED), &FONT (CID_YELLOW, CID_RED));
 
   // Use USER_DATA to tell window its text
   if (__text)
@@ -213,8 +214,9 @@ message_box                       (const wchar_t *__caption,
 
       // If message is critical we should set another fonts to buttons
       if (critical)
-        w_button_set_fonts (cur_btn, &sf_white_on_red, &sf_black_on_white,
-         &sf_yellow_on_red, &sf_yellow_on_white);
+        w_button_set_fonts (cur_btn,
+         &FONT (CID_WHITE, CID_RED),  &FONT (CID_BLACK, CID_WHITE),
+         &FONT (CID_YELLOW, CID_RED), &FONT (CID_YELLOW, CID_WHITE));
 
       x+=btn_arr.buttons[i].width+1;
     }

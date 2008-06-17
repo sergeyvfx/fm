@@ -15,6 +15,8 @@
 
 #include "smartinclude.h"
 
+BEGIN_HEADER
+
 #include <wchar.h>
 
 //////
@@ -47,5 +49,7 @@ int            // Show a message box
 message_box                       (const wchar_t *__caption,
                                    const wchar_t *__text,
                                    unsigned int   __flags);
+
+END_HEADER
 
 #endif

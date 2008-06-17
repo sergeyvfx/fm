@@ -11,20 +11,29 @@
  */
 
 #include "file_panel.h"
+#include "deque.h"
+
+////////
+//
+
+// Count of panels which will be created
+// during initialisation of panels stuff
+#define DEFAULT_PANELS_COUNT 2
 
 ////////
 // Variables
 
-static file_panel_t *left_panel   = NULL;
+static deque_t *panels = NULL;
 static file_panel_t *last_focused = NULL;
+static w_box_t *panels_grid;
 
 ////////
 // Some helpful macroses
 
 // Macros for panels initialisation which creates new panel
 // and returns from file_panels_init with error
-#define SPAWN_NEW_PANEL(__panel) \
-  if (!(__panel=file_panel_create ())) \
+#define SPAWN_NEW_PANEL() \
+  if (!file_panel_create ()) \
     { \
       return -1; \
     }
@@ -80,6 +89,12 @@ file_panel_keydown                (file_panel_widget_t *__panel_widget,
                                    wint_t __ch);
 
 static int
+file_panel_onresize               (file_panel_widget_t *__panel_widget);
+
+static int
+file_panel_focused                (file_panel_widget_t *__panel_widget);
+
+static int
 file_panel_defact_widget_destructor(file_panel_widget_t *__widget);
 
 ////////
@@ -103,7 +118,45 @@ zerolize_columns                  (file_panel_columns_t *__columns)
 }
 
 /**
- *  Parser iteration for parse_columns_mask()
+ * Validates widths of columns
+ *
+ * @param __panel - for wich panel columns will be validated
+ */
+static void
+validate_colums_widths            (file_panel_t *__panel)
+{
+  int i, ptr;
+  int total_width=0;
+  int max;
+  int fit_width;
+
+  for (i=0; i<__panel->columns.count; i++)
+    {
+      if (__panel->columns.data[i].width<2)
+        __panel->columns.data[i].width=2;
+      total_width+=__panel->columns.data[i].width;
+    }
+
+  fit_width=__panel->widget->position.width-2-__panel->columns.count+1;
+  while (total_width>fit_width)
+    {
+      max=-1;
+      ptr=-1;
+      for (i=0; i<__panel->columns.count; i++)
+        if (max<0 || __panel->columns.data[i].width>max)
+          {
+            ptr=i;
+            max=__panel->columns.data[i].width;
+          }
+      if (ptr<0 || __panel->columns.data[ptr].width<=2)
+        break;
+      __panel->columns.data[ptr].width--;
+      total_width--;
+    }
+}
+
+/**
+ * Parser iteration for parse_columns_mask()
  *
  * @param __data - string to parse
  * @param __token - pointer to string where save token
@@ -187,7 +240,7 @@ parse_columns_mask                (file_panel_t *__panel,
             }
           i++;
         }
-      
+
       // If column type is cnown
       if (column_type!=COLUMN_UNKNOWN)
         {
@@ -206,7 +259,11 @@ parse_columns_mask                (file_panel_t *__panel,
 
           // Fill fields of new column
           columns->data[columns->count].type=column_type;
-          columns->data[columns->count].width=orig_columns_widths[column_type];
+
+          columns->data[columns->count].width=
+              columns->data[columns->count].orig_width=
+              orig_columns_widths[column_type];
+
           columns->data[columns->count].title=title;
 
           if (!orig_columns_widths[column_type])
@@ -225,7 +282,12 @@ parse_columns_mask                (file_panel_t *__panel,
 
   // Subrtact column separators
   unused_width-=(columns->count-1);
-  delta=(unused_width-unset_count)/unset_count;
+  
+  if (unused_width<0)
+    unused_width=0;
+
+  if (unset_count)
+    delta=(unused_width-unset_count)/unset_count;
 
   // Set width of previously unset columns
   for (i=0; i<columns->count; i++)
@@ -239,6 +301,8 @@ parse_columns_mask                (file_panel_t *__panel,
         }
     }
 
+  validate_colums_widths (__panel);
+  
   return 0;
 }
 
@@ -284,12 +348,38 @@ set_default_actions               (file_panel_t *__panel)
   SET_PANEL_ACTION (__panel, free_items,     file_panel_defact_free_items);
   SET_PANEL_ACTION (__panel, item_user_data_deleter, 0);
   SET_PANEL_ACTION (__panel, draw_items,     file_panel_defact_draw_item_list);
-  SET_PANEL_ACTION (__panel, on_refresh,     file_panel_defact_on_refresh);
+  SET_PANEL_ACTION (__panel, onrefresh,      file_panel_defact_onrefresh);
+  SET_PANEL_ACTION (__panel, onresize,       file_panel_defact_onresize);
 
   SET_PANEL_DATA_ACTION (__panel, keydown_handler,
     file_panel_defact_keydown_handler);
+
+  // Used in such stuff, as cwd_sink() when directory is changed to
+  // parent and cursor should be placed onto item, from which we come.
+  //
+  // In such situation it would be better if this item
+  // will be at the center of visible part of list.
+  SET_PANEL_DATA_ACTION (__panel, centrize_to_item,
+    file_panel_defact_centrize_to_item);
+
+  // Will be helpful for actions like incremental search,
+  // because in difference with "centrize_to_item" it will
+  // make less scrolling.
   SET_PANEL_DATA_ACTION (__panel, scroll_to_item,
     file_panel_defact_scroll_to_item);
+}
+
+/**
+ * Sets default parameters of new-created file panel
+ *
+ * @param __panel - panel which has to be initialized
+ */
+static void
+set_default_params                (file_panel_t *__panel)
+{
+  file_panel_set_listing_mode (__panel, LISTING_MODE_MEDIUM);
+  file_panel_set_cwd (__panel, L"/");
+  file_panel_set_columns (__panel, DEFAULT_FULL_ROW_MASK);
 }
 
 /**
@@ -301,36 +391,24 @@ static file_panel_t*
 file_panel_create                 (void)
 {
   file_panel_t *res;
+  widget_t *parent;
 
   // Allocate memory for panel and its widget
   MALLOC_ZERO (res, sizeof (file_panel_t));
-  MALLOC_ZERO (res->widget, sizeof (file_panel_widget_t));
+
+  parent=WIDGET (w_box_append_item (panels_grid, -1));
 
   ////
-  // Widget initialisation
-
-  // Create layout and panel
-  WIDGET_LAYOUT (WIDGET (res->widget))=scr_create_window (0, 0,
-    SCREEN_WIDTH/2, /*SCREEN_HEIGHT*/15);
-
-  res->widget->panel=panel_new (WIDGET_LAYOUT (WIDGET (res->widget)));
-
-  // Methods of widget
-  res->widget->methods.destroy =
-    (widget_action)file_panel_defact_widget_destructor;
-  res->widget->methods.draw    = (widget_action)file_panel_defact_draw_widget;
-
-  // Position of panel
-  res->widget->position.x=0;
-  res->widget->position.y=0;
-  res->widget->position.width=SCREEN_WIDTH/2;
-  res->widget->position.height=/*SCREEN_HEIGHT*/15;
+  // General widget initialisation
+  WIDGET_INIT (res->widget, file_panel_widget_t, WT_SINGLE, parent, 0,
+    file_panel_defact_widget_destructor, file_panel_defact_draw_widget,
+    0, 0, 1, 0, 0);
 
   // Set up panels fonts
-  res->widget->font             = &sf_lcyan_on_blue;
-  res->widget->border_font      = &sf_lcyan_on_blue;
-  res->widget->focused_dir_font = &sf_black_on_cyan;
-  res->widget->caption_font     = &sf_yellow_on_blue;
+  res->widget->font             = &FONT (CID_CYAN, CID_BLUE);
+  res->widget->border_font      = &FONT (CID_CYAN, CID_BLUE);
+  res->widget->focused_dir_font = &FONT (CID_BLACK, CID_CYAN);
+  res->widget->caption_font     = &FONT (CID_YELLOW, CID_BLUE);
 
   // Save pointer to file panel descriptor in
   // userdata in widget
@@ -340,8 +418,24 @@ file_panel_create                 (void)
   set_default_actions (res);
 
   // Fill up callbacks
-  WIDGET_USER_CALLBACK (WIDGET (res->widget), keydown)=
-    (widget_keydown)file_panel_keydown;
+  WIDGET_CALLBACK (WIDGET (res->widget), keydown)=
+    (widget_keydown_proc)file_panel_keydown;
+
+  WIDGET_CALLBACK (WIDGET (res->widget), onresize)=
+    (widget_action)file_panel_onresize;
+
+  WIDGET_CALLBACK (WIDGET (res->widget), focused)=
+    (widget_action)file_panel_focused;
+  
+  WIDGET_POST_INIT (res->widget);
+
+  set_default_params (res);
+
+  deque_push_back (panels, res);
+
+  if (!last_focused)
+    file_panel_set_focus (res); else
+    file_panel_redraw (res);
 
   return res;
 }
@@ -376,28 +470,30 @@ file_panel_defact_widget_destructor(file_panel_widget_t *__widget)
  * @param __panel - panel to destroy
  * @return zero on succsess, non-zero if failed
  */
-static int
-file_panel_destructor             (file_panel_t *__panel)
+static void
+file_panel_destructor             (void *__panel)
 {
   if (!__panel)
-    return -1;
+    return;
 
+  file_panel_t *panel=__panel;
+  
   // Destroy widget
-  widget_destroy (WIDGET (__panel->widget));
+  widget_destroy (WIDGET (panel->widget));
 
   // Free CWD string
-  if (__panel->cwd.data)
-    free (__panel->cwd.data);
+  if (panel->cwd.data)
+    free (panel->cwd.data);
 
   // Free existing list of items
-  if (__panel->actions.free_items)
-    __panel->actions.free_items (__panel);
+  if (panel->actions.free_items)
+    panel->actions.free_items (panel);
 
-  zerolize_columns (&__panel->columns);
+  zerolize_columns (&panel->columns);
 
-  free (__panel);
+  free (panel);
 
-  return 0;
+  return;
 }
 
 /**
@@ -422,13 +518,14 @@ read_config                       (void)
  *
  * @param __panel - panel which received a keydown event
  * @param __ch - pointer to received character (not string!)
- * @return zero on succsess, non-zero if failed
+ * @return zero if callback hasn't handled received character
+ *   non-zero otherwise
  */
 static int
 file_panel_comm_keydown_handler   (file_panel_t *__panel, const wchar_t *__ch)
 {
   if (!__panel || FILE_PANEL_TEST_FLAG (__panel, FPF_UNFOCUSABLE))
-    return -1;
+    return 0;
 
   switch (*__ch)
     {
@@ -458,10 +555,10 @@ file_panel_comm_keydown_handler   (file_panel_t *__panel, const wchar_t *__ch)
       file_panel_defact_walk (__panel, WALK_NEXT_COLUMN);
       break;
     default:
-      return -1;
+      return 0;
     }
   
-  return 0;
+  return 1;
 }
 
 ////
@@ -495,46 +592,75 @@ file_panel_keydown                (file_panel_widget_t *__panel_widget,
   return file_panel_comm_keydown_handler (panel, (wchar_t*)&__ch);
 }
 
+/**
+ * Onresize callback for file panel widget
+ *
+ * @param __panel_widget - widget which received this callback
+ * @return zero if callback hasn't handled received character
+ */
+static int
+file_panel_onresize               (file_panel_widget_t *__panel_widget)
+{
+  if (!__panel_widget)
+    return -1;
+
+  // Call default widget's handler
+  widget_onresize (WIDGET (__panel_widget));
+
+  if (WIDGET_USER_DATA (__panel_widget))
+    {
+      file_panel_t *panel=WIDGET_USER_DATA (__panel_widget);
+      if (panel->actions.onresize)
+        panel->actions.onresize (panel);
+    }
+
+  return 0;
+}
+
+static int
+file_panel_focused                (file_panel_widget_t *__panel_widget)
+{
+  if (WIDGET_TEST_FLAG (__panel_widget, 0x1000))
+    return 0;
+
+  WIDGET_SET_FLAG (__panel_widget, 0x1000);
+  file_panel_set_focus (WIDGET_USER_DATA (__panel_widget));
+  WIDGET_RESET_FLAG (__panel_widget, 0x1000);
+
+  return 1;
+}
+
 ////////
 // User's backend
 
 /**
  * Initialises file panels
  *
+ * @param __parent - parent widget in which file panels' grid
+ * will be integrated
  * @return zero on sucsess and non-zero if operation failed
  */
 int
-file_panels_init                  (void)
+file_panels_init                  (widget_t *__parent)
 {
-  wchar_t ch;
-
-  
   if (
       // Get data from configuration
-      read_config () ||           
+      read_config () ||
 
       // Intialize file panels' default actions stuff
       file_panel_defact_init ())  
     return -1;
 
+  // Create grid to manage panels' position
+  panels_grid=widget_create_box (WIDGET_CONTAINER (__parent),
+    0, 0, 0, 0, WBS_VERTICAL, 0);
+
+  panels = deque_create ();
+
   // Create panels
-  SPAWN_NEW_PANEL (left_panel);
-
-  file_panel_set_listing_mode (left_panel, LISTING_MODE_MEDIUM);
-  file_panel_set_cwd (left_panel, L"/");
-  file_panel_set_columns (left_panel, DEFAULT_FULL_ROW_MASK);
-  
-  // Just for testing
-  file_panel_set_focus (left_panel);
-  file_panel_refresh (left_panel);
-  file_panel_draw (left_panel);
-
-  scr_wnd_keypad (WIDGET_LAYOUT (WIDGET (left_panel->widget)), TRUE);
-
-  while ((ch=scr_wnd_getch (WIDGET_LAYOUT (WIDGET (left_panel->widget))))!='q')
-    {
-      WIDGET_USER_CALLBACK (WIDGET (left_panel->widget), keydown)(left_panel->widget, ch);
-    }
+  int i;
+  for (i=0; i<DEFAULT_PANELS_COUNT; i++)
+    SPAWN_NEW_PANEL ();
 
   return 0;
 }
@@ -546,7 +672,7 @@ void
 file_panels_done                  (void)
 {
   // Destroy all panels
-  file_panel_destructor (left_panel);
+  deque_destroy (panels, file_panel_destructor);
 
   file_panel_defact_done ();
 }
@@ -601,17 +727,17 @@ file_panel_set_focus              (file_panel_t *__panel)
     {
       last_focused->focused=last_focused->widget->focused=FALSE;
 
-      if (__panel->actions.on_refresh)
-        __panel->actions.on_refresh (__panel);
+      if (__panel->actions.onrefresh)
+        __panel->actions.onrefresh (__panel);
 
-      file_panel_draw (last_focused);
+      file_panel_redraw (last_focused);
     }
 
   // Focus new panel and redraw it
   __panel->focused=TRUE;
 
-  if (__panel->actions.on_refresh)
-    __panel->actions.on_refresh (__panel);
+  if (__panel->actions.onrefresh)
+    __panel->actions.onrefresh (__panel);
 
   widget_set_focus (WIDGET (__panel->widget));
 
@@ -635,6 +761,21 @@ file_panel_draw                   (file_panel_t *__panel)
 }
 
 /**
+ * Redraws a panel
+ *
+ * @param __panel - panel to draw
+ * @return zero on succsess, non-zero if failed
+ */
+int
+file_panel_redraw                 (file_panel_t *__panel)
+{
+  if (!__panel || !__panel->widget)
+    return -1;
+
+  return widget_redraw (WIDGET (__panel->widget));
+}
+
+/**
  * Refreshs file panel
  *
  * @param __panel - panel to refresh
@@ -650,9 +791,9 @@ file_panel_refresh                (file_panel_t *__panel)
   if ((res=refill_items (__panel)))
     return res;
 
-  // Call to on_refresh action
-  if (__panel->actions.on_refresh)
-    __panel->actions.on_refresh (__panel);
+  // Call to onrefresh action
+  if (__panel->actions.onrefresh)
+    __panel->actions.onrefresh (__panel);
 
   file_panel_draw (__panel);
 
@@ -684,11 +825,11 @@ file_panel_rescan                 (file_panel_t *__panel)
   if (!found)
     __panel->items.current=prev_current;
 
-  // Call to on_refresh action
-  if (__panel->actions.on_refresh)
-    __panel->actions.on_refresh (__panel);
+  // Call to onrefresh action
+  if (__panel->actions.onrefresh)
+    __panel->actions.onrefresh (__panel);
 
-  file_panel_draw (__panel);
+  file_panel_redraw (__panel);
 
   return 0;
 }
@@ -755,5 +896,62 @@ file_panel_set_listing_mode       (file_panel_t *__panel, int __mode)
     return;
 
   __panel->listing_mode=__mode;
+
   file_panel_rescan (__panel);
+  file_panel_update_columns_widths (__panel);
+  file_panel_redraw (__panel);
+}
+
+/**
+ * Updates widths of columns
+ *
+ * @param __panel - panel for which widths are updating
+ */
+void
+file_panel_update_columns_widths  (file_panel_t *__panel)
+{
+  int i, unused_width, delta;
+  int unset_count=0, reset_count=0;
+
+  file_panel_columns_t *columns;
+
+  // Invalid pointers
+  if (!__panel || !__panel->widget)
+    return;
+
+  columns=&__panel->columns;
+
+  unused_width=__panel->widget->position.width-2;
+
+  // reset widths of columns to original
+  for (i=0; i<columns->count; i++)
+    {
+      unused_width-=columns->data[i].orig_width;
+      columns->data[i].width=columns->data[i].orig_width;
+      if (!columns->data[i].orig_width)
+        unset_count++;
+    }
+
+  // Subrtact column separators
+  unused_width-=(columns->count-1);
+
+  if (unused_width<0)
+    unused_width=0;
+
+  if (unset_count)
+    delta=(unused_width-unset_count)/unset_count;
+
+  // Set width of previously unset columns
+  for (i=0; i<columns->count; i++)
+    {
+      if (!columns->data[i].width)
+        {
+          columns->data[i].width=
+            (reset_count==unset_count-1)?unused_width:delta;
+          reset_count++;
+          unused_width-=delta;
+        }
+    }
+
+  validate_colums_widths (__panel);
 }

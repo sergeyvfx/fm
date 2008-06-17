@@ -14,6 +14,9 @@
 #define _dir_h_
 
 #include "smartinclude.h"
+
+BEGIN_HEADER
+
 #include "file.h"
 
 #include <dirent.h>
@@ -53,5 +56,7 @@ wcscandir_alphasort               (const void *__a, const void *__b);
 
 int            // Separatelly alphabetically sorter for wcscandir
 wcscandir_alphasort_sep           (const void *__a, const void *__b);
+
+END_HEADER
 
 #endif

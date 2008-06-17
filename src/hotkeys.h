@@ -15,6 +15,8 @@
 
 #include "smartinclude.h"
 
+BEGIN_HEADER
+
 #include <wchar.h>
 
 typedef void (*hotkey_callback)  (void);
@@ -28,5 +30,7 @@ hotkey_release                    (const wchar_t *__sequence);
 
 short          // Put new character to sequence
 hotkey_push_character             (wchar_t __ch);
+
+END_HEADER
 
 #endif

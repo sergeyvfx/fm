@@ -43,9 +43,7 @@ button_destructor                 (w_button_t *__button)
 static int
 button_drawer                     (w_button_t *__button)
 {
-  // Inherit layout from parent
-  scr_window_t layout=WIDGET_LAYOUT (__button)=
-    WIDGET_LAYOUT (__button->parent);
+  scr_window_t layout=WIDGET_LAYOUT (__button);
 
   // Widget is invisible or there is no layout
   if (!WIDGET_VISIBLE (__button) || !layout)
@@ -124,6 +122,7 @@ button_shortcut                   (w_button_t *__button)
   _WIDGET_CALL_USER_CALLBACK (__button, shortcut, __button);
 
   // .. if we are still here emulate clicking in the button
+  widget_set_focus (WIDGET (__button));
   return button_keydown (__button, KEY_RETURN);
 }
 
@@ -152,25 +151,18 @@ widget_create_button              (w_container_t *__parent,
   if (!__parent || !__caption)
     return 0;
 
-  // Allocate and zerolize memory for new button
-  MALLOC_ZERO (res, sizeof (w_button_t));
+  unsigned int w;
 
-  res->type=WT_BUTTON;
+  w=(__caption?widget_shortcut_length (__caption):0)+
+    4+(__style&WBS_DEFAULT?2:0);
 
-  res->parent=WIDGET (__parent);
-
-  if (WIDGET_IS_CONTAINER (__parent))
-    res->tab_order=WIDGET_CONTAINER_LENGTH (__parent);
-
-  // Set methods
-  res->methods.destroy = (widget_action)button_destructor;
-  res->methods.draw    = (widget_action)button_drawer;
+  WIDGET_INIT (res, w_button_t, WT_BUTTON, __parent, WF_NOLAYOUT,
+               button_destructor, button_drawer,
+               __x, __y, 1, w, 1);
 
   // Set callbacks
-  WIDGET_CALLBACK (res, keydown)  = (widget_keydown)button_keydown;
+  WIDGET_CALLBACK (res, keydown)  = (widget_keydown_proc)button_keydown;
   WIDGET_CALLBACK (res, shortcut) = (widget_action)button_shortcut;
-  WIDGET_CALLBACK (res, focused)  = (widget_action)widget_focused;
-  WIDGET_CALLBACK (res, blured)   = (widget_action)widget_blured;
 
   WIDGET_SHORTCUT (res)=widget_shortcut_key (__caption);
 
@@ -178,21 +170,13 @@ widget_create_button              (w_container_t *__parent,
 
   res->style=__style;
 
-  res->position.x      = __x;
-  res->position.y      = __y;
-  res->position.z      = 1;
-  res->position.width  = (__caption?widget_shortcut_length (__caption):0)+
-    4+(__style&WBS_DEFAULT?2:0);
-  res->position.height = 1;
+  res->font         = &FONT (CID_BLACK, CID_WHITE);
+  res->focused_font = &FONT (CID_BLACK, CID_CYAN);
 
-  res->font         = &sf_black_on_white;
-  res->focused_font = &sf_black_on_cyan;
+  res->hot_font         = &FONT (CID_BLUE, CID_WHITE);
+  res->hot_focused_font = &FONT (CID_BLUE, CID_CYAN);
 
-  res->hot_font         = &sf_blue_on_white;
-  res->hot_focused_font = &sf_blue_on_cyan;
-
-  // Register widget in container
-  w_container_append_child (__parent, WIDGET (res));
+  WIDGET_POST_INIT (res);
 
   return res;
 }

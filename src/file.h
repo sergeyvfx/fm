@@ -15,6 +15,8 @@
 
 #include "smartinclude.h"
 
+BEGIN_HEADER
+
 #include <sys/stat.h>
 
 ////////
@@ -47,5 +49,7 @@ wcfilename                        (const wchar_t *__name);
 
 void           // Convert file mode creation mask to string
 umasktowcs                        (mode_t __mask, wchar_t *__res);
+
+END_HEADER
 
 #endif

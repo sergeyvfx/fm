@@ -15,6 +15,8 @@
 
 #include "smartinclude.h"
 
+BEGIN_HEADER
+
 #define _(x) i18n_text(x)
 
 void
@@ -25,5 +27,7 @@ i18n_release (void);
 
 wchar_t *
 i18n_text (const wchar_t *);
+
+END_HEADER
 
 #endif

@@ -81,10 +81,18 @@ menu_hotkey_callback              (void)
 static void
 test                              (void)
 {
-  w_window_t *wnd;
+//  wint_t ch;
   w_button_t *btn;
   w_sub_menu_t *sm;
   w_edit_t *edt;
+  w_box_t *main_box=NULL;
+  w_window_t *wnd;
+
+  main_box=widget_create_box (NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
+    WBS_HORISONTAL, 3);
+
+  w_box_set_item_szie (main_box, 0, 1);
+  w_box_set_item_szie (main_box, 2, 1);
 
   hotkey_register (L"F9", menu_hotkey_callback);
   hotkey_register (L"^a M-a M-^B", menu_hotkey_callback);
@@ -110,7 +118,7 @@ test                              (void)
 
   edt=widget_create_edit (WIDGET_CONTAINER (wnd), 2, 7, 20);
   w_edit_set_text (edt, L"Test2");
-  w_edit_set_fonts (edt, &sf_yellow_on_black);
+  w_edit_set_fonts (edt, &FONT (CID_YELLOW, CID_BLACK));
 
   sm=w_menu_append_submenu (menu, _(L"_File"));
   w_submenu_append_item (sm, _(L"_New"), 0, 0);
@@ -133,19 +141,25 @@ test                              (void)
   sm=w_menu_append_submenu (menu, _(L"_Help"));
   w_submenu_append_item (sm, _(L"_About"), 0, 0);
 
-  //file_panels_init ();
-  //file_panels_done ();
+  file_panels_init (WIDGET (w_box_item (main_box, 1)));
 
   w_window_show_modal (wnd);
 
-  widget_destroy (WIDGET (wnd));
-  widget_destroy (WIDGET (menu));
+  widget_main_loop ();
+
+//  file_panels_done ();
+
+//  widget_destroy (WIDGET (main_box));
+//  widget_destroy (WIDGET (wnd));
+//  widget_destroy (WIDGET (menu));
 }
 
 #ifdef SIGWINCH
+
 static void
 sig_winch                         (int sig ATTR_UNUSED)
 {
+  screen_on_resize ();
   widget_on_scr_resize ();
 }
 #endif
@@ -167,6 +181,10 @@ iface_init                        (void)
   if ((res=screen_init (SM_COLOR)))
     return res;
 
+  // Initialise widgets
+  if ((res=widgets_init ()))
+    return res;
+
 #ifdef SIGWINCH
   // For caughting terminal resizing
   signal (SIGWINCH, sig_winch);
@@ -185,6 +203,8 @@ iface_init                        (void)
 void
 iface_done                        (void)
 {
+  widgets_done ();
+
   // We don't need screen now!
   screen_done ();
 }

@@ -1,7 +1,7 @@
 /**
  * ${project-name} - a GNU/Linux console-based file manager
  *
- * Header for all files
+ * Implementation file of widget edit
  *
  * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
  * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
@@ -50,8 +50,7 @@ edit_drawer                       (w_edit_t *__edit)
   size_t len, scrolled, caret_pos;
 
   // Inherit layout from parent
-  scr_window_t layout=WIDGET_LAYOUT (__edit)=
-    WIDGET_LAYOUT (__edit->parent);
+  scr_window_t layout=WIDGET_LAYOUT (__edit);
 
   // Widget is invisible or there is no layout
   if (!WIDGET_VISIBLE (__edit) || !layout)
@@ -96,7 +95,7 @@ static int
 edit_focused                      (w_edit_t *__edit)
 {
   _WIDGET_CALL_USER_CALLBACK (__edit, focused, __edit);
-
+  
   // We shoud show a caret when edit box is focused
   scr_show_curser ();
 
@@ -316,36 +315,23 @@ widget_create_edit                (w_container_t *__parent,
 {
   w_edit_t *res;
 
-  // Allocate and free memory for new edit box
-  MALLOC_ZERO (res, sizeof (w_edit_t));
+  // There is no parent, so we can't create edit
+  if (!__parent)
+    return 0;
 
-  if (WIDGET_IS_CONTAINER (__parent))
-    res->tab_order=WIDGET_CONTAINER_LENGTH (__parent);
+  WIDGET_INIT (res, w_edit_t, WT_EDIT, __parent, WF_NOLAYOUT,
+               edit_destructor, edit_drawer,
+               __x, __y, 1, __width, 1);
 
-  res->type=WT_EDIT;
-
-  res->parent=WIDGET (__parent);
-
-  // Set methods
-  res->methods.destroy = (widget_action)edit_destructor;
-  res->methods.draw    = (widget_action)edit_drawer;
-
-  WIDGET_CALLBACK (res, keydown) = (widget_keydown)edit_keydown;
+  WIDGET_CALLBACK (res, keydown) = (widget_keydown_proc)edit_keydown;
   WIDGET_CALLBACK (res, focused) = (widget_action)edit_focused;
   WIDGET_CALLBACK (res, blured)  = (widget_action)edit_blured;
 
-  res->position.x      = __x;
-  res->position.y      = __y;
-  res->position.z      = 1;
-  res->position.width  = __width;
-  res->position.height = 1;
-
-  res->font=&sf_black_on_cyan;
+  res->font = &FONT (CID_BLACK, CID_CYAN);
 
   w_edit_set_text (res, L"");
 
-  // Register widget in container
-  w_container_append_child (__parent, WIDGET (res));
+  WIDGET_POST_INIT (res);
 
   return res;
 }

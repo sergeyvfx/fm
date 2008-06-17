@@ -11,6 +11,7 @@
  */
 
 #include "widget.h"
+#include "deque.h"
 
 #include <malloc.h>
 
@@ -21,8 +22,89 @@
 
 // static widget_t *current_widget=NULL;
 
-////
+// List of root widgets
+static deque_t *root_widgets = NULL;
+
+////////
 // Deep-core stuff
+
+////
+// Helpers for get_focused_entry
+
+/**
+ * Recursively sinking in tree in specified direction
+ *
+ * @param __widget - current node of widget tree
+ * @param __dir - direction of moving
+ */
+static widget_t*
+get_neighbour_iter                (const widget_t *__widget,
+                                   short           __dir)
+{
+  if (!__widget)
+    return 0;
+  
+  if (!WIDGET_IS_CONTAINER (__widget))
+    return (widget_t*)__widget;
+
+  __dir=__dir<0?-1:1;
+
+  unsigned int    i, length = WIDGET_CONTAINER_LENGTH (__widget);
+  widget_t       *widget, *cur_widget;
+
+  i=__dir>0?0:length-1;
+
+  while (i>=0 && i<length)
+    {
+      cur_widget=
+        w_container_widget_by_tab_order (WIDGET_CONTAINER (__widget), i);
+
+      if ((widget=get_neighbour_iter (cur_widget, __dir)))
+        return widget;
+      i+= __dir;
+    }
+
+  return 0;
+}
+
+/**
+ * Searchs for branch from which searching of neighbour
+ * may be started and starts this searching
+ *
+ * @param __widget - widget, describes current node of widget tree
+ * @param __dir - direction of moving inside tree
+ */
+static widget_t*
+get_neighbour                     (const widget_t *__widget,
+                                   short           __dir)
+{
+  if (!__widget || !__widget->parent ||
+      !WIDGET_IS_CONTAINER (__widget->parent))
+    return 0;
+
+  __dir=__dir<0?-1:1;
+
+  w_container_t  *parent    = WIDGET_CONTAINER (__widget->parent);
+  unsigned int    i, length = WIDGET_CONTAINER_LENGTH (parent);
+  widget_t       *widget, *cur_widget;
+
+  i=__widget->tab_order+__dir;
+
+  // Search for widget, from which we can
+  // call recursively finding of searched widget
+  while (i>=0 && i<length)
+    {
+      cur_widget=w_container_widget_by_tab_order (parent, i);
+
+      if ((widget=get_neighbour_iter (cur_widget, __dir)))
+        return widget;
+
+      i+= __dir;
+    }
+
+  // Try to find in neighbour brunch of parent widget
+  return get_neighbour (__widget->parent, __dir);
+}
 
 /**
  * Gets next/prev focused widget
@@ -39,15 +121,147 @@ static widget_t*
 get_focused_entry                 (const widget_t *__widget, short __dir)
 {
   int index;
+  w_container_t *cnt;
+  unsigned int length;
+  widget_t *widget;
+
+  __dir=__dir<0?-1:1;
+  
   if (!__widget || !__widget->parent || !WIDGET_IS_CONTAINER (__widget->parent))
     return NULL;
 
-  return w_container_widget_by_tab_order (WIDGET_CONTAINER (__widget->parent),
-    ((index=__widget->tab_order+__dir)>=0?
-      index:
-      WIDGET_CONTAINER_LENGTH (__widget->parent)-1)%
-        WIDGET_CONTAINER_LENGTH (__widget->parent));
+  cnt    = WIDGET_CONTAINER (__widget->parent);
+  length = WIDGET_CONTAINER_LENGTH (__widget->parent);
+  index  = __widget->tab_order+__dir;
+
+  // Try to get next widget in current container
+  if (index>=0 && index<length)
+    return w_container_widget_by_tab_order (cnt, index);
+
+  // Try to get searched widget from
+  // neighbour branch of wiget tree
+  if ((widget=get_neighbour (__widget, __dir)))
+    return widget;
+
+  // Cycling
+  while (cnt->parent && WIDGET_IS_CONTAINER (cnt->parent))
+    cnt=WIDGET_CONTAINER (cnt->parent);
+
+  return get_neighbour_iter (WIDGET (cnt), __dir);
 }
+
+/**
+ * Common part of widget_container_delete() and widget_container_drop()
+ *
+ * @param __widget - container from which child has to be deleted
+ * @param __child - widget tobe deleted
+ * @param __call_deleter - is in neccessary to call widget's deleter
+ */
+static void
+w_container_delete_entry          (w_container_t *__widget,
+                                    widget_t     *__child,
+                                    BOOL          __call_deleter)
+{
+  unsigned int i;
+  widget_t *w;
+  if (!__widget || !__child || !WIDGET_IS_CONTAINER (__widget))
+    return;
+
+  for (i=0; i<WIDGET_CONTAINER_LENGTH (__widget); i++)
+    {
+      if ((w=WIDGET_CONTAINER_DATA (__widget)[i])==__child)
+        {
+          if (__call_deleter)
+            widget_destroy (WIDGET (__child)); else
+            if (__child->parent==WIDGET (__widget))
+              __child->parent=0;
+
+          // Shift widgets in storage
+          while (i<WIDGET_CONTAINER_LENGTH (__widget)-1)
+            {
+              WIDGET_CONTAINER_DATA (__widget)[i]=
+                WIDGET_CONTAINER_DATA (__widget)[i+1];
+              i++;
+            }
+          WIDGET_CONTAINER_LENGTH (__widget)--;
+          break;
+        }
+    }
+}
+
+/**
+ * Widget's deleter for deque iterator
+ *
+ * @param __widget - widget to be deleted
+ */
+static void
+widget_deque_deleter              (void *__widget)
+{
+  widget_destroy (WIDGET (__widget));
+}
+
+/**
+ * Compares two widgets by their addresses
+ *
+ * @param __w1 - first widget
+ * @param __w2 - second widget
+ * @return zero if this two addresses are identical,
+ * -1 is first address is less than second and 1 otherwise
+ */
+static int
+widget_ptr_cmp                    (const void *__w1, const void *__w2)
+{
+  return (long)__w2-(long)__w1;
+}
+
+/**
+ * Resets focused widget for all parent widgets,
+ * which is a container
+ * helper for widget_set_focus()
+ *
+ * @param __widget - from which node start reseting
+ * @param __focused - pointer new focused widget
+ */
+static void
+reset_focused_widget              (w_container_t *__widget,
+                                   widget_t *__focused)
+{
+  if (!__widget || !WIDGET_IS_CONTAINER (__widget))
+    return;
+  
+  __widget->focused_widget=__focused;
+  reset_focused_widget (WIDGET_CONTAINER (__widget->parent), __focused);
+}
+
+/**
+ * Popups as much as possible, while
+ * a focused_widget is actual
+ *
+ * @param __widget - from where startpopupping
+ * @return 
+ */
+w_container_t*
+get_toplevel                      (widget_t *__widget)
+{
+  if (!__widget)
+    return 0;
+  
+  w_container_t *cur=WIDGET_CONTAINER (__widget->parent);
+
+  if (!cur)
+    return WIDGET_IS_CONTAINER (__widget)?WIDGET_CONTAINER (__widget):0;
+
+  if (!WIDGET_IS_CONTAINER (cur))
+    return 0;
+
+  while (cur->parent && WIDGET_IS_CONTAINER (cur->parent))
+    cur=WIDGET_CONTAINER (cur->parent);
+
+  return cur;
+}
+
+////////
+//
 
 // Code to operate with non-modal windows
 /*void
@@ -56,28 +270,102 @@ widget_set_current_widget         (widget_t *__widget)
   current_widget=__widget;
 }*/
 
-/*void           // Main loop of widget stuff to manipulate with messages from user
+/**
+ * Main loop of widget stuff to manipulate with messages from user
+ */
+void
 widget_main_loop                  (void)
 {
-  int ch;
-  scr_window_t layout;
-  scr_window_t root_wnd=screen_root_wnd ();
-
+  wint_t ch;
+  widget_t *w;
+  
   for (;;)
     {
-      layout=current_widget&&WIDGET_LAYOUT (current_widget)?WIDGET_LAYOUT (current_widget):root_wnd;
+      ch=scr_wnd_getch (0);
 
-      scr_wnd_keypad (layout, TRUE);
-      ch=scr_wnd_getch (layout);
-
-      // Redirect calls to current widget
-      if (current_widget && WIDGET_CALLBACK (current_widget, keydown))
-        WIDGET_CALLBACK (current_widget, keydown) (current_widget, ch);
+      if (deque_head (root_widgets))
+        {
+          w=deque_data (deque_head (root_widgets));
+          WIDGET_CALL_CALLBACK (w, keydown, w, ch);
+        }
     }
-}*/
+}
 
 //////
 //
+
+/**
+ * Initializes widgets' stuff
+ *
+ * @return a zero in successful, non-aero otherwise
+ */
+int
+widgets_init                      (void)
+{
+  root_widgets=deque_create ();
+  if (!root_widgets)
+    return -1;
+
+  return 0;
+}
+
+/**
+ * Uninitializes widgets' stuff
+ */
+void
+widgets_done                      (void)
+{
+  deque_destroy (root_widgets, widget_deque_deleter);
+}
+
+/**
+ * Adds widget to list of root widgets
+ *
+ * @param __widget - widget to be added
+ */
+void
+widget_add_root                   (widget_t *__widget)
+{
+  if (!__widget)
+    return;
+
+  // Widget is already in root widgets
+  if (deque_find (root_widgets, __widget, widget_ptr_cmp))
+    widget_delete_root (__widget);
+
+  // Blure previous head widget in list
+  if (deque_head (root_widgets))
+    {
+      widget_t *w=deque_data (deque_head (root_widgets));
+      WIDGET_CALL_CALLBACK (w, blured, w);
+    }
+
+   deque_push_front (root_widgets, __widget);
+}
+
+/**
+ * Deletes widget from list of root widgets.
+ *
+ * @param __widget - widget to be added
+ */
+void
+widget_delete_root                (widget_t *__widget)
+{
+  if (!__widget)
+    return;
+
+  iterator_t *iter;
+
+  if ((iter=deque_find (root_widgets, __widget, widget_ptr_cmp)))
+    deque_remove (root_widgets, iter, 0);
+
+  // Focus head widget in list
+  if (deque_head (root_widgets))
+    {
+      widget_t *w=deque_data (deque_head (root_widgets));
+      WIDGET_CALL_CALLBACK (w, focused, w);
+    }
+}
 
 /**
  *  Destructor of any widget
@@ -106,6 +394,11 @@ widget_draw                       (widget_t *__widget)
   if (!__widget || !__widget->methods.draw)
     return -1;
 
+  // Layout of widget is locked
+  if (WIDGET_TEST_FLAG (__widget, WF_REDRAW_LOCKED) ||
+      !WIDGET_VISIBLE (__widget))
+    return 0;
+
   return __widget->methods.draw (__widget);
 }
 
@@ -114,15 +407,24 @@ widget_draw                       (widget_t *__widget)
  *
  * @param __widget - widget to be redrawn
  */
-void
+int
 widget_redraw                     (widget_t *__widget)
 {
-  if (!__widget)
-    return;
+  int res;
 
-  widget_draw (__widget);
+  if (!__widget)
+    return 0;
+
+  // Layout of widget is locked or widget is invisible
+  if (WIDGET_TEST_FLAG (__widget, WF_REDRAW_LOCKED) ||
+      !WIDGET_VISIBLE (__widget))
+    return 0;
+
+  res=widget_draw (__widget);
   scr_wnd_invalidate (WIDGET_LAYOUT (__widget));
   scr_wnd_refresh (WIDGET_LAYOUT (__widget));
+  
+  return res;
 }
 
 /**
@@ -141,12 +443,22 @@ widget_full_redraw                (void)
 void
 widget_on_scr_resize              (void)
 {
+  iterator_t *iter;
   scr_clear ();
+
+  // !!FIX ME!!
+  iter=root_widgets->tail;
+  while (iter)
+    {
+      WIDGET_CALL_CALLBACK (iter->data, onresize, iter->data);
+      iter=iter->prev;
+    }
+
   widget_full_redraw ();
 }
 
 /**
- *  Sets focus to widget
+ * Sets focus to widget
  *
  * @param __widget - widget you want to set focus to
  */
@@ -156,21 +468,34 @@ widget_set_focus                  (widget_t *__widget)
   if (!__widget)
     return;
 
-  // Update previois focused widget widget
-  if (__widget->parent && WIDGET_IS_CONTAINER (__widget->parent))
+  w_container_t *top_level=get_toplevel (__widget),
+                *cnt=WIDGET_CONTAINER (__widget->parent);
+
+  // Manage previously focused widget
+  if (top_level && top_level->focused_widget)
     {
-      w_container_t *cnt=WIDGET_CONTAINER (__widget->parent);
-      if (cnt->focused_widget)
-        {
-          widget_t *w=cnt->focused_widget;
-          w->focused=FALSE;
+      widget_t *old_focused=top_level->focused_widget;
+      w_container_t *focused_cnt;
+      focused_cnt=WIDGET_CONTAINER (old_focused->parent);
 
-          // Blure da previous focused widget
-          WIDGET_CALL_CALLBACK (w, blured, w);
+      // Zerolize focused widgets in previously focused branch
+      reset_focused_widget (focused_cnt, 0);
 
-          widget_draw (w);
-        }
+      // Redraw widget
+      old_focused->focused=FALSE;
+
+      WIDGET_CALL_CALLBACK (old_focused, blured, old_focused);
+
+      widget_redraw (old_focused);
+    }
+
+  if (cnt && WIDGET_IS_CONTAINER (cnt))
+    {
+      // Store focused widget for it's parent
       cnt->focused_widget=__widget;
+
+      // Store focused widget for all other widgets
+      reset_focused_widget (WIDGET_CONTAINER (cnt->parent), __widget);
     }
 
   // Set focus to new widget and redraw
@@ -317,20 +642,31 @@ widget_prev_focused               (const widget_t *__widget)
 // Container
 
 /**
- * Appends widget to container
+ * Appends widget to container on specified position
  *
  * @param __container - container where widget have to be added
  * @param __widget - widget which you want to add to container
+ * @param __pos - position of widget
  */
 void
-w_container_append_child          (w_container_t *__container,
-                                   widget_t *__widget)
+w_container_insert_child          (w_container_t *__container,
+                                   widget_t      *__widget,
+                                   unsigned int   __pos)
 {
+  if (!__widget)
+    return;
+
+  if (!__container)
+    {
+     widget_add_root (__widget);
+      return;
+    }
+
   // `__container` is not a contaier-based widget
   // or a `__widget` is NULL
-  if (!WIDGET_IS_CONTAINER (__container) || !__widget)
+  if (!__container || !WIDGET_IS_CONTAINER (__container) || !__widget)
     return;
-  
+
   // Need to make array a bit bigger
   if (__container->container.length>=__container->container.alloc_length)
     {
@@ -338,9 +674,81 @@ w_container_append_child          (w_container_t *__container,
       __container->container.data=realloc (__container->container.data,
         __container->container.alloc_length*sizeof (widget_t*));
     }
-  
-  __container->container.data[__container->container.length++]=__widget;
+
+  // Shift an array
+  unsigned int i;
+  for (i=__container->container.length; i>__pos; i--)
+    __container->container.data[i]=__container->container.data[i-1];
+
+  __widget->tab_order = WIDGET_CONTAINER_LENGTH (__container);
+
+  // Add widget to storage
+  __container->container.data[__pos]=__widget;
+  __container->container.length++;
+
+  __widget->parent=WIDGET (__container);
+
+  if (WIDGET_TEST_FLAG (__container, WF_CONTAINER))
+    {
+      widget_resize (__widget, 0, 0, __container->position.width,
+        __container->position.height);
+    }
 }
+
+/**
+ * Appends widget to container
+ *
+ * @param __container - container where widget have to be added
+ * @param __widget - widget which you want to add to container
+ */
+void
+w_container_append_child          (w_container_t *__container,
+                                   widget_t      *__widget)
+{
+  if (!__widget)
+    return;
+
+  if (!__container)
+    {
+      widget_add_root (__widget);
+      return;
+    }
+
+  // `__container` is not a contaier-based widget
+  // or a `__widget` is NULL
+  if (!__container || !WIDGET_IS_CONTAINER (__container))
+    return;
+
+  unsigned int pos=WIDGET_CONTAINER_LENGTH (__container);
+  w_container_insert_child (__container, __widget, pos);
+}
+
+/**
+ * Deletes widget from container and calls a destroyer for it
+ *
+ * @param __widget - container from which child has to be deleted
+ * @param __child - widget tobe deleted
+ */
+void
+w_container_delete                (w_container_t *__widget, widget_t *__child)
+{
+  w_container_delete_entry (__widget, __child, TRUE);
+}
+
+/**
+ * Drop widget from container without destroying it
+ *
+ * @param __widget - container from which child has to be dropped
+ * @param __child - widget tobe dropped
+ */
+void
+w_container_drop                  (w_container_t *__widget, widget_t *__child)
+{
+  w_container_delete_entry (__widget, __child, FALSE);
+}
+
+////////
+//
 
 /**
  * Returns widget with specified tab order from container
@@ -368,6 +776,64 @@ w_container_widget_by_tab_order   (const w_container_t *__container,
 }
 
 /**
+ * Locks layout for redraw
+ *
+ * @param __widget - widget which layout is to be locked
+ */
+void
+widget_lock_redraw                (widget_t *__widget)
+{
+  if (!__widget)
+    return;
+
+  WIDGET_SET_FLAG (__widget, WF_REDRAW_LOCKED);
+
+  WIDGET_CONTAINER_ACTION_ITERONLY (__widget, widget_lock_redraw);
+}
+
+/**
+ * Locks layout for redraw
+ *
+ * @param __widget - widget which layout is to be unlocked
+ */
+void
+widget_unlock_redraw              (widget_t *__widget)
+{
+  if (!__widget)
+    return;
+
+  WIDGET_RESET_FLAG (__widget, WF_REDRAW_LOCKED);
+
+  WIDGET_CONTAINER_ACTION_ITERONLY (__widget, widget_unlock_redraw);
+}
+
+/**
+ * Resizes widget
+ *
+ * @param __widget - widget to be resized
+ * @param __x, __y - new coordinates of widget
+ * @param __w, __h - new width and height of widget
+ */
+void
+widget_resize                     (widget_t *__widget,
+                                   int __x, int __y,
+                                   int __w, int __h)
+{
+  if (!__widget)
+    return;
+
+  // Store new size in widget
+  __widget->position.x      = __x;
+  __widget->position.y      = __y;
+  __widget->position.width  = __w;
+  __widget->position.height = __h;
+
+  WIDGET_CALL_CALLBACK (__widget, onresize, __widget);
+
+  widget_redraw (WIDGET (__widget));
+}
+
+/**
  * Handler of `focused` callback (system-based)
  *
  * @param __widget - widget which caucghted this callback
@@ -376,7 +842,19 @@ w_container_widget_by_tab_order   (const w_container_t *__container,
 int
 widget_focused                    (widget_t *__widget)
 {
+  if (!__widget)
+    return 0;
+
   _WIDGET_CALL_USER_CALLBACK (__widget, focused, __widget);
+
+  if (WIDGET_IS_CONTAINER (__widget))
+    {
+      w_container_t *cnt=WIDGET_CONTAINER (__widget);
+      if (cnt->focused_widget)
+        return WIDGET_CALL_CALLBACK (cnt->focused_widget, focused,
+          cnt->focused_widget);
+    }
+
   return 0;
 }
 
@@ -389,6 +867,132 @@ widget_focused                    (widget_t *__widget)
 int
 widget_blured                     (widget_t *__widget)
 {
+  if (!__widget)
+    return 0;
+
   _WIDGET_CALL_USER_CALLBACK (__widget, blured, __widget);
+
+  if (WIDGET_IS_CONTAINER (__widget))
+    {
+      w_container_t *cnt=WIDGET_CONTAINER (__widget);
+      if (cnt->focused_widget)
+        return WIDGET_CALL_CALLBACK (cnt->focused_widget, blured,
+          cnt->focused_widget);
+    }
+
   return 0;
+}
+
+/**
+ * Handler of `keydown` callback (system-based)
+ *
+ * @param __widget - widget which caucghted this callback
+ * @param __ch - received character
+ * @return zero if callback hasn't handled callback
+ */
+int
+widget_keydown                    (widget_t *__widget, int __ch)
+{
+  // Call user's callback
+  _WIDGET_CALL_USER_CALLBACK (__widget, keydown, __widget, __ch);
+
+  return 0;
+}
+
+/**
+ * Handler of `shortcut` callback (system-based)
+ *
+ * @param __widget - widget which caucghted this callback
+ * @return zero if callback hasn't handled callback
+ */
+int
+widget_shortcut                   (widget_t *__widget)
+{
+  // Call user's callback
+  _WIDGET_CALL_USER_CALLBACK (__widget, shortcut, __widget);
+
+  return 0;
+}
+
+int
+widget_onresize                   (widget_t *__widget)
+{
+  _WIDGET_CALL_USER_CALLBACK (__widget, onresize, __widget);
+
+  // There is no window's resising stuff, so
+  // we have to create new window and use it
+  scr_window_t oldwnd = WIDGET_LAYOUT (__widget),
+               newwnd = widget_create_layout (WIDGET (__widget));
+
+  WIDGET_LAYOUT (__widget)=newwnd;
+
+  BOOL locked=WIDGET_TEST_FLAG (__widget, WF_REDRAW_LOCKED);
+
+  if (!locked)
+    widget_lock_redraw (__widget);
+
+  // But does we really need this call?
+  WIDGET_CONTAINER_ACTION_ITERONLY (__widget, WIDGET_CALL_CALLBACK,
+    onresize, __iterator_);
+
+  if (!locked)
+    {
+      widget_unlock_redraw (__widget);
+      widget_redraw (__widget);
+    }
+
+  if (oldwnd && !WIDGET_TEST_FLAG (__widget, WF_NOLAYOUT))
+    {
+      //
+      // NOTE:
+      //  Windows must be deleted in such way:
+      //    1. Delete all children of widnow
+      //    2. Delete window
+      //  If window has children - it won't deleted
+      //
+      // So, no children - no problems :)
+      //
+      scr_destroy_window (oldwnd);
+    }
+
+  return 0;
+}
+
+/**
+ * Creates layout for widget
+ *
+ * @param __widget - widget for which create layout
+ * @return created layout
+ */
+scr_window_t
+widget_create_layout              (widget_t *__widget)
+{
+  if (!__widget)
+    return 0;
+
+  if (WIDGET_TEST_FLAG (__widget, WF_NOLAYOUT))
+    {
+      // Widget doesn't have it's own layout,
+      // so it will use parent's layout
+      if (__widget->parent)
+        return WIDGET_LAYOUT (__widget->parent);
+    } 
+
+  scr_window_t res;
+
+  // Save position to make code shorter
+  widget_position_t pos=__widget->position;
+
+  if (!__widget->parent)
+    {
+      // If there is no parent of widget,
+      // we just create new layout window
+      res=scr_create_window (pos.x, pos.y, pos.width, pos.height);
+    } else {
+      // Otherwise we should create new subwindow on parent's window
+      res=scr_create_sub_window (WIDGET_LAYOUT (__widget->parent),
+        pos.x, pos.y, pos.width, pos.height);
+    }
+
+  return res;
 }

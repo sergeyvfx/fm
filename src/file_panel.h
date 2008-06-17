@@ -14,6 +14,9 @@
 #define _file_panel_h_
 
 #include "smartinclude.h"
+
+BEGIN_HEADER
+
 #include "screen.h"
 #include "widget.h"
 #include "file.h"
@@ -54,28 +57,40 @@
 // Type defenitins
 
 // Walking directions
-enum { WALK_NEXT, WALK_PREV, WALK_NEXT_PAGE,
-  WALK_PREV_PAGE, WALK_HOME, WALK_END,
-  WALK_NEXT_COLUMN, WALK_PREV_COLUMN};
+enum {
+  WALK_NEXT,
+  WALK_PREV,
+  WALK_NEXT_PAGE,
+  WALK_PREV_PAGE,
+  WALK_HOME,
+  WALK_END,
+  WALK_NEXT_COLUMN,
+  WALK_PREV_COLUMN
+};
 
 // Types of columns
 enum {
-  COLUMN_UNKNOWN=-1,
-  COLUMN_NAME=0,
-  COLUMN_SIZE=1,
-  COLUMN_TIME=2,
-  COLUMN_PERM=3,
-  COLUMN_OCTPERM=4
+  COLUMN_UNKNOWN = -1,
+  COLUMN_NAME    =  0,
+  COLUMN_SIZE    =  1,
+  COLUMN_TIME    =  2,
+  COLUMN_PERM    =  3,
+  COLUMN_OCTPERM =  4
 };
 
-enum { LISTING_MODE_FULL, LISTING_MODE_BRIEF, LISTING_MODE_MEDIUM };
+enum {
+  LISTING_MODE_FULL,
+  LISTING_MODE_BRIEF,
+  LISTING_MODE_MEDIUM
+};
 
 ////
 // Item of file panel
 
 typedef struct {
-  short          type;   // Type of panel - name.size,m.time,etc
-  unsigned short width;  // Width of column;
+  short          type;       // Type of panel - name.size,m.time,etc
+  unsigned short width;      // Width of column;
+  unsigned short orig_width; // Original width of column;
   wchar_t        *title;  
 } file_panel_column_t;
 
@@ -146,11 +161,15 @@ typedef struct {
     file_panel_action      item_user_data_deleter; // Deleter of item's
                                                    // user-defined data
     file_panel_action      draw_items;     // Draws list of items
-    file_panel_action      on_refresh;     // Action after re-filling item list
+    file_panel_action      onrefresh;      // Action after re-filling item list
+                                           // and before drawing a panel
+    file_panel_action      onresize;       // Action after re-filling item list
                                            // and before drawing a panel
     file_panel_data_action keydown_handler;// Handles keyboard input
     file_panel_data_action scroll_to_item; // Set cursor to item and
                                            // scroll to view
+    file_panel_data_action centrize_to_item; // Set cursor to item and
+                                             // centrizes view
   } actions;
 } file_panel_t;
 
@@ -158,7 +177,7 @@ typedef struct {
 // Common stuff
 
 int            // Initialise file panels
-file_panels_init                  (void);
+file_panels_init                  (widget_t *__parent);
 
 void           // Uninitialise file panels
 file_panels_done                  (void);
@@ -176,6 +195,9 @@ file_panel_refresh                (file_panel_t *__panel);
 int            // Draw a panel
 file_panel_draw                   (file_panel_t *__panel);
 
+int           // Redraw panel
+file_panel_redraw                 (file_panel_t *__panel);
+
 int
 file_panel_set_columns            (file_panel_t  *__panel,
                                    const wchar_t *__columns);
@@ -190,6 +212,9 @@ file_panel_item_index_by_name     (file_panel_t  *__panel,
 
 void
 file_panel_set_listing_mode       (file_panel_t *__panel, int __mode);
+
+void
+file_panel_update_columns_widths  (file_panel_t *__panel);
 
 ////////
 // Default actions
@@ -216,12 +241,20 @@ void           // Walk on file panel's widget
 file_panel_defact_walk            (file_panel_t *__panel, short __direction);
 
 int            // Handles an on_refresh action of panel
-file_panel_defact_on_refresh      (file_panel_t *__panel);
+file_panel_defact_onrefresh       (file_panel_t *__panel);
+
+int
+file_panel_defact_onresize        (file_panel_t *__panel);
 
 int
 file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch);
 
 void
+file_panel_defact_centrize_to_item(file_panel_t *__panel, wchar_t *__name);
+
+void
 file_panel_defact_scroll_to_item  (file_panel_t *__panel, wchar_t *__name);
+
+END_HEADER
 
 #endif

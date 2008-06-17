@@ -18,6 +18,7 @@
 
 #ifdef SCREEN_NCURSESW
 static WINDOW *root_wnd = NULL;
+BOOL curs_wis = TRUE;
 #  define MY_KEYS (KEY_MAX+1)
 #endif
 
@@ -25,19 +26,25 @@ int ESCDELAY = 0;  // Disable pause when escape is pressed
 static int mode=0; // Mode of screen
 
 // Default fonts
-scr_font_t sf_null;
-scr_font_t sf_black_on_white, sf_blue_on_white, sf_yellow_on_white;
-scr_font_t sf_white_on_red, sf_yellow_on_red;
-scr_font_t sf_black_on_cyan, sf_blue_on_cyan, sf_yellow_on_cyan;
-scr_font_t sf_yellow_on_black, sf_white_on_black;
-scr_font_t sf_gray_on_blue, sf_lblue_on_blue, sf_cyan_on_blue,
-           sf_lcyan_on_blue, sf_white_on_blue, sf_yellow_on_blue;
+scr_font_t screen_fonts[SCREEN_MAX_FONTS];
 
 #ifdef SCREEN_NCURSESW
+#  include <time.h>
+
 #  define INIT_COLOR(__font,__pair_no,__fore,__back,__bold) \
   init_pair (__pair_no,  __fore,  __back); \
   __font.color_pair  = __pair_no; \
 __font.bold          = __bold;
+
+#  define _INIT_COLOR(__fore, __back, __bold) \
+  { \
+    INIT_COLOR (screen_fonts[CID (__fore, __back)],\
+      pair_no,__fore,__back,__bold);\
+    pair_no++;\
+  }
+
+#  define DELAY (0.2*1000*10)
+
 #endif
 
 //////
@@ -49,37 +56,39 @@ __font.bold          = __bold;
 static void
 define_default_fonts              (void)
 {
-  sf_null.bold = FALSE;
-
 #ifdef SCREEN_NCURSESW
-  sf_null.color_pair = 0;
 
-  INIT_COLOR (sf_black_on_white,  CP_BLACK_ON_WHITE,   COLOR_BLACK,   COLOR_WHITE, FALSE);
-  INIT_COLOR (sf_blue_on_white,   CP_BLUE_ON_WHITE,    COLOR_BLUE,    COLOR_WHITE, FALSE);
-  INIT_COLOR (sf_yellow_on_white, CP_YELLOW_ON_WHITE,  COLOR_YELLOW,  COLOR_WHITE, TRUE);
+  int colors[][3]=
+   {
+     {CID_BLACK,  CID_WHITE, FALSE},
+     {CID_BLUE,   CID_WHITE, FALSE},
+     {CID_YELLOW, CID_WHITE, TRUE},
 
-  INIT_COLOR (sf_white_on_red,    CP_WHITE_ON_RED,     COLOR_WHITE,   COLOR_RED,   TRUE);
-  INIT_COLOR (sf_yellow_on_red,   CP_YELLOW_ON_RED,    COLOR_YELLOW,  COLOR_RED,   TRUE);
+     {CID_CYAN,   CID_BLUE,  TRUE},
+     {CID_YELLOW, CID_BLUE,  TRUE},
+     {CID_WHITE,  CID_BLUE,  TRUE},
 
-  INIT_COLOR (sf_black_on_cyan,   CP_BLACK_ON_CYAN,    COLOR_BLACK,   COLOR_CYAN,  FALSE);
-  INIT_COLOR (sf_blue_on_cyan,    CP_BLUE_ON_CYAN,     COLOR_BLUE,    COLOR_CYAN,  FALSE);
-  INIT_COLOR (sf_yellow_on_cyan,  CP_YELLOW_ON_CYAN,   COLOR_YELLOW,  COLOR_CYAN,  TRUE);
+     {CID_BLACK,  CID_CYAN,  FALSE},
+     {CID_BLUE,   CID_CYAN,  FALSE},
+     {CID_YELLOW, CID_CYAN,  TRUE},
 
-  INIT_COLOR (sf_yellow_on_black, CP_YELLOW_ON_BLACK,  COLOR_YELLOW,  COLOR_BLACK, TRUE);
-  INIT_COLOR (sf_white_on_black,  CP_WHITE_ON_BLACK,   COLOR_WHITE,   COLOR_BLACK, TRUE);
+     {CID_YELLOW, CID_BLACK,  TRUE},
 
-  INIT_COLOR (sf_gray_on_blue ,   CP_GRAY_ON_BLUE,     COLOR_WHITE,   COLOR_BLUE,  FALSE);
-  INIT_COLOR (sf_lblue_on_blue ,  CP_LBLUE_ON_BLUE,    COLOR_BLUE,    COLOR_BLUE,  TRUE);
-  INIT_COLOR (sf_cyan_on_blue ,   CP_CYAN_ON_BLUE,     COLOR_CYAN,    COLOR_BLUE,  FALSE);
-  INIT_COLOR (sf_lcyan_on_blue ,  CP_LCYAN_ON_BLUE,    COLOR_CYAN,    COLOR_BLUE,  TRUE);
-  INIT_COLOR (sf_white_on_blue ,  CP_WHITE_ON_BLUE,    COLOR_WHITE,   COLOR_BLUE,  TRUE);
-  INIT_COLOR (sf_yellow_on_blue , CP_YELLOW_ON_BLUE,   COLOR_YELLOW,  COLOR_BLUE,  TRUE);
+     {CID_WHITE,   CID_RED,  TRUE},
+     {CID_YELLOW,  CID_RED,  TRUE},
 
-  sf_null.color_pair            = CP_NULL;
+     {-1, -1, -1}
+   };
+  
+  int i=0, pair_no=1;
 
+  while (colors[i][0]>=0)
+    {
+      _INIT_COLOR (colors[i][0], colors[i][1], colors[i][2]);
+      i++;
+    }
+  
 #endif
- 
-  sf_black_on_cyan.bold   = FALSE;
 }
 
 /**
@@ -134,6 +143,7 @@ screen_init                       (int __mode)
 
   cbreak ();  // take input chars one at a time, no wait for \n
   noecho ();  // don't echo input
+  nodelay (stdscr, TRUE);
 
   if (__mode&SM_COLOR)
     {
@@ -141,6 +151,13 @@ screen_init                       (int __mode)
       start_color ();
     }
 
+  //
+  // TODO:
+  //  But does we really need this?
+  //
+  //  (this stuff was added to give an opportunity to
+  //   handle escaped escape)
+  //
   init_escape_keys ();
 
 #endif
@@ -191,9 +208,29 @@ screen_refresh                    (BOOL __full_refresh)
 }
 
 /**
+ * Call this method when root screen has been resized
+ */
+void
+screen_on_resize                  (void)
+{
+#ifdef SCREEN_NCURSESW
+  // We need reinitialize the screen
+  endwin ();
+  refresh ();
+
+  // Restore visibility of cursor
+  if (!curs_wis)
+    scr_hide_curser (); else
+    scr_show_curser ();
+
+#endif
+}
+
+/**
  * Returns character from window
  *
  * @param __window - from which window expects a character
+ * (this parameter maybe deprecated)
  * @return caugthed character
  */
 wchar_t
@@ -207,12 +244,20 @@ scr_wnd_getch                     (scr_window_t __window)
 
   wint_t ch;
 
+#ifdef SCREEN_NCURSESW
+  struct timespec timestruc;
+
+  timestruc.tv_sec  = 0;
+  timestruc.tv_nsec = DELAY;
+#endif
+
   for (;;)
     {
+      // Read next character from window
 
-  // Read next character from window
 #ifdef SCREEN_NCURSESW
-      wget_wch (__window, &ch);
+      while (wget_wch (stdscr, &ch)==ERR)
+        nanosleep (&timestruc, 0);
 #endif
 
       if (!hotkey_push_character (ch))
@@ -240,10 +285,36 @@ is_ncurses_funckey                (wchar_t __ch)
 {
   //
   // TODO:
-  //  But maybe it'll be better if we replace this function with makros like
+  //  But maybe it'll be better if we replace this function with macros like
   //  #define is_ncurses_funckey (__ch>=KEY_MIN && __ch<=KEY_MAX) ?
   //
 
   return __ch>=KEY_MIN && __ch<=KEY_MAX;
 }
 #endif
+
+scr_window_t
+scr_create_sub_window             (scr_window_t __parent,
+                                   int __x, int __y,
+                                   int __w, int __h)
+{
+  scr_window_t res;
+
+  if (!__parent)
+    return 0;
+
+#ifdef SCREEN_NCURSESW
+  while (__parent->_parent)
+    {
+      __x+=__parent->_begx;
+      __y+=__parent->_begy;
+      __parent=__parent->_parent;
+    }
+
+  res=subwin (__parent, __h, __w, __y, __x);
+#endif
+  
+  scr_wnd_erase (res);
+  
+  return res;
+}

@@ -15,6 +15,8 @@
 
 #include "smartinclude.h"
 
+BEGIN_HEADER
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -49,5 +51,7 @@
 #define SET_FLAG(__flags, __f)   (__flags)|=(__f)
 #define TEST_FLAG(__flags, __f)  ((__flags)&(__f))
 #define CLEAR_FLAG(__flags, __f) ((__flags)&=~(__f))
+
+END_HEADER
 
 #endif

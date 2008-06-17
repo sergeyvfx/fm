@@ -35,6 +35,14 @@ fit_filename                      (const wchar_t *__file_name,
                                    wchar_t       *__res)
 {
   size_t len;
+  
+  if (__len<=0)
+    {
+      // Wanted length of file name is too short
+      *__res=0;
+      return;
+    }
+
   if ((len=wcslen (__file_name))<=__len)
     {
       // Do not call any specific stuff

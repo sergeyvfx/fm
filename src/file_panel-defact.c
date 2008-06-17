@@ -11,9 +11,6 @@
  */
 
 #include "file_panel.h"
-
-
-#include "file_panel.h"
 #include "dir.h"
 #include "util.h"
 #include "messages.h"
@@ -80,18 +77,18 @@ get_file_panel_item_font          (const file_panel_t  *__panel,
                                    unsigned long        __index)
 {
   if (__index>=__panel->items.length)
-    return &sf_white_on_red;
+    return &FONT (CID_WHITE, CID_RED);
 
   file_panel_item_t item=__panel->items.data[__index];
 
   // Item is under cursor
-  if (__panel->items.current==__index &&
+  if (__panel->items.current==__index && __panel->focused &&
       !FILE_PANEL_TEST_FLAG (__panel, FPF_UNFOCUSABLE))
-    return &sf_black_on_cyan;
+    return &FONT (CID_BLACK, CID_CYAN);
 
   if (S_ISDIR (item.file->stat.st_mode) &&
       wcscmp (item.file->name, L".."))
-    return &sf_white_on_blue;
+    return &FONT (CID_WHITE, CID_BLUE);
 
   return __panel->widget->font;
 }
@@ -319,7 +316,6 @@ draw_full_row                     (const file_panel_t *__panel,
             if (S_ISLNK (item->file->lstat.st_mode))
               pchar[0]='l'; else
               pchar[0]='-';
-
             break;
           case COLUMN_OCTPERM:
             {
@@ -579,6 +575,14 @@ update_scroll_data                (file_panel_t *__panel)
 
   file_panel_widget_t *widget=__panel->widget;
 
+  if (widget->position.height<3)
+    {
+      // Size of widget is too small, so
+      // we can't properly calculate scrolling data.
+      // The safiest way - nothing to do
+      return;
+    }
+
   // Scroll sizes
   widget->items_per_page=widget->position.height-3;
   if (__panel->listing_mode==LISTING_MODE_BRIEF)
@@ -628,6 +632,23 @@ centralize_current_item           (file_panel_t *__panel)
     widget->scroll_top=0;
 
   update_scroll_data (__panel);
+}
+
+/**
+ * Sets cursor to item with specified name
+ *
+ * @param __panel - panel for which do this operation
+ * @param __name - name pf item on which cursor will be set
+ */
+static void
+cursor_to_item                    (file_panel_t *__panel, wchar_t *__name)
+{
+  unsigned long index;
+  index=file_panel_item_index_by_name (__panel, __name, 0);
+  if (index<0)
+    index=0;
+
+  __panel->items.current=index;
 }
 
 /**
@@ -685,7 +706,7 @@ cwd_sink                          (file_panel_t  *__panel,
 
       if (fn)
         {
-          FILE_PANEL_DATA_ACTION_CALL (__panel, scroll_to_item, fn);
+          FILE_PANEL_DATA_ACTION_CALL (__panel, centrize_to_item, fn);
           free (fn);
         }
 
@@ -745,17 +766,34 @@ file_panel_defact_done            (void)
 }
 
 /**
- * Handles an on_refresh() action of panel
+ * Handles an onrefresh() action of panel
  *
- * @param __panel - panel which received an on_refresh action
+ * @param __panel - panel which received an onrefresh action
  * @return zero if callback hasn't handled received character
  */
 int
-file_panel_defact_on_refresh      (file_panel_t *__panel)
+file_panel_defact_onrefresh       (file_panel_t *__panel)
 {
   if (!__panel)
     return -1;
 
+  update_scroll_data (__panel);
+  return 0;
+}
+
+/**
+ * Handles an onresize() action of panel
+ *
+ * @param __panel - panel which received an onrefresh action
+ * @return zero if callback hasn't handled received character
+ */
+int
+file_panel_defact_onresize        (file_panel_t *__panel)
+{
+  if (!__panel)
+    return -1;
+
+  file_panel_update_columns_widths (__panel);
   update_scroll_data (__panel);
   return 0;
 }
@@ -800,7 +838,10 @@ file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
           item=&__panel->items.data[__panel->items.current];
 
           if (S_ISDIR (item->file->stat.st_mode))
-            cwd_sink (__panel, item->file->name);
+            {
+              cwd_sink (__panel, item->file->name);
+              file_panel_redraw (__panel);
+            }
         }
       break;
     default:
@@ -1095,7 +1136,21 @@ file_panel_defact_walk            (file_panel_t *__panel, short __direction)
 }
 
 /**
- * Sets cursor and scrolls to view item with specified name
+ * Sets cursor and centrizes view to item with specified name
+ *
+ * @paarm __panel - panel to operate with
+ * @param __name - name of item to select
+ */
+void
+file_panel_defact_centrize_to_item(file_panel_t *__panel, wchar_t *__name)
+{
+  cursor_to_item (__panel, __name);
+  centralize_current_item (__panel);
+  file_panel_draw (__panel);
+}
+
+/**
+ * Sets cursor and scrolls view to item with specified name
  *
  * @paarm __panel - panel to operate with
  * @param __name - name of item to select
@@ -1103,12 +1158,7 @@ file_panel_defact_walk            (file_panel_t *__panel, short __direction)
 void
 file_panel_defact_scroll_to_item  (file_panel_t *__panel, wchar_t *__name)
 {
-  unsigned long index;
-  index=file_panel_item_index_by_name (__panel, __name, 0);
-  if (index<0)
-    index=0;
-
-  __panel->items.current=index;
-  centralize_current_item (__panel);
+  cursor_to_item (__panel, __name);
+  update_scroll_data (__panel);
   file_panel_draw (__panel);
 }

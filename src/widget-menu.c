@@ -458,14 +458,14 @@ menu_mapper                       (w_menu_t *__menu)
 {
   wint_t ch;
   BOOL finito=FALSE;
-  scr_window_t layout=WIDGET_LAYOUT (__menu);
+  // scr_window_t layout=WIDGET_LAYOUT (__menu);
 
   // For caughting of all function keys
-  scr_wnd_keypad (layout, TRUE);
+  // scr_wnd_keypad (layout, TRUE);
   for (;;)
     {
       // Wait for next character from user
-      ch=scr_wnd_getch (layout);
+      ch=scr_wnd_getch (0);
       
       switch (ch)
         {
@@ -524,7 +524,7 @@ menu_mapper                       (w_menu_t *__menu)
             short i;
             BOOL found=FALSE;
             wchar_t tmp=towlower (ch);
-            if (__menu->cur_submenu)
+            if (__menu->unfolded && __menu->cur_submenu)
               {
                 for (i=0; i<__menu->cur_submenu->items.length; ++i)
                   {
@@ -581,6 +581,7 @@ menu_focused                      (w_menu_t *__menu)
   if (__menu->sub_menus.length)
     {
       show_menu (__menu);
+      widget_add_root (WIDGET (__menu));
 
       __menu->cur_submenu=&__menu->sub_menus.data[0];
 
@@ -602,6 +603,7 @@ menu_focused                      (w_menu_t *__menu)
          __menu->unfolded=FALSE;
         }
 
+      widget_delete_root (WIDGET (__menu));
       __menu->cur_submenu=0;
       
     }
@@ -609,6 +611,39 @@ menu_focused                      (w_menu_t *__menu)
   __menu->active=FALSE;
   
   return res;
+}
+
+/**
+ * Handler of `onresize` callback (system-based)
+ *
+ * @param __menu - menu which caucghted this callback
+ * @return zero if callback hasn't handled callback
+ */
+static int
+menu_onresize                     (w_menu_t *__menu)
+{
+  if (!__menu)
+    return 0;
+
+  // Call to user-defined handler of focused callback
+  _WIDGET_CALL_USER_CALLBACK (__menu, onresize, __menu);
+
+  // Redraw main line of menu
+  if (__menu->layout)
+    {
+      scr_wnd_resize (__menu->layout, SCREEN_WIDTH, 1);
+      widget_redraw (WIDGET (__menu));
+    }
+  
+  // Redraw unfolded submenu
+  if (__menu->unfolded)
+    {
+      widget_position_t pos=submenu_position (__menu->cur_submenu);
+      scr_wnd_resize (__menu->submenu_layout, pos.width, pos.height);
+      draw_submenu (__menu->cur_submenu);
+    }
+
+  return -1;
 }
 
 //////
@@ -626,25 +661,21 @@ widget_create_menu                (unsigned int __style)
 {
   w_menu_t *res;
 
-  MALLOC_ZERO (res, sizeof (w_menu_t));
+  WIDGET_INIT (res, w_menu_t, WT_MENU, 0, 0,
+               menu_destructor, menu_drawer,
+               0, 0, 1, SCREEN_WIDTH, 1);
 
-  res->type=WT_MENU;
-
-  res->methods.destroy = (widget_action)menu_destructor;
-  res->methods.draw    = (widget_action)menu_drawer;
-
-  WIDGET_CALLBACK (res, focused) = (widget_action)menu_focused;
-  WIDGET_CALLBACK (res, blured)  = (widget_action)widget_blured;
-
-  res->layout=scr_create_window (0, 0, SCREEN_WIDTH, 1);
   res->panel=panel_new (res->layout);
 
-  // Look&feel
-  res->font         = &sf_black_on_cyan;
-  res->focused_font = &sf_white_on_black;
+  WIDGET_CALLBACK (res, focused)  = (widget_action)menu_focused;
+  WIDGET_CALLBACK (res, onresize) = (widget_action)menu_onresize;
 
-  res->hot_font         = &sf_yellow_on_cyan;
-  res->hot_focused_font = &sf_yellow_on_black;
+  // Look&feel
+  res->font         = &FONT (CID_BLACK, CID_CYAN);
+  res->focused_font = &FONT (CID_WHITE, CID_BLACK);
+
+  res->hot_font         = &FONT (CID_YELLOW, CID_CYAN);
+  res->hot_focused_font = &FONT (CID_YELLOW, CID_BLACK);
 
   res->style=__style;
 
@@ -655,6 +686,10 @@ widget_create_menu                (unsigned int __style)
       widget_redraw (WIDGET (res));
       show_menu (res);
     }
+
+  WIDGET_POST_INIT (res);
+  
+  widget_delete_root (WIDGET (res));
 
   return res;
 }

@@ -13,6 +13,21 @@
 #ifndef _smart_include_h_
 #define _smart_include_h_
 
+/*
+  This macroses are used in header files to ensure that the declarations
+  within are properly encapsulated in an `extern "C" { .. }` block when
+  included from a  C++ compiler.
+ */
+#ifdef __cplusplus
+#  define BEGIN_HEADER extern "C" {
+#  define END_HEADER }
+#else
+#  define BEGIN_HEADER
+#  define END_HEADER
+#endif
+
+BEGIN_HEADER
+
 #include <config.h>
 
 #include "build-stamp.h"
@@ -36,4 +51,6 @@
 #  define ATTR_UNUSED
 #endif
 
+END_HEADER
+ 
 #endif

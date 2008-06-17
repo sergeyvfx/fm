@@ -11,7 +11,6 @@
  */
 
 #include "widget.h"
-
 #include <malloc.h>
 
 ///////
@@ -21,7 +20,7 @@
   if (WIDGET_SHORTCUT (_w)==_shortcut_key) \
     { \
       if (WIDGET_CALLBACK (_w, shortcut)) \
-        WIDGET_CALLBACK (_w, shortcut) (_w); else \
+        return WIDGET_CALLBACK (_w, shortcut) (_w); else \
         break; \
     }
 
@@ -43,6 +42,9 @@ window_destructor                 (w_window_t *__window)
   // Hide window to reduce blinks
   w_window_hide (__window);
 
+  // Call deter inherited from container
+  WIDGET_CONTAINER_DELETER (__window);
+
   // Delete panel associated with layout
   if (__window->panel)
     panel_del (__window->panel);
@@ -53,9 +55,6 @@ window_destructor                 (w_window_t *__window)
 
   if (__window->caption.text)
     free (__window->caption.text);
-
-  // Call deter inherited from container
-  WIDGET_CONTAINER_DELETER (__window);
 
   free (__window);
 
@@ -96,7 +95,7 @@ window_drawer                     (w_window_t *__window)
 
   // Call drawer inherited from container
   WIDGET_CONTAINER_DRAWER (__window);
-
+  
   return 0;
 }
 
@@ -113,7 +112,7 @@ window_keydown                    (w_window_t *__window, wint_t __ch)
 {
   widget_t *focused;
 
-  // Call to user's callback
+  // Call user's callback
   _WIDGET_CALL_USER_CALLBACK (__window, keydown, __window, __ch);
 
   // If user's callback hadn't processed this callback,
@@ -164,16 +163,16 @@ window_proc                       (w_window_t *__window)
 {
   wint_t ch;
   BOOL finito;
-  scr_window_t layout=WIDGET_LAYOUT (__window);
+  // scr_window_t layout=WIDGET_LAYOUT (__window);
 
   // For caughting of all function keys
-  scr_wnd_keypad (layout, TRUE);
+  // scr_wnd_keypad (layout, TRUE);
   for (;;)
     {
       finito=FALSE;
 
       // Wait for next character from user
-      ch=scr_wnd_getch (layout);
+      ch=scr_wnd_getch (0);
 
       // Try to manage ch by common keydown callback
       if (!window_keydown (__window, ch))
@@ -217,11 +216,15 @@ window_proc                       (w_window_t *__window)
 static int
 window_show_entry                 (w_window_t *__window, int __show_mode)
 {
-   if (!__window)
+  if (!__window)
      return -1;
 
-   // Window is now visible
-   WIDGET_POSITION (__window).z=1;
+  // Window is now visible
+  WIDGET_POSITION (__window).z=1;
+
+  panel_show (__window->panel);
+
+  widget_add_root (WIDGET (__window));
 
   __window->show_mode    = __show_mode;
   __window->modal_result = MR_NONE;
@@ -238,16 +241,64 @@ window_show_entry                 (w_window_t *__window, int __show_mode)
     widget_set_focus (WIDGET_CONTAINER_DATA (__window)[0]);
 
   // Draw window
-  widget_draw (WIDGET (__window));
+  widget_redraw (WIDGET (__window));
 
   if (__show_mode==WSM_MODAL)
     {
+      widget_t *w;
       window_proc (__window);
+
+      if ((w=__window->focused_widget))
+        WIDGET_CALL_CALLBACK (w, blured, w);
+
       w_window_hide (__window);
       return __window->modal_result;
     }
 
   return 0;
+}
+
+/**
+ * Callback for onresize action
+ *
+ * @param __window - window which caughted this event
+ * @return zero if callback hasn't handled callback
+ */
+static int
+window_onresize                   (w_window_t *__window)
+{
+  if (!__window)
+    return 0;
+
+  _WIDGET_CALL_USER_CALLBACK (__window, onresize, __window);
+
+  // There is no window's resising stuff, so
+  // we have to create new window and use it
+  scr_window_t oldwnd = WIDGET_LAYOUT (__window),
+               newwnd = widget_create_layout (WIDGET (__window));
+
+  WIDGET_LAYOUT (__window)=newwnd;
+  panel_replace (__window->panel, newwnd);
+  panels_doupdate ();
+
+  BOOL locked=WIDGET_TEST_FLAG (__window, WF_REDRAW_LOCKED);
+
+  if (!locked)
+    widget_lock_redraw (WIDGET (__window));
+
+  WIDGET_CONTAINER_ACTION_ITERONLY (__window, WIDGET_CALL_CALLBACK,
+    onresize, __iterator_);
+  
+  if (!locked)
+    {
+      widget_unlock_redraw (WIDGET (__window));
+      widget_redraw (WIDGET (__window));
+    }
+
+  if (oldwnd)
+    scr_destroy_window (oldwnd);
+
+  return TRUE;
 }
 
 //////
@@ -267,36 +318,21 @@ widget_create_window              (const wchar_t *__caption,
 {
   w_window_t *res;
 
-  // Allocate and free memory for new window
-  MALLOC_ZERO (res, sizeof (w_window_t));
-
-  res->type=WT_WINDOW;
-
-  // Set methods
-  res->methods.destroy = (widget_action)window_destructor;
-  res->methods.draw    = (widget_action)window_drawer;
-
-  WIDGET_CALLBACK (res, focused)  = (widget_action)widget_focused;
-  WIDGET_CALLBACK (res, blured)   = (widget_action)widget_blured;
+  WIDGET_INIT (res, w_window_t, WT_WINDOW, 0, 0,
+               window_destructor, window_drawer, \
+               __x, __y, 0, __w, __h);
 
   if (__caption)
     res->caption.text=wcsdup (__caption);
 
-  // Create layout for window
-  res->layout=scr_create_window (__x, __y, __w, __h);
-
   res->panel=panel_new (res->layout);
 
-  res->position.x      = __x;
-  res->position.y      = __y;
-  res->position.width  = __w;
-  res->position.height = __h;
-
   // Layout parameters
-  res->font         = &sf_black_on_white;
-  res->caption.font = &sf_blue_on_white;
+  res->font         = &FONT (CID_BLACK, CID_WHITE);
+  res->caption.font = &FONT (CID_BLUE,  CID_WHITE);
 
-  WIDGET_CALLBACK (res, keydown)=(widget_keydown)window_keydown;
+  WIDGET_CALLBACK (res, keydown)  = (widget_keydown_proc)window_keydown;
+  WIDGET_CALLBACK (res, onresize) = (widget_action)window_onresize;
 
   return res;
 }
@@ -343,6 +379,8 @@ w_window_hide                     (w_window_t *__window)
   if (!__window || !WIDGET_LAYOUT (__window))
     return;
 
+  widget_delete_root (WIDGET (__window));
+  
   WIDGET_CALL_CALLBACK (__window, blured, __window);
 
   // Window is now invisible

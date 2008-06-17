@@ -56,7 +56,7 @@ wcsfit                            (const wchar_t *__str, size_t __len,
   // Copy needed amount of data from input string
   wcsncpy (str, __str, in_len<=len?in_len:len-suff_len);
 
-  // If original length is grater than new length,
+  // If original length is greater than new length,
   // append an ellipsis
   if (in_len>len)
     wcscat (str, __suffix);

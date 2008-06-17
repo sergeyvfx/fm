@@ -26,11 +26,13 @@
 
 #define WT_CONTAINER  0x10
 #define WT_WINDOW     (WT_CONTAINER+1)
-#define WT_MENU       (WT_CONTAINER+2)
+#define WT_BOX        (WT_CONTAINER+2)
+#define WT_BOX_ITEM   (WT_CONTAINER+3)
 
 #define WT_SINGLE     0x30
 #define WT_BUTTON     (WT_SINGLE+1)
 #define WT_EDIT       (WT_SINGLE+2)
+#define WT_MENU       (WT_SINGLE+3)
 
 // Window show modes
 #define WSM_DEFAULT 0x00
@@ -48,6 +50,10 @@
 #define SMI_NONE           0x0000
 #define SMI_SEPARATOR      0x0001
 
+// Box styles
+#define WBS_VERTICAL       0x0000
+#define WBS_HORISONTAL     0x0001
+
 // Modal results
 #define MR_NONE   0x0000
 #define MR_OK     0x0001
@@ -58,6 +64,20 @@
 #define MR_RETRY  0x0006
 #define MR_IGNORE 0x0007
 #define MR_SKIP   0x0008
+
+////
+// Widgets' flags
+
+// If widget has this flag, then it can contain only one child,
+// which will be resized to the whole paren't size
+#define WF_CONTAINER     0x0001
+
+// Widget doesn't have its own layout and uses parent's
+// to draw itself
+#define WF_NOLAYOUT      0x0002
+
+// Redrawing of widget is locked
+#define WF_REDRAW_LOCKED 0x0004
 
 ////////
 // Macroses
@@ -84,6 +104,11 @@
 #define WIDGET_CALLBACK(_w, _cb)      (WIDGET (_w))->callbacks._cb
 #define WIDGET_USER_CALLBACK(_w,_cb)  (WIDGET (_w))->user_callbacks._cb
 
+#define WIDGET_FLAGS(_w)              ((WIDGET (_w))->flags)
+#define WIDGET_SET_FLAG(_w, _f)       ((WIDGET (_w))->flags|=_f)
+#define WIDGET_RESET_FLAG(_w, _f)     ((WIDGET (_w))->flags&=~_f)
+#define WIDGET_TEST_FLAG(_w, _f)      ((WIDGET (_w))->flags&_f)
+
 // Safe calling to callback
 #define WIDGET_CALL_CALLBACK(_w,_cb,_args...) \
   (WIDGET_CALLBACK (_w, _cb)?WIDGET_CALLBACK (_w, _cb) (_args):0)
@@ -92,16 +117,71 @@
 #define _WIDGET_CALL_USER_CALLBACK(_w,_cb,_args...) \
   { \
     int res; \
-    if (WIDGET_USER_CALLBACK (_w, _cb) && (res=WIDGET_USER_CALLBACK (_w, _cb) (_args))) \
+    if (WIDGET_USER_CALLBACK (_w, _cb) && \
+       (res=WIDGET_USER_CALLBACK (_w, _cb) (_args))) \
       return res; \
   }
 
+//////
+// Some automatization
+
+/**
+ * Initializes new widget object
+ * @param _widget - pointer to memery where bject will be created
+ * @param _datatype - datatype of widget (to determine size of object)
+ * @param _parent - parent of widget
+ * @param _destructor - function-destructor
+ * @param _drawer - function-drawer
+ * @param _x, _y, _z - coordinates of widget
+ * @param _w, _h - dimesions of widget
+ */
+#define WIDGET_INIT(_widget, _datatype, _type, _parent, \
+                    _flags, \
+                    _destructor, _drawer, \
+                    _x, _y, _z, _w, _h) \
+  /* Allocate and free memory for new edit box */ \
+  MALLOC_ZERO (_widget, sizeof (_datatype)); \
+\
+  (_widget)->type  = _type; \
+  (_widget)->flags = _flags; \
+\
+  /* Set methods */ \
+  (_widget)->methods.destroy = (widget_action)_destructor; \
+  (_widget)->methods.draw    = (widget_action)_drawer; \
+\
+  /* Need this assigments here because this data */ \
+  /* is needed for widget_create_layout() */ \
+  (_widget)->parent=WIDGET (_parent); \
+\
+  (_widget)->position.x      = _x; \
+  (_widget)->position.y      = _y; \
+  (_widget)->position.z      = _z; \
+  (_widget)->position.width  = _w; \
+  (_widget)->position.height = _h; \
+\
+  /* Create layout for window */ \
+  (_widget)->layout=widget_create_layout (WIDGET (_widget)); \
+\
+  WIDGET_CALLBACK (_widget, focused)  = (widget_action)widget_focused; \
+  WIDGET_CALLBACK (_widget, blured)   = (widget_action)widget_blured; \
+  WIDGET_CALLBACK (_widget, shortcut) = (widget_action)widget_shortcut; \
+  WIDGET_CALLBACK (_widget, keydown)  = (widget_keydown_proc)widget_keydown; \
+  WIDGET_CALLBACK (_widget, onresize) = (widget_action)widget_onresize;
+
+// Post-initializing stuff
+#define WIDGET_POST_INIT(_widget) \
+  /* Register widget in container */ \
+  w_container_append_child (WIDGET_CONTAINER (_widget->parent), \
+    WIDGET (_widget));
+
 ////
 // Container-based macrodefs
-#define WIDGET_IS_CONTAINER(_w)      (WIDGET_TYPE (_w)>=WT_CONTAINER && WIDGET_TYPE (_w)<WT_SINGLE)
-#define WIDGET_CONTAINER_DATA(_w)    ((WIDGET_CONTAINER (_w))->container.data)
-#define WIDGET_CONTAINER_LENGTH(_w)  ((WIDGET_CONTAINER (_w))->container.length)
-#define WIDGET_CONTAINER_FOCUSED(_w) ((WIDGET_CONTAINER (_w))->focused_widget)
+#define WIDGET_IS_CONTAINER(_w) \
+  (WIDGET_TYPE (_w)>=WT_CONTAINER && WIDGET_TYPE (_w)<WT_SINGLE)
+
+#define WIDGET_CONTAINER_DATA(_w)   ((WIDGET_CONTAINER (_w))->container.data)
+#define WIDGET_CONTAINER_LENGTH(_w) ((WIDGET_CONTAINER (_w))->container.length)
+#define WIDGET_CONTAINER_FOCUSED(_w)((WIDGET_CONTAINER (_w))->focused_widget)
 
 #define WIDGET_CONTAINER_ACTION_FULL(_w, _iterator_action, _post_action) \
   if (WIDGET_IS_CONTAINER (_w)) { \
@@ -114,19 +194,29 @@
 #define WIDGET_CONTAINER_ACTION_ITERONLY(_w, _iterator_action,_args...) \
   if (WIDGET_IS_CONTAINER (_w)) { \
     unsigned int i, n=WIDGET_CONTAINER_LENGTH (_w); \
+    widget_t *__iterator_; \
     for (i=0; i<n; ++i) \
-      _iterator_action (WIDGET_CONTAINER_DATA (_w)[i], ##_args); \
+      { \
+        __iterator_=WIDGET_CONTAINER_DATA (_w)[i]; \
+        _iterator_action (__iterator_, ##_args); \
+      } \
   }
 
 #define WIDGET_CONTAINER_DELETER(_w) \
-  WIDGET_CONTAINER_ACTION_FULL (_w, widget_destroy, SAFE_FREE)
+  WIDGET_CONTAINER_ACTION_ITERONLY (_w, widget_destroy)
+
+#define _WIDGET_CONTAINER_DRAWER_ITER(_w) \
+  if (!_w->focused) \
+    widget_draw (_w);
 
 #define WIDGET_CONTAINER_DRAWER(_w) \
-  WIDGET_CONTAINER_ACTION_ITERONLY (_w, widget_draw)
+  WIDGET_CONTAINER_ACTION_ITERONLY (_w, _WIDGET_CONTAINER_DRAWER_ITER); \
+  if (WIDGET_IS_CONTAINER (_w) && WIDGET_CONTAINER(_w)->focused_widget) \
+    widget_draw (WIDGET_CONTAINER(_w)->focused_widget);
 
 ////
 // Button's macrodefs
-#define WIDGET_BUTTON_MODALRESULT(_w)        ((WIDGET_BUTTON (_w))->modal_result)
+#define WIDGET_BUTTON_MODALRESULT(_w)   ((WIDGET_BUTTON (_w))->modal_result)
 
 ////
 // Deep-core macroses
@@ -135,8 +225,8 @@
 ////////
 // Type defenitions
 
-typedef int (*widget_action)    (void *__widget);
-typedef int (*widget_keydown)   (void *__widget, wint_t __ch);
+typedef int (*widget_action)       (void *__widget);
+typedef int (*widget_keydown_proc) (void *__widget, wint_t __ch);
 
 // Position of widget
 typedef struct {
@@ -153,24 +243,27 @@ typedef struct {
 
 // Callbacks for simple widgets
 typedef struct {
-  widget_keydown  keydown;
-  widget_action   shortcut;
-  widget_action   focused;
-  widget_action   blured;
+  widget_keydown_proc keydown;
+  widget_action       shortcut;
+  widget_action       focused;
+  widget_action       blured;
+  widget_action       onresize;
 } widget_callbacks_t;
 
 // Callbacks' structure for user's bindings
 typedef struct {
-  widget_keydown  keydown;
-  widget_action   clicked;
-  widget_action   shortcut;
-  widget_action   focused;
-  widget_action   blured;
+  widget_keydown_proc keydown;
+  widget_action       clicked;
+  widget_action       shortcut;
+  widget_action       focused;
+  widget_action       blured;
+  widget_action       onresize;
 } widget_user_callbacks_t;
 
 // Basic widget's members
 #define WIDGET_MEMBERS \
   unsigned short          type;            /* Type of widget  */ \
+  unsigned long           flags;           /* Different flags of widget */ \
   widget_methods_t        methods;         /* Methods of widget */ \
   widget_callbacks_t      callbacks;       /* Callbacks of widget */ \
   widget_user_callbacks_t user_callbacks;  /* Callbacks of widget for user's usage */ \
@@ -309,6 +402,28 @@ typedef struct w_menu_t_entry {
   BOOL               active;         // Is menu activate?
 } w_menu_t;
 
+////
+// Boxes
+
+typedef struct {
+  // Inherit from container
+  WIDGET_CONTAINER_MEMBERS
+
+  int size;  // Size of item
+} w_box_item_t;
+
+typedef struct {
+  // Inherit from container
+  WIDGET_CONTAINER_MEMBERS
+
+  panel_t            panel; // Panel of layout to manipulate with visibility
+
+  unsigned int       style; // Style of box
+
+  // System info
+  BOOL    evaluted; // If sizes of item were evaluted?
+} w_box_t;
+
 ////////////////
 //
 
@@ -317,21 +432,33 @@ typedef struct w_menu_t_entry {
 
 // Code to operate with non-modal windows
 /*void           // Set widget where to send messages from user
-widget_set_current_widget         (widget_t *__widget);
+widget_set_current_widget         (widget_t *__widget);*/
 
-void           // Main loop of widget stuff to manipulate with messages from user
-widget_main_loop                  (void);*/
+void
+widget_main_loop                  (void);
 
 //////
 // Common stuff
 
+int
+widgets_init                      (void);
+
+void
+widgets_done                      (void);
+
 void           // Totally destroing of widget
 widget_destroy                    (widget_t *__widget);
+
+void
+widget_add_root                   (widget_t *__widget);
+
+void
+widget_delete_root                (widget_t *__widget);
 
 int            // Draw widget on screen
 widget_draw                       (widget_t *__widget);
 
-void           // Redraw widget on screen
+int            // Redraw widget on screen
 widget_redraw                     (widget_t *__widget);
 
 void           // Totally redraw all widgets
@@ -362,6 +489,20 @@ widget_next_focused               (const widget_t *__widget);
 widget_t *
 widget_prev_focused               (const widget_t *__widget);
 
+void
+widget_resize                     (widget_t *__widget,
+                                   int __x, int __y,
+                                   int __w, int __h);
+
+scr_window_t
+widget_create_layout              (widget_t *__widget);
+
+void
+widget_lock_redraw                (widget_t *__widget);
+
+void
+widget_unlock_redraw              (widget_t *__widget);
+
 ////
 // Deep-core common stuff
 int
@@ -369,6 +510,15 @@ widget_focused                    (widget_t *__widget);
 
 int
 widget_blured                     (widget_t *__widget);
+
+int
+widget_shortcut                   (widget_t *__widget);
+
+int
+widget_onresize                   (widget_t *__widget);
+
+int
+widget_keydown                    (widget_t *__widget, int __ch);
 
 /////
 // Per-widget stuff
@@ -378,7 +528,18 @@ widget_blured                     (widget_t *__widget);
 
 void
 w_container_append_child          (w_container_t *__container,
-                                   widget_t *__widget);
+                                   widget_t      *__widget);
+
+void
+w_container_insert_child          (w_container_t *__container,
+                                   widget_t      *__widget,
+                                   unsigned int   __pos);
+
+void
+w_container_delete                (w_container_t *__widget, widget_t *__child);
+
+void
+w_container_drop                  (w_container_t *__widget, widget_t *__child);
 
 widget_t*
 w_container_widget_by_tab_order   (const w_container_t *__container,
@@ -391,7 +552,6 @@ w_container_widget_by_tab_order   (const w_container_t *__container,
 void
 w_window_end_modal                (w_window_t *__window, int __modal_result);
 
-//
 w_window_t*    // Creates new window
 widget_create_window              (const wchar_t *__caption,
                                    int __x, int __y,
@@ -454,5 +614,36 @@ w_edit_get_text                   (w_edit_t* __edit);
 
 void
 w_edit_set_fonts                  (w_edit_t *__edit, scr_font_t *__font);
+
+////
+// Boxes
+
+w_box_t*
+widget_create_box                 (w_container_t *__parent,
+                                   int __x, int __y,
+                                   int __w, int __h,
+                                   unsigned int __style,
+                                   unsigned int __count);
+
+void
+w_box_set_item_szie               (w_box_t *__box, unsigned int __index,
+                                   int __size);
+
+w_box_item_t*
+w_box_item                        (w_box_t *__box, unsigned int __index);
+
+w_box_item_t*
+w_box_insert_item                  (w_box_t     *__box,
+                                    unsigned int __index,
+                                    int          __size);
+
+w_box_item_t*
+w_box_append_item                  (w_box_t *__box, int __size);
+
+void
+w_box_delete_item                  (w_box_t     *__box, w_box_item_t *__item);
+
+void
+w_box_delete_by_index              (w_box_t     *__box, unsigned int __index);
 
 #endif

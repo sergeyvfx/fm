@@ -15,6 +15,8 @@
 
 #include "smartinclude.h"
 
+BEGIN_HEADER
+
 ////
 // Constants
 
@@ -34,15 +36,19 @@
 #  define SCREEN_HEIGHT     LINES
 
 // Type definitions
-#  define scr_window_t      WINDOW*
+typedef WINDOW* scr_window_t;
+typedef PANEL*  panel_t;
+
+extern BOOL curs_wis;
+
 #  define scr_color_pair_t  int
-#  define panel_t           PANEL*
 
 // Functions' call abstraction
-#  define scr_hide_curser()                     curs_set (0)
-#  define scr_show_curser()                     curs_set (1)
+#  define scr_hide_curser()                     (curs_set (0),curs_wis=FALSE)
+#  define scr_show_curser()                     (curs_set (1),curs_wis=TRUE)
 
 #  define scr_create_window(__x,__y,__w,__h)    newwin (__h, __w, __y, __x)
+
 #  define scr_destroy_window(__wnd)             delwin (__wnd)
 
 #  define scr_move_caret(__x,__y)               move (__y, __x)
@@ -54,6 +60,8 @@
 
 #  define scr_wnd_keypad(__wnd, __val)          keypad (__wnd, __val)
 
+#  define scr_wnd_resize(_wnd,_w,_h)            wresize (_wnd, _h, _w)
+#  define scr_wnd_erase(_wnd)                   werase (_wnd)
 #  define scr_wnd_clear(_wnd)                   wclear (_wnd)
 #  define scr_wnd_refresh(_wnd)                 wrefresh (_wnd)
 
@@ -95,26 +103,33 @@
 // Default color pairs
 #  define CP_NULL            0
 
-#  define CP_BLACK_ON_WHITE    1
-#  define CP_BLUE_ON_WHITE     2
-#  define CP_YELLOW_ON_WHITE   3
+#  define CID_LIGHT(_c) ((_c)+0x08)
+#  define CID(_f, _b)   (((_b)<<0x03)+(_f)+1)
+#  define FONT(_f, _b)  (screen_fonts[CID(_f, _b)])
 
-#  define CP_WHITE_ON_RED      4
-#  define CP_YELLOW_ON_RED     5
+#  define CID_BLACK     COLOR_BLACK
+#  define CID_RED       COLOR_RED
+#  define CID_GREEN     COLOR_GREEN
+#  define CID_YELLOW    COLOR_YELLOW
+#  define CID_BLUE      COLOR_BLUE
+#  define CID_MAGENTA   COLOR_MAGENTA
+#  define CID_CYAN      COLOR_CYAN
+#  define CID_WHITE     COLOR_WHITE
 
-#  define CP_BLACK_ON_CYAN     6
-#  define CP_YELLOW_ON_CYAN    7
-#  define CP_BLUE_ON_CYAN      8
+#  define CID_LBLACK     CID_LIGHT(CID_BLACK)
+#  define CID_LRED       CID_LIGHT(CID_RED)
+#  define CID_LGREEN     CID_LIGHT(CID_GREEN)
+#  define CID_LYELLOW    CID_LIGHT(CID_YELLOW)
+#  define CID_LBLUE      CID_LIGHT(CID_BLUE)
+#  define CID_LMAGENTA   CID_LIGHT(CID_MAGENTA)
+#  define CID_LCYAN      CID_LIGHT(CID_CYAN)
+#  define CID_LWHITE     CID_LIGHT(CID_WHITE)
 
-#  define CP_YELLOW_ON_BLACK   10
-#  define CP_WHITE_ON_BLACK    11
+#define COLOR_MIN 0x00
+#define COLOR_MAX 0x07
 
-#  define CP_GRAY_ON_BLUE      12
-#  define CP_LBLUE_ON_BLUE     13
-#  define CP_CYAN_ON_BLUE      14
-#  define CP_LCYAN_ON_BLUE     15
-#  define CP_WHITE_ON_BLUE     16
-#  define CP_YELLOW_ON_BLUE    17
+#define LIGHT_COLOR_MIN CID_LIGHT(0x00)
+#define LIGHT_COLOR_MAX CID_LIGHT(0x07)
 
 #  define COLOR_PAIR_USER   20
 
@@ -138,7 +153,7 @@
 #  define KEY_ESC       27
 #  define KEY_DELETE    KEY_DC
 
-#  define KEY_ESC_ESC   539 /* Excaped escape */
+#  define KEY_ESC_ESC   539 /* Escaped escape */
 
 ////////
 // Panel-stuff abstraction
@@ -170,13 +185,8 @@ typedef struct {
 ////
 // Global fonts
 
-extern scr_font_t sf_null;
-extern scr_font_t sf_black_on_white, sf_blue_on_white, sf_yellow_on_white;
-extern scr_font_t sf_white_on_red,   sf_yellow_on_red;
-extern scr_font_t sf_black_on_cyan,  sf_blue_on_cyan, sf_yellow_on_cyan;
-extern scr_font_t sf_yellow_on_black, sf_white_on_black;
-extern scr_font_t sf_gray_on_blue, sf_lblue_on_blue, sf_cyan_on_blue,
-       sf_lcyan_on_blue, sf_white_on_blue, sf_yellow_on_blue;
+#define SCREEN_MAX_FONTS  128
+extern scr_font_t screen_fonts[SCREEN_MAX_FONTS];
 
 ////////
 //
@@ -193,8 +203,16 @@ screen_root_wnd                   (void);
 void           // Refresh screen
 screen_refresh                    (BOOL __full_refresh);
 
+void
+screen_on_resize                  (void);
+
 wchar_t       // Return character from window
 scr_wnd_getch                     (scr_window_t __window);
+
+scr_window_t
+scr_create_sub_window             (scr_window_t __parent,
+                                   int __x, int __y,
+                                   int __w, int __h);
 
 #ifdef SCREEN_NCURSESW
 
@@ -202,5 +220,7 @@ int
 is_ncurses_funckey                (wchar_t __ch);
 
 #endif
+
+END_HEADER
 
 #endif

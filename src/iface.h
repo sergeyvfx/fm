@@ -13,10 +13,14 @@
 
 #include "smartinclude.h"
 
+BEGIN_HEADER
+
 int            // Initialize interface
 iface_init                        (void);
 
 void           // Uninitialize interface
 iface_done                        (void);
+
+END_HEADER
 
 #endif
