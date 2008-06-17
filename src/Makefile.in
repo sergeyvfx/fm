@@ -9,8 +9,8 @@ SUBDIRS =
 
 OBJECTIVE_BINS = fm
 
-LIBADD = -Wl,-export-dynamic -ldl -lncursesw -lpanel 
-CFLAGS +=  
+LIBADD = -Wl,-export-dynamic -ldl -lncursesw -lpanel
+CFLAGS += 
 
 HEADERS = 
 SOURCES = \
@@ -29,7 +29,8 @@ SOURCES = \
 	file_panel-defact.c \
 	file.c \
 	dir.c \
-	util.c
+	util.c \
+	deque.c
 
 OBJECTS = ${SOURCES:.c=.o}
 
