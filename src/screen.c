@@ -79,7 +79,7 @@ define_default_fonts              (void)
 
      {-1, -1, -1}
    };
-  
+
   int i=0, pair_no=1;
 
   while (colors[i][0]>=0)
@@ -87,7 +87,7 @@ define_default_fonts              (void)
       _INIT_COLOR (colors[i][0], colors[i][1], colors[i][2]);
       i++;
     }
-  
+
 #endif
 }
 
@@ -116,7 +116,7 @@ init_escape_keys                  (void)
           char *temp = malloc (strlen (value)+2);
           sprintf (temp, "\033%s", value);
           define_key(temp, i+MY_KEYS);
-          
+
           free (temp);
           free (value);
         }
@@ -137,12 +137,13 @@ int
 screen_init                       (int __mode)
 {
   mode=__mode;
-  
+
 #ifdef SCREEN_NCURSESW
   root_wnd=initscr ();
 
   cbreak ();  // take input chars one at a time, no wait for \n
   noecho ();  // don't echo input
+  raw();
   nodelay (stdscr, TRUE);
 
   if (__mode&SM_COLOR)
@@ -177,6 +178,8 @@ void
 screen_done                       (void)
 {
 #ifdef SCREEN_NCURSESW
+  noraw();
+  keypad(stdscr, FALSE);
   endwin ();
 #endif
 }
@@ -313,8 +316,8 @@ scr_create_sub_window             (scr_window_t __parent,
 
   res=subwin (__parent, __h, __w, __y, __x);
 #endif
-  
+
   scr_wnd_erase (res);
-  
+
   return res;
 }

@@ -168,8 +168,8 @@ typedef struct {
     file_panel_data_action keydown_handler;// Handles keyboard input
     file_panel_data_action scroll_to_item; // Set cursor to item and
                                            // scroll to view
-    file_panel_data_action centrize_to_item; // Set cursor to item and
-                                             // centrizes view
+    file_panel_data_action centre_to_item; // Set cursor to item and
+                                           // centres view
   } actions;
 } file_panel_t;
 
@@ -250,7 +250,7 @@ int
 file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch);
 
 void
-file_panel_defact_centrize_to_item(file_panel_t *__panel, wchar_t *__name);
+file_panel_defact_centre_to_item  (file_panel_t *__panel, wchar_t *__name);
 
 void
 file_panel_defact_scroll_to_item  (file_panel_t *__panel, wchar_t *__name);

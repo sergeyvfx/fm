@@ -25,7 +25,7 @@ swap (iterator_t *__a, iterator_t *__b)
     __b->data = data;
 }
 
-/*
+/**
  * Initializes deque
  *
  * @return initialized empty deque
@@ -44,7 +44,7 @@ deque_create (void)
     return deq;
 }
 
-/*
+/**
  * Removes element from deque
  *
  * @param __this is deque
@@ -80,7 +80,7 @@ deque_remove (deque_t *__this, iterator_t *__item, destroyer __destroyer)
     return 0;
 }
 
-/*
+/**
  * Removes all elements of deque
  *
  * @param __this is deque
@@ -106,7 +106,7 @@ deque_clear (deque_t *__this, destroyer __destroyer)
     return 0;
 }
 
-/*
+/**
  * Destroy deque
  *
  * @param __this is deque
@@ -123,7 +123,7 @@ deque_destroy (deque_t *__this, destroyer __destroyer)
     return 0;
 }
 
-/*
+/**
  * Inserts element to tail of deque
  *
  * @param __this is deque
@@ -160,7 +160,7 @@ deque_push_back (deque_t *__this, void *__data)
     return 0;
 }
 
-/*
+/**
  * Inserts element to head of deque
  *
  * @param __this is deque
@@ -194,7 +194,7 @@ deque_push_front (deque_t *__this, void *__data)
     return 0;
 }
 
-/*
+/**
  * Removes element from tail of deque
  *
  * @param __this is deque
@@ -222,7 +222,7 @@ deque_pop_back (deque_t *__this)
     return data;
 }
 
-/*
+/**
  * Removes element from head of deque
  *
  * @param __this is deque
@@ -249,7 +249,7 @@ deque_pop_front (deque_t *__this)
     return pop_iter;
 }
 
-/*
+/**
  * Sorts an deque
  *
  * @param __this is deque
@@ -273,7 +273,7 @@ deque_sort (deque_t *__this, comporator __compr)
     }
 }
 
-/*
+/**
  * Sorting insert in deque
  *
  * @param __this is deque
@@ -318,7 +318,7 @@ deque_sorted_insert (deque_t *__this, void *__data, comporator __compr)
     return t;
 }
 
-/*
+/**
  * Find an element in deque
  *
  * @param __this is deque

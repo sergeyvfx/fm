@@ -16,16 +16,16 @@
 ////////
 //
 
-// Count of panels which will be created
-// during initialisation of panels stuff
-#define DEFAULT_PANELS_COUNT 2
-
 ////////
 // Variables
 
 static deque_t *panels = NULL;
 static file_panel_t *last_focused = NULL;
 static w_box_t *panels_grid;
+
+// Count of panels which will be created
+// during initialisation of panels stuff
+static int default_panels_count = 2;
 
 ////////
 // Some helpful macroses
@@ -208,7 +208,7 @@ parse_columns_mask                (file_panel_t *__panel,
   int column_type, i;
   int unused_width, delta;
   int unset_count=0, reset_count=0;
-  
+
   file_panel_columns_t *columns;
 
   // Invalid pointers
@@ -282,7 +282,7 @@ parse_columns_mask                (file_panel_t *__panel,
 
   // Subrtact column separators
   unused_width-=(columns->count-1);
-  
+
   if (unused_width<0)
     unused_width=0;
 
@@ -302,7 +302,7 @@ parse_columns_mask                (file_panel_t *__panel,
     }
 
   validate_colums_widths (__panel);
-  
+
   return 0;
 }
 
@@ -359,11 +359,11 @@ set_default_actions               (file_panel_t *__panel)
   //
   // In such situation it would be better if this item
   // will be at the center of visible part of list.
-  SET_PANEL_DATA_ACTION (__panel, centrize_to_item,
-    file_panel_defact_centrize_to_item);
+  SET_PANEL_DATA_ACTION (__panel, centre_to_item,
+    file_panel_defact_centre_to_item);
 
   // Will be helpful for actions like incremental search,
-  // because in difference with "centrize_to_item" it will
+  // because in difference with "centre_to_item" it will
   // make less scrolling.
   SET_PANEL_DATA_ACTION (__panel, scroll_to_item,
     file_panel_defact_scroll_to_item);
@@ -426,7 +426,7 @@ file_panel_create                 (void)
 
   WIDGET_CALLBACK (WIDGET (res->widget), focused)=
     (widget_action)file_panel_focused;
-  
+
   WIDGET_POST_INIT (res->widget);
 
   set_default_params (res);
@@ -477,7 +477,7 @@ file_panel_destructor             (void *__panel)
     return;
 
   file_panel_t *panel=__panel;
-  
+
   // Destroy widget
   widget_destroy (WIDGET (panel->widget));
 
@@ -557,7 +557,7 @@ file_panel_comm_keydown_handler   (file_panel_t *__panel, const wchar_t *__ch)
     default:
       return 0;
     }
-  
+
   return 1;
 }
 
@@ -648,7 +648,7 @@ file_panels_init                  (widget_t *__parent)
       read_config () ||
 
       // Intialize file panels' default actions stuff
-      file_panel_defact_init ())  
+      file_panel_defact_init ())
     return -1;
 
   // Create grid to manage panels' position
@@ -659,7 +659,7 @@ file_panels_init                  (widget_t *__parent)
 
   // Create panels
   int i;
-  for (i=0; i<DEFAULT_PANELS_COUNT; i++)
+  for (i=0; i<default_panels_count; i++)
     SPAWN_NEW_PANEL ();
 
   return 0;

@@ -689,7 +689,7 @@ cwd_sink                          (file_panel_t  *__panel,
       if (file_panel_set_cwd (__panel, new_cwd))
         {
           // Some errors occured
-          message_box (L"Error", L"Cannot chamge directory",
+          message_box (L"Error", L"Cannot change directory",
             MB_CRITICAL|MB_OK);
 
           // Restore parameters
@@ -706,7 +706,7 @@ cwd_sink                          (file_panel_t  *__panel,
 
       if (fn)
         {
-          FILE_PANEL_DATA_ACTION_CALL (__panel, centrize_to_item, fn);
+          FILE_PANEL_DATA_ACTION_CALL (__panel, centre_to_item, fn);
           free (fn);
         }
 
@@ -1136,13 +1136,13 @@ file_panel_defact_walk            (file_panel_t *__panel, short __direction)
 }
 
 /**
- * Sets cursor and centrizes view to item with specified name
+ * Sets cursor and centres view to item with specified name
  *
  * @paarm __panel - panel to operate with
  * @param __name - name of item to select
  */
 void
-file_panel_defact_centrize_to_item(file_panel_t *__panel, wchar_t *__name)
+file_panel_defact_centre_to_item   (file_panel_t *__panel, wchar_t *__name)
 {
   cursor_to_item (__panel, __name);
   centralize_current_item (__panel);
