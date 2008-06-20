@@ -688,15 +688,17 @@ cwd_sink                          (file_panel_t  *__panel,
       // Set new CWD
       if (file_panel_set_cwd (__panel, new_cwd))
         {
-          // Some errors occured
-          message_box (L"Error", L"Cannot change directory",
-            MB_CRITICAL|MB_OK);
-
           // Restore parameters
           file_panel_set_cwd (__panel, s_cwd);
           __panel->items.current      = s_cur;
           __panel->widget->scroll_top = s_scrolltop;
+
+          // Redraw panel
           file_panel_draw (__panel);
+
+          // Some errors occured
+          message_box (L"Error", L"Cannot change directory",
+            MB_CRITICAL|MB_OK);
 
           SAFE_FREE (s_cwd);
           free (new_cwd);
@@ -1025,6 +1027,30 @@ file_panel_defact_draw_widget     (file_panel_widget_t *__panel_widget)
       // Restore font
       scr_wnd_font (layout, *__panel_widget->font);
     }
+
+  return 0;
+}
+
+/**
+ * Destroys a file panel's widget
+ *
+ * @param __widget - widget to destroy
+ */
+int
+file_panel_defact_widget_destructor(file_panel_widget_t *__widget)
+{
+  if (!__widget)
+    return -1;
+
+  // Delete panel associated with layout
+  if (__widget->panel)
+    panel_del (__widget->panel);
+
+  // Destroy screen layout
+  if (WIDGET_LAYOUT (__widget))
+      scr_destroy_window (WIDGET_LAYOUT (__widget));
+
+  free (__widget);
 
   return 0;
 }

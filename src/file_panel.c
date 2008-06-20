@@ -94,9 +94,6 @@ file_panel_onresize               (file_panel_widget_t *__panel_widget);
 static int
 file_panel_focused                (file_panel_widget_t *__panel_widget);
 
-static int
-file_panel_defact_widget_destructor(file_panel_widget_t *__widget);
-
 ////////
 //
 
@@ -441,30 +438,6 @@ file_panel_create                 (void)
 }
 
 /**
- * Destroys a file panel's widget
- *
- * @param __widget - widget to destroy
- */
-static int
-file_panel_defact_widget_destructor(file_panel_widget_t *__widget)
-{
-  if (!__widget)
-    return -1;
-
-  // Delete panel associated with layout
-  if (__widget->panel)
-    panel_del (__widget->panel);
-
-  // Destroy screen layout
-  if (WIDGET_LAYOUT (__widget))
-      scr_destroy_window (WIDGET_LAYOUT (__widget));
-
-  free (__widget);
-
-  return 0;
-}
-
-/**
  * Destroys a file panel
  *
  * @param __panel - panel to destroy
@@ -478,8 +451,9 @@ file_panel_destructor             (void *__panel)
 
   file_panel_t *panel=__panel;
 
-  // Destroy widget
-  widget_destroy (WIDGET (panel->widget));
+  // Delete widget from widget tree (destructor will be applied)
+  w_container_delete (WIDGET_CONTAINER (panel->widget->parent),
+    WIDGET (panel->widget));
 
   // Free CWD string
   if (panel->cwd.data)
@@ -673,6 +647,10 @@ file_panels_done                  (void)
 {
   // Destroy all panels
   deque_destroy (panels, file_panel_destructor);
+
+  // Delete grid from widget tree
+  w_container_delete (WIDGET_CONTAINER (panels_grid->parent),
+    WIDGET (panels_grid));
 
   file_panel_defact_done ();
 }

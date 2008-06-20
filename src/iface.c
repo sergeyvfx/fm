@@ -77,6 +77,13 @@ menu_hotkey_callback              (void)
   widget_set_focus (WIDGET (menu));
 }
 
+void
+exit_hotkey                       (void)
+{
+  iface_done ();
+  exit (0);
+}
+
 // Just for testing and debugging
 static void
 test                              (void)
@@ -95,9 +102,10 @@ test                              (void)
   w_box_set_item_szie (main_box, 2, 1);
 
   hotkey_register (L"F9", menu_hotkey_callback);
-  hotkey_register (L"^a M-a M-^B", menu_hotkey_callback);
+  hotkey_register (L"^q", exit_hotkey);
 
-  hotkey_release (L"^a M-a M-^B");
+//  hotkey_register (L"^a M-a M-^B", menu_hotkey_callback);
+//  hotkey_release (L"^a M-a M-^B");
 
   wnd=widget_create_window (_(L"My Window 1"), 4, 2, 32, 10);
 
@@ -146,12 +154,6 @@ test                              (void)
   w_window_show_modal (wnd);
 
   widget_main_loop ();
-
-//  file_panels_done ();
-
-//  widget_destroy (WIDGET (main_box));
-//  widget_destroy (WIDGET (wnd));
-//  widget_destroy (WIDGET (menu));
 }
 
 #ifdef SIGWINCH
@@ -203,6 +205,7 @@ iface_init                        (void)
 void
 iface_done                        (void)
 {
+  file_panels_done ();
   widgets_done ();
 
   // We don't need screen now!

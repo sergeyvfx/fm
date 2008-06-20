@@ -25,6 +25,14 @@
 // List of root widgets
 static deque_t *root_widgets = NULL;
 
+// Is list of root widget uynder destroying?
+//
+// Need this flag because widgets_done() calls widget_destroy() for
+// all root widgets, and their destuctor may want to delete widget
+// from list of root widgets. This is not good idea, because
+// deque_destroy() will work incorrectly.
+static BOOL destroying_root_widgets = FALSE;
+
 ////////
 // Deep-core stuff
 
@@ -315,7 +323,10 @@ widgets_init                      (void)
 void
 widgets_done                      (void)
 {
+  destroying_root_widgets=TRUE;
   deque_destroy (root_widgets, widget_deque_deleter);
+  root_widgets=NULL;
+  destroying_root_widgets=FALSE;
 }
 
 /**
@@ -326,7 +337,7 @@ widgets_done                      (void)
 void
 widget_add_root                   (widget_t *__widget)
 {
-  if (!__widget)
+  if (!__widget || !root_widgets || destroying_root_widgets)
     return;
 
   // Widget is already in root widgets
@@ -351,7 +362,7 @@ widget_add_root                   (widget_t *__widget)
 void
 widget_delete_root                (widget_t *__widget)
 {
-  if (!__widget)
+  if (!__widget || !root_widgets || destroying_root_widgets)
     return;
 
   iterator_t *iter;

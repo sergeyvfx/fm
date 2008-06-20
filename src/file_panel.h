@@ -234,6 +234,9 @@ file_panel_defact_free_items      (file_panel_t *__panel);
 int            // Draw a file panel's widget
 file_panel_defact_draw_widget     (file_panel_widget_t *__panel_widget);
 
+int
+file_panel_defact_widget_destructor(file_panel_widget_t *__widget);
+
 int            // Default action to draw a list of panel's items
 file_panel_defact_draw_item_list  (file_panel_t *__panel);
 
