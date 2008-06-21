@@ -13,11 +13,13 @@
 #include "file.h"
 
 #include <wchar.h>
+#include <math.h>
 
 ////////
 //
 
 #define FILE_TRUNCATOR '~'
+#define DIGITS_IN_HUMAN_SIZE 7
 
 ////////
 //
@@ -130,4 +132,36 @@ umasktowcs                        (mode_t __mask, wchar_t *__res)
   
   // Null-terminator
   __res[9]=0;
+}
+
+/**
+ * Converts file size to human-readable format
+ *
+ * @param __size - original size of file
+ * @param __suffix - returned suffix of human-readable size
+ * @return huma-readable size of file (without suffix)
+ */
+#ifdef __USE_FILE_OFFSET64
+__u64_t
+fsizetohuman                      (__u64_t __size, char *__suffix)
+#else
+__u32_t
+fsizetohuman                      (__u32_t __size, char *__suffix)
+#endif
+{
+  static char suffixes[] = {'\0', 'K', 'M', 'G', 'T'};
+  __u64_t res=__size;
+  short suff_ptr=0;
+  double log10=log (10);
+
+  while (log (res)/log10>DIGITS_IN_HUMAN_SIZE)
+    {
+      res/=1024;
+      suff_ptr++;
+    }
+
+  if (__suffix)
+    (*__suffix)=suffixes[suff_ptr];
+
+  return res;
 }

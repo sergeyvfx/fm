@@ -261,21 +261,19 @@ draw_full_row                     (const file_panel_t *__panel,
                   wcscpy (pchar, DIR_CAPTION); else
                   wcscpy (pchar, UPDIR_CAPTION);
               } else {
+                char suffix;
+#ifdef __USE_FILE_OFFSET64
+                __u64_t size;
+                static wchar_t format[]=L"%lld%c";
+#else
+                __u32_t size;
+                static wchar_t format[]=L"%ld%c";
+#endif
+
                 flags=CF_ALIGN_RIGHT;
 
-                //
-                // TODO:
-                //  Add adding converting to human-readable
-                //  format (i.e. 1000M, 900G) here
-                //
-
-#ifdef __USE_FILE_OFFSET64
-                swprintf (pchar, MAX_SCREEN_WIDTH, L"%lld",
-                  item->file->lstat.st_size);
-#else
-                swprintf (pchar, MAX_SCREEN_WIDTH, L"%lld",
-                  item->file->lstat.st_size);
-#endif
+                size=fsizetohuman (item->file->lstat.st_size, &suffix);
+                swprintf (pchar, MAX_SCREEN_WIDTH, format, size, suffix);
               }
             break;
             case COLUMN_TIME:

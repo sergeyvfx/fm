@@ -75,7 +75,7 @@ static wchar_t *orig_column_titles[]={
 // Non-recalcuated widths of columns
 static unsigned short orig_columns_widths[]={
   0,
-  11,
+  9,
   12,
   10,
   4

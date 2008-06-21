@@ -157,7 +157,6 @@ test                              (void)
 }
 
 #ifdef SIGWINCH
-
 static void
 sig_winch                         (int sig ATTR_UNUSED)
 {

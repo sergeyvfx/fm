@@ -50,6 +50,14 @@ wcfilename                        (const wchar_t *__name);
 void           // Convert file mode creation mask to string
 umasktowcs                        (mode_t __mask, wchar_t *__res);
 
+#ifdef __USE_FILE_OFFSET64
+__u64_t        // Convert file size to human-readable format
+fsizetohuman                      (__u64_t __size, char *__suffix);
+#else
+__u32_t       // Convert file size to human-readable format
+fsizetohuman                      (__u32_t __size, char *__suffix);
+#endif
+
 END_HEADER
 
 #endif

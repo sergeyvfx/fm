@@ -9,7 +9,7 @@ SUBDIRS =
 
 OBJECTIVE_BINS = fm
 
-LIBADD = -Wl,-export-dynamic -ldl -lncursesw -lpanel
+LIBADD = -Wl,-export-dynamic -ldl -lncursesw -lpanel -lm 
 CFLAGS += 
 
 HEADERS = 
