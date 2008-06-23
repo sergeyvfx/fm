@@ -17,6 +17,8 @@ SOURCES = \
 	main.c \
 	screen.c \
 	iface.c \
+	iface-act.c \
+	iface-menu.c \
 	widget.c \
 	widget-box.c \
 	widget-button.c \

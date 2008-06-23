@@ -21,6 +21,21 @@ iface_init                        (void);
 void           // Uninitialize interface
 iface_done                        (void);
 
+int
+iface_mainloop                    (void);
+
+////
+// Menu
+
+int
+iface_create_menu                 (void);
+
+////
+// Actions
+
+void
+iface_act_exit                    (void);
+
 END_HEADER
 
 #endif

@@ -12,31 +12,13 @@ msgstr ""
 msgid "Information"
 msgstr "Информация"
 
-msgid "Some very long text for debug\nNew line"
-msgstr "Некоторый длиннющий текст для отладки.\nНовая строка"
-
-msgid "_Test"
-msgstr "_Тест"
-
-msgid "_Menu"
-msgstr "_Меню"
-
-msgid "_Edit"
-msgstr "_Редактирование"
-
 msgid "_File"
 msgstr "_Файл"
 
 msgid "_Exit"
 msgstr "_Выход"
 
-msgid "_New"
-msgstr "_Новый"
-
-msgid "_Open..."
-msgstr "_Открыть"
-
-msgid "_About"
+msgid "_About..."
 msgstr "_О программе..."
 
 msgid "_Help"
@@ -63,23 +45,11 @@ msgstr "_Пропустить"
 msgid "Are you sure you want to quit?"
 msgstr "Вы действительно хотите закончить работу?"
 
-msgid "_Undo"
-msgstr "_Отмена"
-
-msgid "_Redo"
-msgstr "_Повтор"
-
-msgid "_Cut"
-msgstr "_Вырезать"
-
-msgid "_Paste"
-msgstr "_Вставить"
-
-msgid "C_opy"
-msgstr "К_опировать"
-
-msgid "My Window 1"
-msgstr "Мое Окно 1"
-
 msgid "Critical"
 msgstr "Важно!"
+
+msgid "_Command"
+msgstr "_Команда"
+
+msgid "_Options"
+msgstr "_Настройки"

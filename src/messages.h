@@ -14,6 +14,7 @@
 #define _messages_h_
 
 #include "smartinclude.h"
+#include "widget.h"
 
 BEGIN_HEADER
 

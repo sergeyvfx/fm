@@ -14,6 +14,7 @@
 #include "dir.h"
 #include "util.h"
 #include "messages.h"
+#include "i18n.h"
 
 #include <time.h>
 
@@ -695,7 +696,7 @@ cwd_sink                          (file_panel_t  *__panel,
           file_panel_draw (__panel);
 
           // Some errors occured
-          message_box (L"Error", L"Cannot change directory",
+          message_box (_(L"Error"), _(L"Cannot change directory"),
             MB_CRITICAL|MB_OK);
 
           SAFE_FREE (s_cwd);
