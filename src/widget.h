@@ -38,6 +38,9 @@
 #define WSM_DEFAULT 0x00
 #define WSM_MODAL   0x01
 
+// Window styles
+#define WMS_CENTERED 0x01
+
 // Button styles
 #define WBS_NONE    0x0000
 #define WBS_DEFAULT 0x0001
@@ -308,6 +311,8 @@ typedef struct {
     scr_font_t      *font;  // Font of caption
   } caption;
 
+  unsigned int   style;
+  
   // Some deep-core info
   unsigned short show_mode;
   int            modal_result;
@@ -555,7 +560,8 @@ w_window_end_modal                (w_window_t *__window, int __modal_result);
 w_window_t*    // Creates new window
 widget_create_window              (const wchar_t *__caption,
                                    int __x, int __y,
-                                   int __w, int __h);
+                                   int __w, int __h,
+                                   unsigned int __style);
 
 void           //  Show window
 w_window_show                     (w_window_t *__window);
@@ -593,6 +599,9 @@ widget_create_menu                (unsigned int __style);
 
 w_sub_menu_t*
 w_menu_append_submenu             (w_menu_t *__menu, const wchar_t *__caption);
+
+void
+w_menu_hide                       (w_menu_t *__menu);
 
 void
 w_submenu_append_item             (w_sub_menu_t       *__sub_menu,

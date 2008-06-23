@@ -20,6 +20,8 @@
   scr_wnd_font (layout, focused?*__menu->focused_font:*__menu->font); \
   scr_wnd_putch (layout, ' ');
 
+#define END_MENU_ON_CALLBACK
+
 // From which position sub-menus starts drawing
 #define SUMBENUS_LEFT           1
 // Padding of caption on sub-menu
@@ -449,110 +451,138 @@ set_submenu_focused_item          (w_sub_menu_t *__sub_menu, short __index)
 }
 
 /**
- * Maps requests from user
+ * Ends handling messages for menu
  *
- * @param __menu - menu for which map requests
+ * @param __menu - for which menu stop handling
  */
 static void
-menu_mapper                       (w_menu_t *__menu)
+end_menu                          (w_menu_t *__menu)
 {
-  wint_t ch;
-  BOOL finito=FALSE;
-  // scr_window_t layout=WIDGET_LAYOUT (__menu);
+  if (!__menu)
+    return;
 
-  // For caughting of all function keys
-  // scr_wnd_keypad (layout, TRUE);
-  for (;;)
+  // After mapper finished, menu losts focus
+  WIDGET_CALL_CALLBACK (__menu, blured, __menu);
+
+  if (__menu->style&WMS_HIDE_UNFOCUSED)
     {
-      // Wait for next character from user
-      ch=scr_wnd_getch (0);
-      
-      switch (ch)
+      hide_menu (__menu);
+    } else {
+     panel_hide (__menu->submenu_panel);
+     __menu->unfolded=FALSE;
+    }
+
+  widget_delete_root (WIDGET (__menu));
+  __menu->cur_submenu=0;
+
+  __menu->active=FALSE;
+}
+
+/**
+ * Handles a keydown callback
+ *
+ * @param __menu - menu received a callback
+ * @param __ch - received character
+ * @return zero if callback hasn't handled received character
+ *   non-zero otherwise
+ */
+static int
+menu_keydown                      (w_menu_t *__menu, wint_t __ch)
+{
+  if (!__menu)
+    return 0;
+
+  switch (__ch)
+    {
+    case KEY_ESC:
+    case KEY_ESC_ESC:
+      if (__menu->unfolded)
         {
-        case KEY_ESC:
-        case KEY_ESC_ESC:
-          if (__menu->unfolded)
-            {
-              panel_hide (__menu->submenu_panel);
-              __menu->unfolded=FALSE;
-            } else
-              finito=TRUE;
-          break;
+          panel_hide (__menu->submenu_panel);
+          __menu->unfolded=FALSE;
+        } else {
+          end_menu (__menu);
+        }
+      break;
 
-        // Navigation
-        case KEY_LEFT:
-          switch_to_submenu (SUBMENU_PREV (__menu->cur_submenu));
-          break;
+    // Navigation
+    case KEY_LEFT:
+      switch_to_submenu (SUBMENU_PREV (__menu->cur_submenu));
+      break;
 
-        case KEY_RIGHT:
-          switch_to_submenu (SUBMENU_NEXT (__menu->cur_submenu));
-          break;
+    case KEY_RIGHT:
+      switch_to_submenu (SUBMENU_NEXT (__menu->cur_submenu));
+      break;
 
-        case KEY_RETURN:
-          if (__menu->unfolded)
-            {
-              short cur_index;
-
-              // Some checking to be shure all is good
-              if (__menu->cur_submenu &&
-                  (cur_index=__menu->cur_submenu->cur_item_index)>=0 &&
-                  cur_index<__menu->cur_submenu->items.length &&
-                  __menu->cur_submenu->items.data[cur_index].callback
-                 )
-              {
-                __menu->cur_submenu->items.data[cur_index].callback ();
-              }
-            } else
-              unfold_submenu (__menu->cur_submenu);
-          break;
-
-        // Navigation inside sub-menu
-        case KEY_DOWN:
-          if (!__menu->unfolded)
-            unfold_submenu (__menu->cur_submenu); else
-            set_submenu_focused_item (__menu->cur_submenu,
-              submenu_item_next (__menu->cur_submenu));
-          break;
-        case KEY_UP:
-          if (__menu->unfolded)
-            set_submenu_focused_item (__menu->cur_submenu,
-              submenu_item_prev (__menu->cur_submenu));
-          break;
-
-        default:
+    case KEY_RETURN:
+      if (__menu->unfolded)
+        {
+          short cur_index;
+          menu_item_callback callback;
+          // Some checking to be shure all is good
+          if (__menu->cur_submenu &&
+              (cur_index=__menu->cur_submenu->cur_item_index)>=0 &&
+              cur_index<__menu->cur_submenu->items.length &&
+              (callback=__menu->cur_submenu->items.data[cur_index].callback)
+             )
           {
-            short i;
-            BOOL found=FALSE;
-            wchar_t tmp=towlower (ch);
-            if (__menu->unfolded && __menu->cur_submenu)
-              {
-                for (i=0; i<__menu->cur_submenu->items.length; ++i)
-                  {
-                    if (__menu->cur_submenu->items.data[i].shortcut==tmp)
-                      {
-                        found=TRUE;
-                        if (__menu->cur_submenu->items.data[i].callback)
-                          __menu->cur_submenu->items.data[i].callback ();
-                      }
-                  }
-              }
+#ifdef END_MENU_ON_CALLBACK
+            end_menu (__menu);
+#endif
+            callback ();
+          }
+        } else
+          unfold_submenu (__menu->cur_submenu);
+      break;
 
-            if (!found)
+    // Navigation inside sub-menu
+    case KEY_DOWN:
+      if (!__menu->unfolded)
+        unfold_submenu (__menu->cur_submenu); else
+        set_submenu_focused_item (__menu->cur_submenu,
+          submenu_item_next (__menu->cur_submenu));
+      break;
+    case KEY_UP:
+      if (__menu->unfolded)
+        set_submenu_focused_item (__menu->cur_submenu,
+          submenu_item_prev (__menu->cur_submenu));
+      break;
+
+    default:
+      {
+        short i;
+        BOOL found=FALSE;
+        wchar_t tmp=towlower (__ch);
+        if (__menu->unfolded && __menu->cur_submenu)
+          {
+            for (i=0; i<__menu->cur_submenu->items.length; ++i)
               {
-                for (i=0; i<__menu->sub_menus.length; i++)
+                if (__menu->cur_submenu->items.data[i].shortcut==tmp)
                   {
-                    if (__menu->sub_menus.data[i].shortcut==tmp)
-                      {
-                        switch_to_submenu (&__menu->sub_menus.data[i]);
-                        break;
-                      }
+                    found=TRUE;
+                    if (__menu->cur_submenu->items.data[i].callback)
+                      __menu->cur_submenu->items.data[i].callback ();
                   }
               }
           }
-        }
-      if (finito)
-        break;
+
+        if (!found)
+          {
+            for (i=0; i<__menu->sub_menus.length; i++)
+              {
+                if (__menu->sub_menus.data[i].shortcut==tmp)
+                  {
+                    switch_to_submenu (&__menu->sub_menus.data[i]);
+                    return 0;
+                  }
+              }
+            return -1;
+          }
+        return 0;
+      }
     }
+  
+  return 0;
 }
 
 /**
@@ -564,9 +594,7 @@ menu_mapper                       (w_menu_t *__menu)
 static int
 menu_focused                      (w_menu_t *__menu)
 {
-  int res=0;
-
-  // Call to user-defined handler of focused callback
+  // Call user-defined handler of focused callback
   _WIDGET_CALL_USER_CALLBACK (__menu, focused, __menu);
 
   // When menu is fosued we should map all input signals
@@ -584,33 +612,9 @@ menu_focused                      (w_menu_t *__menu)
       widget_add_root (WIDGET (__menu));
 
       __menu->cur_submenu=&__menu->sub_menus.data[0];
-
-      widget_redraw (WIDGET (__menu));
-      menu_mapper (__menu);
-
-      // After mapper finished, menu losts focus
-      WIDGET_CALL_CALLBACK (__menu, blured, __menu);
-
-      if (__menu->style&WMS_HIDE_UNFOCUSED)
-        {
-          hide_menu (__menu);
-
-          // Set res to 1 because we don't want default callback to
-          // redraw this widget
-          res=1;
-        } else {
-         panel_hide (__menu->submenu_panel);
-         __menu->unfolded=FALSE;
-        }
-
-      widget_delete_root (WIDGET (__menu));
-      __menu->cur_submenu=0;
-      
     }
 
-  __menu->active=FALSE;
-  
-  return res;
+  return 0;
 }
 
 /**
@@ -669,6 +673,7 @@ widget_create_menu                (unsigned int __style)
 
   WIDGET_CALLBACK (res, focused)  = (widget_action)menu_focused;
   WIDGET_CALLBACK (res, onresize) = (widget_action)menu_onresize;
+  WIDGET_CALLBACK (res, keydown)  = (widget_keydown_proc)menu_keydown;
 
   // Look&feel
   res->font         = &FONT (CID_BLACK, CID_CYAN);
@@ -766,4 +771,10 @@ w_submenu_append_item             (w_sub_menu_t      *__sub_menu,
   __sub_menu->items.data[index].callback=__callback;
 
   __sub_menu->items.length++;
+}
+
+void
+w_menu_hide                       (w_menu_t *__menu)
+{
+  end_menu (__menu);
 }

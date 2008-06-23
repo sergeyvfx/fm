@@ -83,10 +83,6 @@ msg_wnd_pos                       (const wchar_t     *__caption,
           len++;
     }
 
-  // Centration
-  res.x=(SCREEN_WIDTH-res.width)/2;
-  res.y=(SCREEN_HEIGHT-res.height)/2;
-
   return res;
 }
 
@@ -184,7 +180,8 @@ message_box                       (const wchar_t *__caption,
   short defbutton=MB_DEFBUTTON (__flags);
   BOOL critical=FALSE;
 
-  wnd=widget_create_window (__caption, pos.x, pos.y, pos.width, pos.height);
+  wnd=widget_create_window (__caption, 0, 0,
+    pos.width, pos.height, WMS_CENTERED);
 
   // Reset default fonts if message is critical
   if ((critical=__flags&MB_CRITICAL))

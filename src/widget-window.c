@@ -24,6 +24,9 @@
         break; \
     }
 
+#define CENTRE_X(_width)    ((SCREEN_WIDTH-_width)/2)
+#define CENTRE_Y(_height)   ((SCREEN_HEIGHT-_height)/2)
+
 ///////
 //
 
@@ -258,6 +261,16 @@ window_show_entry                 (w_window_t *__window, int __show_mode)
   return 0;
 }
 
+static void
+centre_window                     (w_window_t *__window)
+{
+  if (!__window)
+    return;
+
+  __window->position.x=CENTRE_X (__window->position.width);
+  __window->position.y=CENTRE_Y (__window->position.height);
+}
+
 /**
  * Callback for onresize action
  *
@@ -268,9 +281,12 @@ static int
 window_onresize                   (w_window_t *__window)
 {
   if (!__window)
-    return 0;
+    return -1;
 
   _WIDGET_CALL_USER_CALLBACK (__window, onresize, __window);
+
+  if (__window->style&WMS_CENTERED)
+    centre_window (__window);
 
   // There is no window's resising stuff, so
   // we have to create new window and use it
@@ -314,9 +330,16 @@ window_onresize                   (w_window_t *__window)
  */
 w_window_t*
 widget_create_window              (const wchar_t *__caption,
-                                   int __x, int __y, int __w, int __h)
+                                   int __x, int __y, int __w, int __h,
+                                   unsigned int __style)
 {
   w_window_t *res;
+
+  if (__style&WMS_CENTERED)
+    {
+      __x=CENTRE_X (__w);
+      __y=CENTRE_Y (__h);
+    }
 
   WIDGET_INIT (res, w_window_t, WT_WINDOW, 0, 0,
                window_destructor, window_drawer, \
@@ -326,6 +349,8 @@ widget_create_window              (const wchar_t *__caption,
     res->caption.text=wcsdup (__caption);
 
   res->panel=panel_new (res->layout);
+  
+  res->style=__style;
 
   // Layout parameters
   res->font         = &FONT (CID_BLACK, CID_WHITE);
