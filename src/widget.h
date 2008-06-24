@@ -82,6 +82,12 @@
 // Redrawing of widget is locked
 #define WF_REDRAW_LOCKED 0x0004
 
+// Widget is always ontop
+// This means that messages like onresize will be send
+// to such widgets after sending those messages to widgets without
+// this flag
+#define WF_ONTOP         0x0008
+
 ////////
 // Macroses
 
@@ -459,6 +465,9 @@ widget_add_root                   (widget_t *__widget);
 
 void
 widget_delete_root                (widget_t *__widget);
+
+void
+widget_sink_root                  (widget_t *__widget);
 
 int            // Draw widget on screen
 widget_draw                       (widget_t *__widget);

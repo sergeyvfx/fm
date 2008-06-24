@@ -248,7 +248,7 @@ reset_focused_widget              (w_container_t *__widget,
  * @param __widget - from where startpopupping
  * @return 
  */
-w_container_t*
+static w_container_t*
 get_toplevel                      (widget_t *__widget)
 {
   if (!__widget)
@@ -266,6 +266,30 @@ get_toplevel                      (widget_t *__widget)
     cur=WIDGET_CONTAINER (cur->parent);
 
   return cur;
+}
+
+/**
+ * Iterator for widget_on_scr_resize
+ *
+ * @param __state - stage of iteration:
+ *  0 - Call onresize callbaback for no-ontop widgets
+ *  1 - Call onresize callbaback for ontop widgets
+ */
+static void
+on_scr_resize_iter                (short __step)
+{
+  iterator_t *iter;
+  widget_t *w;
+
+  iter=root_widgets->tail;
+  while (iter)
+    {
+      w=iter->data;
+      if ((__step==0 && !WIDGET_TEST_FLAG (w, WF_ONTOP)) ||
+          (__step==1 && WIDGET_TEST_FLAG (w, WF_ONTOP)))
+        WIDGET_CALL_CALLBACK (w, onresize, w);
+      iter=iter->prev;
+    }
 }
 
 ////////
@@ -378,6 +402,21 @@ widget_delete_root                (widget_t *__widget)
     }
 }
 
+void
+widget_sink_root                  (widget_t *__widget)
+{
+  iterator_t *iter=deque_head (root_widgets);
+  if (iter && deque_data (iter)==__widget)
+    {
+      iter=deque_next (iter);
+      if (iter)
+        {
+          widget_t *w=deque_data (iter);
+          widget_add_root (w);
+        }
+    }
+}
+
 /**
  *  Destructor of any widget
  *
@@ -454,16 +493,10 @@ widget_full_redraw                (void)
 void
 widget_on_scr_resize              (void)
 {
-  iterator_t *iter;
   scr_clear ();
 
-  // !!FIX ME!!
-  iter=root_widgets->tail;
-  while (iter)
-    {
-      WIDGET_CALL_CALLBACK (iter->data, onresize, iter->data);
-      iter=iter->prev;
-    }
+  on_scr_resize_iter (0);
+  on_scr_resize_iter (1);
 
   widget_full_redraw ();
 }

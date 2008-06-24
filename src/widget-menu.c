@@ -467,15 +467,17 @@ end_menu                          (w_menu_t *__menu)
   if (__menu->style&WMS_HIDE_UNFOCUSED)
     {
       hide_menu (__menu);
+      widget_delete_root (WIDGET (__menu));
     } else {
+     widget_sink_root (WIDGET (__menu));
      panel_hide (__menu->submenu_panel);
-     __menu->unfolded=FALSE;
     }
 
-  widget_delete_root (WIDGET (__menu));
-  __menu->cur_submenu=0;
+   __menu->unfolded=FALSE;
+   __menu->cur_submenu=0;
+   __menu->active=FALSE;
 
-  __menu->active=FALSE;
+   widget_redraw (WIDGET (__menu));
 }
 
 /**
@@ -627,7 +629,7 @@ static int
 menu_onresize                     (w_menu_t *__menu)
 {
   if (!__menu)
-    return 0;
+    return -1;
 
   // Call to user-defined handler of focused callback
   _WIDGET_CALL_USER_CALLBACK (__menu, onresize, __menu);
@@ -638,7 +640,7 @@ menu_onresize                     (w_menu_t *__menu)
       scr_wnd_resize (__menu->layout, SCREEN_WIDTH, 1);
       widget_redraw (WIDGET (__menu));
     }
-  
+
   // Redraw unfolded submenu
   if (__menu->unfolded)
     {
@@ -647,7 +649,7 @@ menu_onresize                     (w_menu_t *__menu)
       draw_submenu (__menu->cur_submenu);
     }
 
-  return -1;
+  return 0;
 }
 
 //////
@@ -665,7 +667,7 @@ widget_create_menu                (unsigned int __style)
 {
   w_menu_t *res;
 
-  WIDGET_INIT (res, w_menu_t, WT_MENU, 0, 0,
+  WIDGET_INIT (res, w_menu_t, WT_MENU, 0, WF_ONTOP,
                menu_destructor, menu_drawer,
                0, 0, 1, SCREEN_WIDTH, 1);
 
@@ -684,17 +686,20 @@ widget_create_menu                (unsigned int __style)
 
   res->style=__style;
 
+  WIDGET_POST_INIT (res);
+
   if (__style&WMS_HIDE_UNFOCUSED)
     {
+      widget_delete_root (WIDGET (res));
       hide_menu (res);
     } else {
+      widget_sink_root (WIDGET (res));
       widget_redraw (WIDGET (res));
       show_menu (res);
     }
 
-  WIDGET_POST_INIT (res);
-  
-  widget_delete_root (WIDGET (res));
+  res->active=0;
+  res->unfolded=FALSE;
 
   return res;
 }
