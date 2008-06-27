@@ -9,7 +9,7 @@
  * This program can be distributed under the terms of the GNU GPL.
  * See the file COPYING.
  */
- 
+
 #include "dir.h"
 
 #include <wchar.h>
@@ -17,7 +17,7 @@
 #include <dirent.h>
 
 /**
- * Widecharacter analog for system scandir
+ * Wide character analog for system scandir
  * Returned array and its elements must be freed
  *
  * @param __name - name of directory to scan
@@ -29,7 +29,7 @@ wcscandir                         (const wchar_t  *__name,
                                    dirfilter_proc  __filer,
                                    dircmp_proc     __compar,
                                    file_t       ***__res){
-  char *mb_name,   // Multui-byte name of directory
+  char *mb_name,   // Multibyte name of directory
        *full_name;
   struct dirent **eps=0;
   int count, i;
@@ -45,14 +45,14 @@ wcscandir                         (const wchar_t  *__name,
     } else {
       size_t len=(wcslen (__name)+1)*MB_CUR_MAX;
 
-      // Allocate memory for multi-byte buffer
+      // Allocate memory for multibyte buffer
       MALLOC_ZERO (mb_name, len);
 
-      // Convert wide-charatered name of directory to
-      // multi-byte string
+      // Convert wide character name of directory to
+      // multibyte string
       if (wcstombs (mb_name, __name, len)==-1)
         {
-          // Some errors while converting name to widechar
+          // Some errors while converting name to wide char
           free (mb_name);
           return -1;
         }
@@ -77,11 +77,11 @@ wcscandir                         (const wchar_t  *__name,
 
       sprintf (full_name, "%s/%s", mb_name, eps[i]->d_name);
 
-      // Convert multi-byted item name to wide-charactered string
+      // Convert multibyte item name to wide-charactered string
       if (mbstowcs ((*__res)[i]->name, eps[i]->d_name, MAX_FILENAME_LEN)==-1)
         {
-          // If some error had been occured while converting,
-          // free all allocated memoty and return -1
+          // If some error had been occurred while converting,
+          // free all allocated memory and return -1
           int j;
           for (j=0; j<=i; j++)
             free ((*__res)[i]);
@@ -164,7 +164,7 @@ wcdircatsubdir                    (const wchar_t *__name,
 /**
  * Fits name of directory to specified length
  *
- * @param __dir_name - directory name to be fited
+ * @param __dir_name - directory name to be fitted
  * @param __len - length to which fit the file name
  * @param __res - pointer to buffer where result will be stored
  */
@@ -204,7 +204,7 @@ wcdirname                         (const wchar_t *__name)
 
   len=wcslen (__name);
 
-  // Search for last delimeter
+  // Search for last delimiter
   for (i=len-1; i>0; i--)
     if (__name[i]=='/')
       break;

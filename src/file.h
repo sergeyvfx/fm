@@ -25,7 +25,7 @@ BEGIN_HEADER
 #define MAX_FILENAME_LEN  256
 
 ////////
-// Type defenitions
+// Type definitions
 
 typedef struct {
   ////

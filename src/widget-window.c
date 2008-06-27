@@ -34,7 +34,7 @@
  * Destroys a window widget
  *
  * @param __window - window to be destroyed
- * @return zero on seccess, non-zero on failure
+ * @return zero on success, non-zero on failure
  */
 static int
 window_destructor                 (w_window_t *__window)
@@ -45,7 +45,7 @@ window_destructor                 (w_window_t *__window)
   // Hide window to reduce blinks
   w_window_hide (__window);
 
-  // Call deter inherited from container
+  // Call deleter inherited from container
   WIDGET_CONTAINER_DELETER (__window);
 
   // Delete panel associated with layout
@@ -67,7 +67,7 @@ window_destructor                 (w_window_t *__window)
 /**
  * Draws a window
  *
- * @param __window - a window to be drawed
+ * @param __window - a window to be drawn
  * @return zero on success, non-zero on failure
  */
 static int
@@ -98,7 +98,7 @@ window_drawer                     (w_window_t *__window)
 
   // Call drawer inherited from container
   WIDGET_CONTAINER_DRAWER (__window);
-  
+
   return 0;
 }
 
@@ -304,7 +304,7 @@ window_onresize                   (w_window_t *__window)
 
   WIDGET_CONTAINER_ACTION_ITERONLY (__window, WIDGET_CALL_CALLBACK,
     onresize, __iterator_);
-  
+
   if (!locked)
     {
       widget_unlock_redraw (WIDGET (__window));
@@ -321,10 +321,10 @@ window_onresize                   (w_window_t *__window)
 // User's backend
 
 /**
- * Creates new window with specified caprtion and position
+ * Creates new window with specified caption and position
  *
  * @param __caption - caption of window
- * @param __x, __y - coordinates of winddow
+ * @param __x, __y - coordinates of window
  * @param __w, __h - width and height of window
  * @return a pointer to window object
  */
@@ -349,7 +349,7 @@ widget_create_window              (const wchar_t *__caption,
     res->caption.text=wcsdup (__caption);
 
   res->panel=panel_new (res->layout);
-  
+
   res->style=__style;
 
   // Layout parameters
@@ -405,7 +405,7 @@ w_window_hide                     (w_window_t *__window)
     return;
 
   widget_delete_root (WIDGET (__window));
-  
+
   WIDGET_CALL_CALLBACK (__window, blured, __window);
 
   // Window is now invisible

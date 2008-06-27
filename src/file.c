@@ -27,7 +27,7 @@
 /**
  * Fits filename to specified length
  *
- * @param __file_name - file name to be fited
+ * @param __file_name - file name to be fitted
  * @param __len - length to which fit the file name
  * @param __res - pointer to buffer where result will be stored
  */
@@ -37,7 +37,7 @@ fit_filename                      (const wchar_t *__file_name,
                                    wchar_t       *__res)
 {
   size_t len;
-  
+
   if (__len<=0)
     {
       // Wanted length of file name is too short
@@ -78,13 +78,13 @@ wcfilename                        (const wchar_t *__name)
 {
   size_t i, len=wcslen (__name), ptr=0;
   wchar_t *res;
-  
+
   if (!__name)
     return 0;
 
   if (!wcscmp (__name, L"/"))
     return wcsdup (L"/");
-  
+
   // Search last '/'
   for (i=len-1; i>=0; i--)
     if (__name[i]=='/')
@@ -99,7 +99,7 @@ wcfilename                        (const wchar_t *__name)
     res[ptr++]=__name[i++];
 
   res[ptr]=0;
-  
+
   return res;
 }
 
@@ -125,11 +125,11 @@ umasktowcs                        (mode_t __mask, wchar_t *__res)
   __res[4]=__mask&S_IWGRP?'w':'-';
   __res[5]=__mask&S_IXGRP?'x':'-';
 
-  // Permissions for ootthers
+  // Permissions for others
   __res[6]=__mask&S_IROTH?'r':'-';
   __res[7]=__mask&S_IWOTH?'w':'-';
   __res[8]=__mask&S_IXOTH?'x':'-';
-  
+
   // Null-terminator
   __res[9]=0;
 }
@@ -139,7 +139,7 @@ umasktowcs                        (mode_t __mask, wchar_t *__res)
  *
  * @param __size - original size of file
  * @param __suffix - returned suffix of human-readable size
- * @return huma-readable size of file (without suffix)
+ * @return human-readable size of file (without suffix)
  */
 #ifdef __USE_FILE_OFFSET64
 __u64_t

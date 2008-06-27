@@ -54,7 +54,7 @@ BEGIN_HEADER
   (__panel->actions.__action?__panel->actions.__action (__panel, __data):-1)
 
 ////////
-// Type defenitins
+// Type definitions
 
 // Walking directions
 enum {
@@ -91,12 +91,12 @@ typedef struct {
   short          type;       // Type of panel - name.size,m.time,etc
   unsigned short width;      // Width of column;
   unsigned short orig_width; // Original width of column;
-  wchar_t        *title;  
+  wchar_t        *title;
 } file_panel_column_t;
 
 typedef struct {
   file_panel_column_t *data; // Columns' descriptors
-  unsigned short      count; // Count of clumns
+  unsigned short      count; // Count of columns
 } file_panel_columns_t;
 
 typedef struct {
@@ -133,7 +133,7 @@ typedef struct {
   file_panel_widget_t *widget;
 
   // Use this complex structure because I don't want to use
-  // static array becase this will limit max. length of CWD and
+  // static array because this will limit max. length of CWD and
   // I dislike this limitation in Midnight Commander
   struct {
     wchar_t            *data;
@@ -154,7 +154,7 @@ typedef struct {
 
   unsigned int       listing_mode; // Listing mode
 
-  // Actionson on the panel
+  // Actions on the panel
   struct {
     file_panel_action      collect_items;  // Fills items list
     file_panel_action      free_items;     // Frees items list
@@ -169,17 +169,17 @@ typedef struct {
     file_panel_data_action scroll_to_item; // Set cursor to item and
                                            // scroll to view
     file_panel_data_action centre_to_item; // Set cursor to item and
-                                           // centres view
+                                           // centers view
   } actions;
 } file_panel_t;
 
 ////////
 // Common stuff
 
-int            // Initialise file panels
+int            // Initialize file panels
 file_panels_init                  (widget_t *__parent);
 
-void           // Uninitialise file panels
+void           // Uninitialize file panels
 file_panels_done                  (void);
 
 int            // Set the panel's CWD
@@ -219,7 +219,7 @@ file_panel_update_columns_widths  (file_panel_t *__panel);
 ////////
 // Default actions
 
-int            // Intialize file panels' default actions stuff
+int            // Initialize file panels' default actions stuff
 file_panel_defact_init            (void);
 
 void           // Unintialize file panels' default actions stuff

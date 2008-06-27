@@ -25,7 +25,7 @@ short          // Register a hot-key
 hotkey_register                   (const wchar_t   *__sequence,
                                    hotkey_callback  __callback);
 
-void           // Realise registered hot-key
+void           // Release registered hot-key
 hotkey_release                    (const wchar_t *__sequence);
 
 short          // Put new character to sequence

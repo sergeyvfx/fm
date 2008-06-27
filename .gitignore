@@ -3,4 +3,5 @@
 .depend*
 nbproject/
 *.mo
-
+.cproject
+.project

@@ -33,7 +33,8 @@ SOURCES = \
 	file.c \
 	dir.c \
 	util.c \
-	deque.c
+	deque.c \
+	hook.c
 
 OBJECTS = ${SOURCES:.c=.o}
 

@@ -45,7 +45,7 @@ eval_sizes                        (w_box_t *__box);
  * Destroys a box widget
  *
  * @param __box - box to be destroyed
- * @return zero on seccess, non-zero on failure
+ * @return zero on success, non-zero on failure
  */
 static int
 box_destructor                    (w_box_t *__box)
@@ -73,7 +73,7 @@ box_destructor                    (w_box_t *__box)
  * Destroys a box item widget
  *
  * @param __box_item - box item to be destroyed
- * @return zero on seccess, non-zero on failure
+ * @return zero on success, non-zero on failure
  */
 static int
 box_item_destructor               (w_box_item_t *__box_item)
@@ -81,7 +81,7 @@ box_item_destructor               (w_box_item_t *__box_item)
   if (!__box_item)
     return -1;
 
-  // Call deter inherited from container
+  // Call deleter inherited from container
   WIDGET_CONTAINER_DELETER (__box_item);
 
   // Destroy screen layout
@@ -96,7 +96,7 @@ box_item_destructor               (w_box_item_t *__box_item)
 /**
  * Draws a box
  *
- * @param __box - box to be drawed
+ * @param __box - box to be drawn
  * @return zero on success, non-zero on failure
  */
 static int
@@ -115,7 +115,7 @@ box_drawer                        (w_box_t *__box)
 /**
  * Draws a box item
  *
- * @param __box_item - box to be drawed
+ * @param __box_item - box to be drawn
  * @return zero on success, non-zero on failure
  */
 static int
@@ -175,17 +175,17 @@ static void
 eval_sizes                        (w_box_t *__box)
 {
   // It there is no box or sizes of items have been
-  // already evaluted
+  // already evaluated
   if (!__box || __box->evaluted)
     return;
 
   unsigned int i;
-  int offset=0,      // Offset of current item from beginnig of box
+  int offset=0,      // Offset of current item from beginning of box
       size=0,        // Size of one automatically managing item
       cur_size,      // Size of current item
       dyn_size,      // Total size of automatically managing items
       unset_count,   // Count of item for which size is not specified by user
-      set_count=0,   // Count of such (see line upper) item for wich size
+      set_count=0,   // Count of such (see line upper) item for which size
                      // was set during calculating process
       set_size=0,    // Total size of such items (see upper)
       dummy;
@@ -297,7 +297,7 @@ box_onresize                      (w_box_t *__box)
 
   __box->evaluted = FALSE;
 
-  // There is no window's resising stuff, so
+  // There is no window's resizing stuff, so
   // we have to create new window and use it
   scr_window_t oldwnd = WIDGET_LAYOUT (__box),
                newwnd = widget_create_layout (WIDGET (__box));
@@ -413,7 +413,7 @@ init_item                         (w_box_t *__box,
 /**
  * Creates new box
  *
- * @param __parent - parent of edit. Shoudld be CONTAINER
+ * @param __parent - parent of edit. Should be CONTAINER
  * @param __x, __y - coordinates of box
  * @param __w, __h - width and height of box
  * @param __style - style of box
@@ -430,7 +430,7 @@ widget_create_box                 (w_container_t *__parent,
   int i;
   w_box_t *res;
 
-  // General widget initialisation
+  // General widget initialization
   WIDGET_INIT (res, w_box_t, WT_BOX, __parent, 0,
     box_destructor, box_drawer,
     __x, __y, 1, __w, __h);
@@ -473,12 +473,12 @@ w_box_set_item_szie               (w_box_t *__box, unsigned int __index,
 
   BOX_ITEM (__box, __index)->size=__size;
 
-  // Need to re-evalute sizes and redraw widget
+  // Need to re-evaluate sizes and redraw widget
   RECALC_BOX (__box);
 }
 
 /**
- * Returrns widget by index
+ * Returns widget by index
  *
  * @param __box - box for which item belongs
  * @return widget of item with specified index
@@ -495,7 +495,7 @@ w_box_item                        (w_box_t *__box, unsigned int __index)
 /**
  * Inserts new item to box
  *
- * @param __box - box in which item willbe added
+ * @param __box - box in which item will be added
  * @param __index - position of new item
  * @param __size - size of new item
  * @return pointer to widget of new item
@@ -512,7 +512,7 @@ w_box_insert_item                  (w_box_t     *__box,
   init_item (__box, item, __size);
   w_container_insert_child (WIDGET_CONTAINER (__box), WIDGET (item), __index);
 
-  // Need to re-evalute sizes and redraw widget
+  // Need to re-evaluate sizes and redraw widget
   RECALC_BOX (__box);
 
   return item;
@@ -521,7 +521,7 @@ w_box_insert_item                  (w_box_t     *__box,
 /**
  * Appends new item to box
  *
- * @param __box - box in which item willbe added
+ * @param __box - box in which item will be added
  * @param __size - size of new item
  * @return pointer to widget of new item
  */
@@ -534,7 +534,7 @@ w_box_append_item                  (w_box_t *__box, int __size)
 /**
  * Deletes item from box
  *
- * @param __box - box in which item willbe added
+ * @param __box - box in which item will be added
  * @param __item - item to be deleted
  */
 void
@@ -545,14 +545,14 @@ w_box_delete_item                  (w_box_t     *__box, w_box_item_t *__item)
 
   w_container_delete (WIDGET_CONTAINER (__box), WIDGET (__item));
 
-  // Need to re-evalute sizes and redraw widget
+  // Need to re-evaluate sizes and redraw widget
   RECALC_BOX (__box);
 }
 
 /**
  * Deletes item, specified by index
  *
- * @param __box - box in which item willbe added
+ * @param __box - box in which item will be added
  * @param __index - position of new item
  */
 void
@@ -564,6 +564,6 @@ w_box_delete_by_index              (w_box_t     *__box, unsigned int __index)
   w_box_item_t *item=BOX_ITEM (__box, __index);
   w_container_delete (WIDGET_CONTAINER (__box), WIDGET (item));
 
-  // Need to re-evalute sizes and redraw widget
+  // Need to re-evaluate sizes and redraw widget
   RECALC_BOX (__box);
 }

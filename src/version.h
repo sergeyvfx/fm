@@ -13,6 +13,6 @@
 #ifndef _version_h_
 #define _version_h_
 
-#define CORE_VERSION "1.0.0"
+#define CORE_VERSION "0.0.1"
 
 #endif

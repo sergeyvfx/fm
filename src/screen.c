@@ -196,8 +196,8 @@ screen_root_wnd                   (void)
 }
 
 /**
- * Refreshs screen
- * 
+ * Refresh screen
+ *
  * @param __full_refresh - should a full screen will be refreshed?
  */
 void
@@ -234,14 +234,14 @@ screen_on_resize                  (void)
  *
  * @param __window - from which window expects a character
  * (this parameter maybe deprecated)
- * @return caugthed character
+ * @return caughted character
  */
 wchar_t
 scr_wnd_getch                     (scr_window_t __window)
 {
   //
   // TODO:
-  //  Need this function to look after all caucghted characters
+  //  Need this function to look after all caughted characters
   //  and do hotkeys stuff here
   //
 
@@ -276,7 +276,7 @@ scr_wnd_getch                     (scr_window_t __window)
  * Checks is specified character is a code of
  * ncurses's function key.
  *
- * This function is neccessary because most of functional keys' codes
+ * This function is necessary because most of functional keys' codes
  * in ncurses have codes from extended Latin range of Unicode
  *
  * @param __ch - character which has to be checked

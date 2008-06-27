@@ -25,7 +25,7 @@
 // List of root widgets
 static deque_t *root_widgets = NULL;
 
-// Is list of root widget uynder destroying?
+// Is list of root widget under destroying?
 //
 // Need this flag because widgets_done() calls widget_destroy() for
 // all root widgets, and their destuctor may want to delete widget
@@ -51,7 +51,7 @@ get_neighbour_iter                (const widget_t *__widget,
 {
   if (!__widget)
     return 0;
-  
+
   if (!WIDGET_IS_CONTAINER (__widget))
     return (widget_t*)__widget;
 
@@ -76,7 +76,7 @@ get_neighbour_iter                (const widget_t *__widget,
 }
 
 /**
- * Searchs for branch from which searching of neighbour
+ * Search for branch from which searching of neighbour
  * may be started and starts this searching
  *
  * @param __widget - widget, describes current node of widget tree
@@ -110,7 +110,7 @@ get_neighbour                     (const widget_t *__widget,
       i+= __dir;
     }
 
-  // Try to find in neighbour brunch of parent widget
+  // Try to find in neighbor brunch of parent widget
   return get_neighbour (__widget->parent, __dir);
 }
 
@@ -134,7 +134,7 @@ get_focused_entry                 (const widget_t *__widget, short __dir)
   widget_t *widget;
 
   __dir=__dir<0?-1:1;
-  
+
   if (!__widget || !__widget->parent || !WIDGET_IS_CONTAINER (__widget->parent))
     return NULL;
 
@@ -147,7 +147,7 @@ get_focused_entry                 (const widget_t *__widget, short __dir)
     return w_container_widget_by_tab_order (cnt, index);
 
   // Try to get searched widget from
-  // neighbour branch of wiget tree
+  // Neighbor branch of widget tree
   if ((widget=get_neighbour (__widget, __dir)))
     return widget;
 
@@ -162,8 +162,8 @@ get_focused_entry                 (const widget_t *__widget, short __dir)
  * Common part of widget_container_delete() and widget_container_drop()
  *
  * @param __widget - container from which child has to be deleted
- * @param __child - widget tobe deleted
- * @param __call_deleter - is in neccessary to call widget's deleter
+ * @param __child - widget to be deleted
+ * @param __call_deleter - is in necessary to call widget's deleter
  */
 static void
 w_container_delete_entry          (w_container_t *__widget,
@@ -236,7 +236,7 @@ reset_focused_widget              (w_container_t *__widget,
 {
   if (!__widget || !WIDGET_IS_CONTAINER (__widget))
     return;
-  
+
   __widget->focused_widget=__focused;
   reset_focused_widget (WIDGET_CONTAINER (__widget->parent), __focused);
 }
@@ -246,14 +246,14 @@ reset_focused_widget              (w_container_t *__widget,
  * a focused_widget is actual
  *
  * @param __widget - from where startpopupping
- * @return 
+ * @return
  */
 static w_container_t*
 get_toplevel                      (widget_t *__widget)
 {
   if (!__widget)
     return 0;
-  
+
   w_container_t *cur=WIDGET_CONTAINER (__widget->parent);
 
   if (!cur)
@@ -310,7 +310,7 @@ widget_main_loop                  (void)
 {
   wint_t ch;
   widget_t *w;
-  
+
   for (;;)
     {
       ch=scr_wnd_getch (0);
@@ -329,7 +329,7 @@ widget_main_loop                  (void)
 /**
  * Initializes widgets' stuff
  *
- * @return a zero in successful, non-aero otherwise
+ * @return a zero in successful, non-zero otherwise
  */
 int
 widgets_init                      (void)
@@ -473,7 +473,7 @@ widget_redraw                     (widget_t *__widget)
   res=widget_draw (__widget);
   scr_wnd_invalidate (WIDGET_LAYOUT (__widget));
   scr_wnd_refresh (WIDGET_LAYOUT (__widget));
-  
+
   return res;
 }
 
@@ -555,7 +555,7 @@ widget_set_focus                  (widget_t *__widget)
 // Different stuff
 
 /**
- * Extracts shortcut key from etxt
+ * Extracts shortcut key from text
  *
  * @param __text - text from which you want to extract hotkey
  * @return extracted shortcut
@@ -581,7 +581,7 @@ widget_shortcut_key               (const wchar_t *__text)
 /**
  * Returns length of text with shortcuts
  *
- * @param __text - text whose length ypu want to calculate
+ * @param __text - text whose length you want to calculate
  * @return length of text
  */
 int
@@ -645,7 +645,7 @@ widget_shortcut_print             (scr_window_t __layout,
 
       scr_wnd_add_wchar (__layout, __text[i]);
 
-      if (hot) 
+      if (hot)
         {
           scr_wnd_font (__layout, __font);
           hot=FALSE;
@@ -657,7 +657,7 @@ widget_shortcut_print             (scr_window_t __layout,
 }
 
 /**
- * Returns next widget avaliable to be focused
+ * Returns next widget available to be focused
  *
  * @param __widget - container of widgets where search of such widget
  *   have to be started
@@ -670,7 +670,7 @@ widget_next_focused               (const widget_t *__widget)
 }
 
 /**
- * Returns previous widget avaliable to be focused
+ * Returns previous widget available to be focused
  *
  * @param __widget - container of widgets where search of such widget
  *   have to be started
@@ -706,7 +706,7 @@ w_container_insert_child          (w_container_t *__container,
       return;
     }
 
-  // `__container` is not a contaier-based widget
+  // `__container` is not a container-based widget
   // or a `__widget` is NULL
   if (!__container || !WIDGET_IS_CONTAINER (__container) || !__widget)
     return;
@@ -758,7 +758,7 @@ w_container_append_child          (w_container_t *__container,
       return;
     }
 
-  // `__container` is not a contaier-based widget
+  // `__container` is not a container-based widget
   // or a `__widget` is NULL
   if (!__container || !WIDGET_IS_CONTAINER (__container))
     return;
@@ -783,7 +783,7 @@ w_container_delete                (w_container_t *__widget, widget_t *__child)
  * Drop widget from container without destroying it
  *
  * @param __widget - container from which child has to be dropped
- * @param __child - widget tobe dropped
+ * @param __child - widget to be dropped
  */
 void
 w_container_drop                  (w_container_t *__widget, widget_t *__child)
@@ -807,10 +807,10 @@ w_container_widget_by_tab_order   (const w_container_t *__container,
                                    int __tab_order)
 {
   int i, n;
-  // `__container` is not a contaier-based widget
+  // `__container` is not a container-based widget
   if (!WIDGET_IS_CONTAINER (__container))
     return NULL;
-  
+
   for (i=0, n=WIDGET_CONTAINER_LENGTH (__container); i<n; i++)
     if (WIDGET_CONTAINER_DATA (__container)[i] &&
         WIDGET_CONTAINER_DATA (__container)[i]->tab_order==__tab_order)
@@ -880,7 +880,7 @@ widget_resize                     (widget_t *__widget,
 /**
  * Handler of `focused` callback (system-based)
  *
- * @param __widget - widget which caucghted this callback
+ * @param __widget - widget which caughted this callback
  * @return zero if callback hasn't handled callback
  */
 int
@@ -905,7 +905,7 @@ widget_focused                    (widget_t *__widget)
 /**
  * Handler of `blured` callback (system-based)
  *
- * @param __widget - widget which caucghted this callback
+ * @param __widget - widget which caughted this callback
  * @return zero if callback hasn't handled callback
  */
 int
@@ -930,7 +930,7 @@ widget_blured                     (widget_t *__widget)
 /**
  * Handler of `keydown` callback (system-based)
  *
- * @param __widget - widget which caucghted this callback
+ * @param __widget - widget which caughted this callback
  * @param __ch - received character
  * @return zero if callback hasn't handled callback
  */
@@ -946,7 +946,7 @@ widget_keydown                    (widget_t *__widget, int __ch)
 /**
  * Handler of `shortcut` callback (system-based)
  *
- * @param __widget - widget which caucghted this callback
+ * @param __widget - widget which caughted this callback
  * @return zero if callback hasn't handled callback
  */
 int
@@ -963,7 +963,7 @@ widget_onresize                   (widget_t *__widget)
 {
   _WIDGET_CALL_USER_CALLBACK (__widget, onresize, __widget);
 
-  // There is no window's resising stuff, so
+  // There is no window's resizing stuff, so
   // we have to create new window and use it
   scr_window_t oldwnd = WIDGET_LAYOUT (__widget),
                newwnd = widget_create_layout (WIDGET (__widget));
@@ -990,7 +990,7 @@ widget_onresize                   (widget_t *__widget)
       //
       // NOTE:
       //  Windows must be deleted in such way:
-      //    1. Delete all children of widnow
+      //    1. Delete all children of window
       //    2. Delete window
       //  If window has children - it won't deleted
       //
@@ -1020,7 +1020,7 @@ widget_create_layout              (widget_t *__widget)
       // so it will use parent's layout
       if (__widget->parent)
         return WIDGET_LAYOUT (__widget->parent);
-    } 
+    }
 
   scr_window_t res;
 

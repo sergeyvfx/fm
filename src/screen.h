@@ -174,7 +174,7 @@ extern BOOL curs_wis;
 #endif
 
 ////
-// Type defenitions
+// Type definitions
 
 // Screen font
 typedef struct {

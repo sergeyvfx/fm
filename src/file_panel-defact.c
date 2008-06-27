@@ -100,7 +100,7 @@ get_file_panel_item_font          (const file_panel_t  *__panel,
  * @param __layout - layout where draw string
  * @param __string - string to be printed
  * @param __width - width of column
- * @param __append_delimeter - if TRUE then column delimeter will appended
+ * @param __append_delimeter - if TRUE then column delimiter will appended
  * @param __flags - different additional flags to setup look&feel.
  * This flags can include one of this constants:
  *   CF_ALIGN_LEFT, CF_ALIGN_CENTER, CF_ALIGN_RIGHT.
@@ -130,13 +130,13 @@ print_column_string               (scr_window_t    __layout,
   if (__string_font)
     scr_wnd_font (__layout, *__string_font);
 
-  // Apply aligment
+  // Apply alignment
   if (__flags & CF_ALIGN_CENTER)
     padding_left=(__width-len)/2; else
   if (__flags & CF_ALIGN_RIGHT)
     padding_left=__width-len;
 
-  // Apply padding (for aligment)
+  // Apply padding (for alignment)
   for (i=0; i<padding_left; i++)
     scr_wnd_putch (__layout, ' ');
 
@@ -147,7 +147,7 @@ print_column_string               (scr_window_t    __layout,
   for (i=0, n=__width-len-padding_left; i<n; i++)
     scr_wnd_putch (__layout, ' ');
 
-  // Append delimeter
+  // Append delimiter
   if (__append_delimeter)
     {
       if (__delimeter_font)
@@ -163,8 +163,8 @@ print_column_string               (scr_window_t    __layout,
  *
  * @param __panel - panel from which draw headers for columns
  * @param __columns - descriptor of columns set
- * @param __layout - layout on which header will be drawed
- * @return zero on succsess, non-zero if failed
+ * @param __layout - layout on which header will be drew
+ * @return zero on success, non-zero if failed
  */
 static int
 draw_columns_headers              (const file_panel_t         *__panel,
@@ -174,7 +174,7 @@ draw_columns_headers              (const file_panel_t         *__panel,
   int i, n;
   file_panel_column_t *column;
 
-  // Get layput of widget
+  // Get layout of widget
   if (!__panel || !__columns || !__layout || !__panel->widget)
     return -1;
 
@@ -195,13 +195,13 @@ draw_columns_headers              (const file_panel_t         *__panel,
 }
 
 /**
- * Draws row of full-vew table
+ * Draws row of full-view table
  *
  * @param __panel - panel for which item is belong to
  * @param __intex - index of item in items list
  * @param __empty - is item empty?
  * This parameter is needed to draw empty rows of table
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 static int
 draw_full_row                     (const file_panel_t *__panel,
@@ -227,7 +227,7 @@ draw_full_row                     (const file_panel_t *__panel,
 
   if (!__empty)
     {
-      // Get pointer to item to be drawed
+      // Get pointer to item to be drawn
       item=&__panel->items.data[__index];
       // Set font of current item
       item_font=get_file_panel_item_font (__panel, __index);
@@ -306,7 +306,7 @@ draw_full_row                     (const file_panel_t *__panel,
           case COLUMN_PERM:
             // Convert umask to string
             // NOTE: First char of string is reserved for
-            // directory/symlinklink prefix
+            // directory/symlink prefix
             umasktowcs (item->file->lstat.st_mode, pchar+1);
 
             // Append directory/symlink prefix to umask string
@@ -319,7 +319,7 @@ draw_full_row                     (const file_panel_t *__panel,
           case COLUMN_OCTPERM:
             {
               int mode=item->file->lstat.st_mode, j;
-              // Comvert digital value to string
+              // Convert digital value to string
               for (j=0; j<4; j++)
                 {
                   pchar[3-j]=mode%8+'0';
@@ -338,14 +338,14 @@ draw_full_row                     (const file_panel_t *__panel,
 }
 
 /**
- * Draws row of brief-vew table
+ * Draws row of brief-view table
  *
  * @param __panel - panel for which item is belong to
  * @param __intex - index of item in items list
  * @param __empty - is item empty?
  * This parameter is needed to draw empty rows of table
- * @return zero on succsess, non-zero if failed
  * @param __column_count - total count of columns
+ * @return zero on success, non-zero if failed
  */
 static int
 draw_brief_row                    (const file_panel_t *__panel,
@@ -379,7 +379,7 @@ draw_brief_row                    (const file_panel_t *__panel,
 
   if (!__empty)
     {
-      // Get pointer to item to be drawed
+      // Get pointer to item to be drawn
       item=&__panel->items.data[__index];
       // Set font of current item
       item_font=get_file_panel_item_font (__panel, __index);
@@ -398,8 +398,8 @@ draw_brief_row                    (const file_panel_t *__panel,
   initial_width=width=(__panel->widget->position.width-2)/__column_count;
 
   // For last column use the rest space of panel
-  // width=<full width of panel>-<borders>-<widths of standart columns>-
-  //       <cound of separators>
+  // width=<full width of panel>-<borders>-<widths of standard columns>-
+  //       <count of separators>
   if (last_column)
     width=__panel->widget->position.width-2-
       width*(__column_count-1)-(column_number);
@@ -417,8 +417,8 @@ draw_brief_row                    (const file_panel_t *__panel,
   print_column_string (layout, pchar, width,
     !last_column, item_font, __panel->widget->border_font, 0);
 
-  // If tehere is the first item in column,
-  // we should print a cption of column
+  // If there is the first item in column,
+  // we should print a caption of column
   if (!row_number)
     {
       scr_wnd_move_caret (layout, left_offset, row_number+1);
@@ -451,7 +451,7 @@ draw_brief_row                    (const file_panel_t *__panel,
  * Encloses columns
  *
  * @param __columns - descriptor of columns set
- * @param __layout - layout on which item will be drawed
+ * @param __layout - layout on which item will be drawn
  * @param __ch - char which will be used to wnclose columns
  * @param __row - row of layout where do enclosing
  */
@@ -477,7 +477,7 @@ encluse_columns                   (scr_window_t  __layout,
  * Draws items of panel in full-row mode
  *
  * @param __panel - panel from which draw items
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 static int
 draw_full_file_panel_items        (const file_panel_t *__panel)
@@ -487,7 +487,7 @@ draw_full_file_panel_items        (const file_panel_t *__panel)
   unsigned long        i, n,
                        start, per_page;
 
-  // Get layput of widget
+  // Get layout of widget
   if (!__panel || !(layout=WIDGET_LAYOUT ((WIDGET (__panel->widget)))))
     return -1;
 
@@ -503,7 +503,7 @@ draw_full_file_panel_items        (const file_panel_t *__panel)
   if (draw_columns_headers (__panel, &__panel->columns, layout))
     return -1;
 
-  // Draw all items avaliable for currect scrolling offset
+  // Draw all items available for correct scrolling offset
   for (i=0, n=MIN (per_page, __panel->items.length-start); i<n; i++)
     draw_full_row (__panel, i+start, FALSE);
 
@@ -523,7 +523,7 @@ draw_full_file_panel_items        (const file_panel_t *__panel)
  * Draws items of panel in brief mode
  *
  * @param __panel - panel from which draw items
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 static int
 draw_brief_file_panel_items       (const file_panel_t *__panel)
@@ -535,7 +535,7 @@ draw_brief_file_panel_items       (const file_panel_t *__panel)
   unsigned long        i,
                        start, per_page;
 
-  // Get layput of widget
+  // Get layout of widget
   if (!__panel || !(layout=WIDGET_LAYOUT ((WIDGET (__panel->widget)))))
     return -1;
 
@@ -549,7 +549,7 @@ draw_brief_file_panel_items       (const file_panel_t *__panel)
     column_count=COLUMNS_PER_BRIEF; else
     column_count=COLUMNS_PER_MEDIUM;
 
-  // Draw all items avaliable for currect scrolling offset
+  // Draw all items available for correct scrolling offset
   for (i=0; i<per_page; i++)
     {
       scr_wnd_font (layout, *__panel->widget->font);
@@ -578,7 +578,7 @@ update_scroll_data                (file_panel_t *__panel)
     {
       // Size of widget is too small, so
       // we can't properly calculate scrolling data.
-      // The safiest way - nothing to do
+      // The safest way - nothing to do
       return;
     }
 
@@ -594,7 +594,7 @@ update_scroll_data                (file_panel_t *__panel)
 
   if (__panel->items.current>=__panel->items.length)
     __panel->items.current=__panel->items.length-1;
-  
+
   // Come out of current displaying list of items
   if (__panel->items.current>widget->scroll_top+widget->items_per_page-1)
     widget->scroll_top=__panel->items.current-widget->items_per_page+1;
@@ -655,7 +655,7 @@ cursor_to_item                    (file_panel_t *__panel, wchar_t *__name)
  *
  * @param __panel - panel for which CWD must be changed
  * @param __sub_dir - name of subdirectory to CHDIR to
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 static int
 cwd_sink                          (file_panel_t  *__panel,
@@ -695,7 +695,7 @@ cwd_sink                          (file_panel_t  *__panel,
           // Redraw panel
           file_panel_draw (__panel);
 
-          // Some errors occured
+          // Some errors occurred
           message_box (_(L"Error"), _(L"Cannot change directory"),
             MB_CRITICAL|MB_OK);
 
@@ -714,14 +714,14 @@ cwd_sink                          (file_panel_t  *__panel,
       SAFE_FREE (s_cwd);
       free (new_cwd);
     }
-  
+
   return 0;
 }
 
 /**
  * Gets data from config
  *
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 static int
 read_config                       (void)
@@ -744,9 +744,9 @@ read_config                       (void)
 //
 
 /**
- * Intialize file panels' default actions stuff
+ * Initialize file panels' default actions stuff
  *
- * @return zero on sucsess and non-zero if operation failed
+ * @return zero on success and non-zero if operation failed
  */
 int
 file_panel_defact_init            (void)
@@ -800,14 +800,14 @@ file_panel_defact_onresize        (file_panel_t *__panel)
 }
 
 ////
-// Differenet handlers
+// Different handlers
 
 /**
  * Action for handling keydown event
  *
  * @param __panel - panel which received a keydown event
  * @param __ch - pointer to received character (not string!)
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 int
 file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
@@ -830,7 +830,7 @@ file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
     ////////
 
     case KEY_RETURN:
-      // Check is tehere any selected items
+      // Check is there any selected items
       if (__panel->items.length && __panel->items.current>=0 &&
           __panel->items.current<=__panel->items.length)
         {
@@ -856,10 +856,10 @@ file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
 //
 
 /**
- * Gets list of panel's items 
+ * Gets list of panel's items
  *
  * @param __panel - panel for which get items' list
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 int
 file_panel_defact_collect_items   (file_panel_t *__panel)
@@ -909,10 +909,10 @@ file_panel_defact_collect_items   (file_panel_t *__panel)
 }
 
 /**
- * Frees list of panel's items 
+ * Frees list of panel's items
  *
  * @param __panel - panel from which free items' list
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 int
 file_panel_defact_free_items      (file_panel_t *__panel)
@@ -945,7 +945,7 @@ file_panel_defact_free_items      (file_panel_t *__panel)
  * Default action to draw a list of panel's items
  *
  * @param __panel - panel for which draw item list
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 int
 file_panel_defact_draw_item_list  (file_panel_t *__panel)
@@ -954,14 +954,14 @@ file_panel_defact_draw_item_list  (file_panel_t *__panel)
   //
   // NOTE:
   //  User could changed a listing mode and we haven't handle this
-  //  in file_panel_set_listing_mode(). But maye be it would better
+  //  in file_panel_set_listing_mode(). But may be it would better
   //  if we handle this in those stuff?
   //
   update_scroll_data (__panel);
 
   //
   // TODO:
-  //  Add choosig of items' display mode here
+  //  Add choosing of items' display mode here
   //
 
   if (__panel->listing_mode==LISTING_MODE_FULL)
@@ -977,7 +977,7 @@ file_panel_defact_draw_item_list  (file_panel_t *__panel)
  * Draws a file panel's widget
  *
  * @param __panel_widget - widget to be drawn
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 int
 file_panel_defact_draw_widget     (file_panel_widget_t *__panel_widget)
@@ -1058,7 +1058,7 @@ file_panel_defact_widget_destructor(file_panel_widget_t *__widget)
  * Walk on file panel's widget
  *
  * @param __panel - panel in which we are walking
- * @param __direction of our walking. This values are posible:
+ * @param __direction of our walking. This values are possible:
  *   WALK_NEXT
  *   WALK_PREV
  *   WALK_NEXT_PAGE
@@ -1138,7 +1138,7 @@ file_panel_defact_walk            (file_panel_t *__panel, short __direction)
           }
 
         ////
-        // Make specifistic checking of scrolling
+        // Make special checking of scrolling
 
         // Come out of current displaying list of items
         if (__panel->items.current>scroll_top+per_page-1)
@@ -1161,9 +1161,9 @@ file_panel_defact_walk            (file_panel_t *__panel, short __direction)
 }
 
 /**
- * Sets cursor and centres view to item with specified name
+ * Sets cursor and centers view to item with specified name
  *
- * @paarm __panel - panel to operate with
+ * @param __panel - panel to operate with
  * @param __name - name of item to select
  */
 void
@@ -1177,7 +1177,7 @@ file_panel_defact_centre_to_item   (file_panel_t *__panel, wchar_t *__name)
 /**
  * Sets cursor and scrolls view to item with specified name
  *
- * @paarm __panel - panel to operate with
+ * @param __panel - panel to operate with
  * @param __name - name of item to select
  */
 void

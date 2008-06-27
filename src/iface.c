@@ -98,10 +98,10 @@ iface_init                        (void)
 {
   int res;
 
-  // Initialise terminal control
+  // Initialize terminal control
   _INIT_ITERATOR (screen_init, SM_COLOR);
 
-  // Initialise widgets
+  // Initialize widgets
   _INIT_ITERATOR (widgets_init);
 
 #ifdef SIGWINCH
@@ -125,7 +125,7 @@ iface_init                        (void)
 }
 
 /**
- * Uninitializes interface
+ * Uninitialized interface
  */
 void
 iface_done                        (void)
@@ -138,7 +138,7 @@ iface_done                        (void)
 }
 
 /**
- * Main loop of intarface
+ * Main loop of interface
  *
  * @return zero on success, non-zero on failure
  */

@@ -32,7 +32,7 @@ typedef struct {
   } buttons[MAX_BUTTONS];
 } btn_array_t;
 
-// Posibile sets of buttons
+// Possible sets of buttons
 static btn_array_t buttons[]={
     { 1, -1, { {MR_OK,    -1, L"_Ok"} } },
     { 2, -1, { {MR_OK,    -1, L"_Ok"},      {MR_CANCEL, -1, L"_Cancel"} } },
@@ -46,12 +46,12 @@ static btn_array_t buttons[]={
 //
 
 /**
- * Returns position of message (x,y-cooddinates and width/height)
+ * Returns position of message (x,y-coordinates and width/height)
  *
  * @param __caption - caption of message window
  * @param __text - text to display in message
  * @param - additional configuration flags of message's window
- * @params - array of buttons
+ * @param - array of buttons
  * @return position of message's window
  */
 static widget_position_t
@@ -68,7 +68,7 @@ msg_wnd_pos                       (const wchar_t     *__caption,
   res.width=wcslen (__caption)+6;
 
   // Is buttons are wider than caption
-  // 4 = 2 spaces for boprder + 2 spaces for padding
+  // 4 = 2 spaces for border + 2 spaces for padding
   res.width=MAX (res.width, __buttons->width+4);
 
   // Check is there is a wider line of text
@@ -157,12 +157,12 @@ msg_window_drawer                 (w_window_t *__window)
  *
  * @param __caption - caption of message
  * @param __text - text of message
- * @params __flags - other flags whish determines feel&look of message box.
+ * @param __flags - other flags which determines feel&look of message box.
  *  MB_CRITICAL - determines message is critical
   * This flags determines a set of buttons:
  *   MB_OK, MB_OKCANCEL, MB_YESNO, MB_YESNOCANCEL,
  *   MB_RETRYCANCEL, MB_RETRYSKIPCANCEL
- * This flagse determines an index of initially focused button:
+ * This flags determines an index of initially focused button:
  *   MB_DEFBUTTON_0, MB_DEFBUTTON_1, MB_DEFBUTTON_2
  *
  * @return modal result of message

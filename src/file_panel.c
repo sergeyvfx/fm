@@ -24,13 +24,13 @@ static file_panel_t *last_focused = NULL;
 static w_box_t *panels_grid;
 
 // Count of panels which will be created
-// during initialisation of panels stuff
+// during initialization of panels stuff
 static int default_panels_count = 2;
 
 ////////
 // Some helpful macroses
 
-// Macros for panels initialisation which creates new panel
+// Macros for panels initialization which creates new panel
 // and returns from file_panels_init with error
 #define SPAWN_NEW_PANEL() \
   if (!file_panel_create ()) \
@@ -42,7 +42,7 @@ static int default_panels_count = 2;
 //
 // name - name of file
 // size - size of file
-// time - last midification time
+// time - last modification time
 // perm - permissions of file in format rwxrwxrwx
 // octperm - permissions in octal format
 //
@@ -72,7 +72,7 @@ static wchar_t *orig_column_titles[]={
     L"Perm"
   };
 
-// Non-recalcuated widths of columns
+// Non-recalculated widths of columns
 static unsigned short orig_columns_widths[]={
   0,
   9,
@@ -82,7 +82,7 @@ static unsigned short orig_columns_widths[]={
 };
 
 ////////
-// Forward defenitions
+// Forward definitions
 
 static int     // Keydown callback for file panel widget
 file_panel_keydown                (file_panel_widget_t *__panel_widget,
@@ -195,7 +195,7 @@ columns_mask_parser_iterator      (wchar_t  *__data,
  * @param __panel - panel for which mask is parsing
  * @param __mask - mask of columns
  * will be stored
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 static int
 parse_columns_mask                (file_panel_t *__panel,
@@ -238,7 +238,7 @@ parse_columns_mask                (file_panel_t *__panel,
           i++;
         }
 
-      // If column type is cnown
+      // If column type is known
       if (column_type!=COLUMN_UNKNOWN)
         {
           wchar_t *title;
@@ -277,7 +277,7 @@ parse_columns_mask                (file_panel_t *__panel,
         }
     }
 
-  // Subrtact column separators
+  // Subtract column separators
   unused_width-=(columns->count-1);
 
   if (unused_width<0)
@@ -307,7 +307,7 @@ parse_columns_mask                (file_panel_t *__panel,
  * Refill items of panel
  *
  * @param __panel - panel for which items are refilling
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 static int
 refill_items                      (file_panel_t *__panel)
@@ -396,7 +396,7 @@ file_panel_create                 (void)
   parent=WIDGET (w_box_append_item (panels_grid, -1));
 
   ////
-  // General widget initialisation
+  // General widget initialization
   WIDGET_INIT (res->widget, file_panel_widget_t, WT_SINGLE, parent, 0,
     file_panel_defact_widget_destructor, file_panel_defact_draw_widget,
     0, 0, 1, 0, 0);
@@ -441,7 +441,7 @@ file_panel_create                 (void)
  * Destroys a file panel
  *
  * @param __panel - panel to destroy
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 static void
 file_panel_destructor             (void *__panel)
@@ -473,7 +473,7 @@ file_panel_destructor             (void *__panel)
 /**
  * Gets data from config
  *
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 static int
 read_config                       (void)
@@ -561,7 +561,7 @@ file_panel_keydown                (file_panel_widget_t *__panel_widget,
         return res;
     }
 
-  // Lets think that if user-defined handler hadn't hadled
+  // Lets think that if user-defined handler hadn't handled
   // action we should execute default keydown handler
   return file_panel_comm_keydown_handler (panel, (wchar_t*)&__ch);
 }
@@ -608,11 +608,11 @@ file_panel_focused                (file_panel_widget_t *__panel_widget)
 // User's backend
 
 /**
- * Initialises file panels
+ * Initializes file panels
  *
  * @param __parent - parent widget in which file panels' grid
  * will be integrated
- * @return zero on sucsess and non-zero if operation failed
+ * @return zero on success and non-zero if operation failed
  */
 int
 file_panels_init                  (widget_t *__parent)
@@ -621,7 +621,7 @@ file_panels_init                  (widget_t *__parent)
       // Get data from configuration
       read_config () ||
 
-      // Intialize file panels' default actions stuff
+      // Initialize file panels' default actions stuff
       file_panel_defact_init ())
     return -1;
 
@@ -640,7 +640,7 @@ file_panels_init                  (widget_t *__parent)
 }
 
 /**
- * Uninitialises file panels
+ * Uninitialize file panels
  */
 void
 file_panels_done                  (void)
@@ -670,7 +670,7 @@ file_panel_set_cwd                (file_panel_t *__panel,
     return -1;
 
   // If new CWD longer than allocated buffer
-  // re-alloc this buffer
+  // realloc this buffer
   if ((len=wcslen (__cwd))>=__panel->cwd.allocated_length)
     {
       __panel->cwd.data=realloc (__panel->cwd.data, (len+1)*sizeof (wchar_t));
@@ -727,7 +727,7 @@ file_panel_set_focus              (file_panel_t *__panel)
  * Draws a panel
  *
  * @param __panel - panel to draw
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 int
 file_panel_draw                   (file_panel_t *__panel)
@@ -742,7 +742,7 @@ file_panel_draw                   (file_panel_t *__panel)
  * Redraws a panel
  *
  * @param __panel - panel to draw
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 int
 file_panel_redraw                 (file_panel_t *__panel)
@@ -754,10 +754,10 @@ file_panel_redraw                 (file_panel_t *__panel)
 }
 
 /**
- * Refreshs file panel
+ * Refresh file panel
  *
  * @param __panel - panel to refresh
- * @return zero on succsess, non-zero if failed
+ * @return zero on success, non-zero if failed
  */
 int
 file_panel_refresh                (file_panel_t *__panel)
@@ -781,8 +781,8 @@ file_panel_refresh                (file_panel_t *__panel)
 /**
  * Rescans file panel
  *
- * @param __panel - panel to be rescaned
- * @return zero on succsess, non-zero if failed
+ * @param __panel - panel to be rescanned
+ * @return zero on success, non-zero if failed
  */
 int
 file_panel_rescan                 (file_panel_t *__panel)
@@ -910,7 +910,7 @@ file_panel_update_columns_widths  (file_panel_t *__panel)
         unset_count++;
     }
 
-  // Subrtact column separators
+  // Subtract column separators
   unused_width-=(columns->count-1);
 
   if (unused_width<0)

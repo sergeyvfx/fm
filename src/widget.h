@@ -136,13 +136,13 @@
 
 /**
  * Initializes new widget object
- * @param _widget - pointer to memery where bject will be created
+ * @param _widget - pointer to emery where object will be created
  * @param _datatype - datatype of widget (to determine size of object)
  * @param _parent - parent of widget
  * @param _destructor - function-destructor
  * @param _drawer - function-drawer
  * @param _x, _y, _z - coordinates of widget
- * @param _w, _h - dimesions of widget
+ * @param _w, _h - dimensions of widget
  */
 #define WIDGET_INIT(_widget, _datatype, _type, _parent, \
                     _flags, \
@@ -158,7 +158,7 @@
   (_widget)->methods.destroy = (widget_action)_destructor; \
   (_widget)->methods.draw    = (widget_action)_drawer; \
 \
-  /* Need this assigments here because this data */ \
+  /* Need this assignments here because this data */ \
   /* is needed for widget_create_layout() */ \
   (_widget)->parent=WIDGET (_parent); \
 \
@@ -232,7 +232,7 @@
 #define WIDGET_SAFE_SET_FONT(_w,_font,_val) if (_val) _w->_font=_val;
 
 ////////
-// Type defenitions
+// Type definitions
 
 typedef int (*widget_action)       (void *__widget);
 typedef int (*widget_keydown_proc) (void *__widget, wint_t __ch);
@@ -293,7 +293,7 @@ typedef struct {
   } container; \
   widget_t        *focused_widget; /* Ptr to focused widget */
 
-// Simpliest widget
+// Simplest widget
 typedef struct _widget_t {
   WIDGET_MEMBERS
 } widget_t;
@@ -318,7 +318,7 @@ typedef struct {
   } caption;
 
   unsigned int   style;
-  
+
   // Some deep-core info
   unsigned short show_mode;
   int            modal_result;
@@ -435,7 +435,7 @@ typedef struct {
   unsigned int       style; // Style of box
 
   // System info
-  BOOL    evaluted; // If sizes of item were evaluted?
+  BOOL    evaluted; // If sizes of item were evaluated?
 } w_box_t;
 
 ////////////////
@@ -460,7 +460,7 @@ widgets_init                      (void);
 void
 widgets_done                      (void);
 
-void           // Totally destroing of widget
+void           // Totally destroying of widget
 widget_destroy                    (widget_t *__widget);
 
 void
@@ -486,7 +486,7 @@ widget_on_scr_resize              (void);
 
 // Some helpers
 
-wchar_t       // Extracts shortcut key from etxt
+wchar_t       // Extracts shortcut key from text
 widget_shortcut_key               (const wchar_t *__text);
 
 int           // Length of text with shortcuts

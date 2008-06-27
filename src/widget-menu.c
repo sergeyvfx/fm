@@ -25,7 +25,7 @@
 // From which position sub-menus starts drawing
 #define SUMBENUS_LEFT           1
 // Padding of caption on sub-menu
-#define SUBMENU_CAPTION_PADDING 1 
+#define SUBMENU_CAPTION_PADDING 1
 // Padding for item in submenu
 #define SUBMENU_ITEM_PADDING    1
 
@@ -92,13 +92,13 @@ menu_destructor                   (w_menu_t *__menu)
 
   if (__menu->submenu_panel)
     {
-      panel_del (__menu->submenu_panel); 
+      panel_del (__menu->submenu_panel);
       scr_destroy_window (__menu->submenu_layout);
     }
 
   if (__menu->submenu_layout)
     scr_destroy_window (__menu->submenu_layout);
-  
+
   SAFE_FREE (__menu->sub_menus.data);
 
   free (__menu);
@@ -195,7 +195,7 @@ draw_submenu_item                 (const w_sub_menu_t *__sub_menu,
 /**
  * Draws a sub menu.
  *
- * @param __sub_menu - sub-menu to be drawed
+ * @param __sub_menu - sub-menu to be drawn
  */
 void
 draw_submenu                      (const w_sub_menu_t *__sub_menu)
@@ -285,7 +285,7 @@ submenu_position                  (const w_sub_menu_t *__sub_menu)
   // Calculate width
   for (i=0, n=__sub_menu->items.length; i<n; ++i)
     {
-      res.width=MAX (res.width, 
+      res.width=MAX (res.width,
         widget_shortcut_length (__sub_menu->items.data[i].caption)+
         2+SUBMENU_ITEM_PADDING*2);
     }
@@ -304,13 +304,13 @@ submenu_item_first                (const w_sub_menu_t *__sub_menu)
 {
   if (!__sub_menu->items.length)
     return -1;
-  
+
   short i, n=__sub_menu->items.length;
 
   for (i=0; i<n; ++i)
     if (!(__sub_menu->items.data[i].flags&SMI_SEPARATOR))
       return i;
-  
+
   return -1;
 }
 
@@ -335,7 +335,7 @@ submenu_item_next                 (const w_sub_menu_t *__sub_menu)
         res=(res+1)%n; else
         break;
     }
-  
+
   if (__sub_menu->items.data[res].flags&SMI_SEPARATOR)
     return -1;
 
@@ -389,7 +389,7 @@ unfold_submenu                    (w_sub_menu_t *__sub_menu)
 
   __sub_menu->cur_item_index=submenu_item_first (__sub_menu);
 
-  // Create a layout and panel (if neccessary)
+  // Create a layout and panel (if necessary)
   scr_window_t tmp=scr_create_window (pos.x, pos.y, pos.width, pos.height);
   if (!menu->submenu_layout)
     {
@@ -440,7 +440,7 @@ set_submenu_focused_item          (w_sub_menu_t *__sub_menu, short __index)
 {
   if (!__sub_menu)
     return;
-  
+
   short sindex=__sub_menu->cur_item_index;
   __sub_menu->cur_item_index=__index;
 
@@ -461,7 +461,7 @@ end_menu                          (w_menu_t *__menu)
   if (!__menu)
     return;
 
-  // After mapper finished, menu losts focus
+  // After mapper finished, menu lost focus
   WIDGET_CALL_CALLBACK (__menu, blured, __menu);
 
   if (__menu->style&WMS_HIDE_UNFOCUSED)
@@ -521,7 +521,7 @@ menu_keydown                      (w_menu_t *__menu, wint_t __ch)
         {
           short cur_index;
           menu_item_callback callback;
-          // Some checking to be shure all is good
+          // Some checking to be sure all is good
           if (__menu->cur_submenu &&
               (cur_index=__menu->cur_submenu->cur_item_index)>=0 &&
               cur_index<__menu->cur_submenu->items.length &&
@@ -590,14 +590,14 @@ menu_keydown                      (w_menu_t *__menu, wint_t __ch)
         return 0;
       }
     }
-  
+
   return 0;
 }
 
 /**
  * Handler of `focused` callback (system-based)
  *
- * @param __menu - menu which caucghted this callback
+ * @param __menu - menu which caughted this callback
  * @return zero if callback hasn't handled callback
  */
 static int
@@ -614,7 +614,7 @@ menu_focused                      (w_menu_t *__menu)
 
   __menu->active=TRUE;
 
-  // IDK what to di if tehere is no submenus
+  // IDK what to di if there is no submenus
   if (__menu->sub_menus.length)
     {
       show_menu (__menu);
@@ -629,7 +629,7 @@ menu_focused                      (w_menu_t *__menu)
 /**
  * Handler of `onresize` callback (system-based)
  *
- * @param __menu - menu which caucghted this callback
+ * @param __menu - menu which caughted this callback
  * @return zero if callback hasn't handled callback
  */
 static int
@@ -665,7 +665,7 @@ menu_onresize                     (w_menu_t *__menu)
 /**
  * Creates menu with specified style
  *
- * @param __style - style of menu. Posibile values:
+ * @param __style - style of menu. Possible values:
  *  WMS_HIDE_UNFOCUSED
  * @return pointer to new menu object
  */
@@ -743,7 +743,7 @@ w_menu_append_submenu             (w_menu_t *__menu, const wchar_t *__caption)
   res->menu=__menu;
 
   __menu->sub_menus.length++;
-  
+
   widget_redraw (WIDGET (__menu));
 
   return res;
@@ -753,7 +753,7 @@ w_menu_append_submenu             (w_menu_t *__menu, const wchar_t *__caption)
  * Appends an item to submenu
  *
  * @param __sub_menu - sub-menu where you want to append an item
- * @param __caption - caption of item (shortcuts are avaliable)
+ * @param __caption - caption of item (shortcuts are available)
  * @param __callback - callback to be called wgen user activates this item
  * @return pointer to new created item
  */
@@ -763,7 +763,7 @@ w_submenu_append_item             (w_sub_menu_t      *__sub_menu,
                                    menu_item_callback __callback,
                                    unsigned int       __flags)
 {
-  short index; // For some optimization of deferences
+  short index; // For some optimization of deference
 
   if (!__sub_menu)
     return 0;
@@ -773,7 +773,7 @@ w_submenu_append_item             (w_sub_menu_t      *__sub_menu,
 
   memset (&__sub_menu->items.data[index], 0,
     sizeof (__sub_menu->items.data[index]));
-  
+
   if (__caption && !(__flags&SMI_SEPARATOR))
     {
       __sub_menu->items.data[index].caption=wcsdup (__caption);

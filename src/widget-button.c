@@ -37,7 +37,7 @@ button_destructor                 (w_button_t *__button)
 /**
  * Draws a button
  *
- * @param __button - button to be drawed
+ * @param __button - button to be drawn
  * @return zero on success, non-zero on failure
  */
 static int
@@ -132,7 +132,7 @@ button_shortcut                   (w_button_t *__button)
 /**
  * Creates new button on parent and specified with caption, position and style
  *
- * @param __parent - parent of button. Shoudld be CONTAINER
+ * @param __parent - parent of button. Should be CONTAINER
  * @param __caption - caption on button
  * @param __x, __y - coordinates of button
  * @param __style of button. May be one or combination of:

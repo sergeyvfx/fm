@@ -22,7 +22,7 @@ BEGIN_HEADER
 #include <dirent.h>
 
 ////////
-// Type defenitions
+// Type definitions
 
 typedef int (*dirfilter_proc) (const struct dirent*);
 typedef int (*dircmp_proc)    (const void*, const void*);
@@ -30,7 +30,7 @@ typedef int (*dircmp_proc)    (const void*, const void*);
 ////////
 //
 
-int            // Widecharacter analog for system scandir
+int            // Wide character analog for system scandir
 wcscandir                         (const wchar_t  *__name,
                                    dirfilter_proc  __filer,
                                    dircmp_proc     __compar,
@@ -54,7 +54,7 @@ scandir_filter_skip_hidden        (const struct dirent * __data);
 int            // Alphabetically sorter for wcscandir
 wcscandir_alphasort               (const void *__a, const void *__b);
 
-int            // Separatelly alphabetically sorter for wcscandir
+int            // Separately alphabetically sorter for wcscandir
 wcscandir_alphasort_sep           (const void *__a, const void *__b);
 
 END_HEADER

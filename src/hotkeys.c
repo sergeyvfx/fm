@@ -27,8 +27,8 @@ static short queue_ptr=0;
 
 //
 // TODO:
-//  We'd better use some typy of hashing to make
-//  findning a hotkey faster.
+//  We'd better use some type of hashing to make
+//  finding a hotkey faster.
 //
 
 static struct {
@@ -93,11 +93,11 @@ check                             (void)
 }
 
 /**
- * Parses a key sequense into a numeric array of codes
+ * Parses a key sequence into a numeric array of codes
  *
- * @oaram __sequence - sequence to parse
+ * @param __sequence - sequence to parse
  * @param __res - pointer to array where to write result of parsing
- * @return length of sequence if succseed, -1 otherwise
+ * @return length of sequence if succeed, -1 otherwise
  */
 static short
 parse_sequence                    (const wchar_t *__sequence,
@@ -146,7 +146,7 @@ parse_sequence                    (const wchar_t *__sequence,
           i++;
           while (i<n && __sequence[i]>='0' && __sequence[i]<='9')
             f=f*10+__sequence[i++]-'0';
-          
+
           dummy=KEY_F(f);
         } else
           dummy=__sequence[i++]; // Simple character

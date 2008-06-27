@@ -40,7 +40,7 @@ edit_destructor                   (w_edit_t *__edit)
 /**
  * Draws a button
  *
- * @param __button - button to be drawed
+ * @param __button - button to be drawn
  * @return zero on success, non-zero on failure
  */
 static int
@@ -61,7 +61,7 @@ edit_drawer                       (w_edit_t *__edit)
   scr_wnd_move_caret (layout, __edit->position.x, __edit->position.y);
   scr_wnd_font (layout, *__edit->font);
 
-  // Calculate length of text wich has to be printed
+  // Calculate length of text which has to be printed
   scrolled  =__edit->scrolled;
   len       = wcslen (__edit->text.data);
   w         = __edit->position.width;
@@ -73,7 +73,7 @@ edit_drawer                       (w_edit_t *__edit)
   for (i=0; i<printed_len; i++)
     scr_wnd_add_wchar (layout, __edit->text.data[i+scrolled]);
 
-  // Print spaces to make edit needeed width
+  // Print spaces to make edit needed width
   for (i=printed_len; i<__edit->position.width; i++)
     scr_wnd_putch (layout, ' ');
 
@@ -95,7 +95,7 @@ static int
 edit_focused                      (w_edit_t *__edit)
 {
   _WIDGET_CALL_USER_CALLBACK (__edit, focused, __edit);
-  
+
   // We shoud show a caret when edit box is focused
   scr_show_curser ();
 
@@ -123,7 +123,7 @@ edit_blured                       (w_edit_t *__edit)
  * Synchronizes allocated buffer length with
  * stored string length
  *
- * @param __edit - edit for which buffer will be synchranized
+ * @param __edit - edit for which buffer will be synchronized
  */
 static void
 edit_sync_buffer                  (w_edit_t *__edit)
@@ -152,7 +152,7 @@ edit_sync_buffer                  (w_edit_t *__edit)
         } else
       if (alloc_len-txt_len>BUFFER_REALLOC_DELTA)
         {
-          // Length of current text is much sghorter than allocated
+          // Length of current text is much shorter than allocated
           // buffer. It'll be better is we'll truncate buffer to
           // save memory
           new_len=txt_len+BUFFER_REALLOC_DELTA;
@@ -171,7 +171,7 @@ edit_sync_buffer                  (w_edit_t *__edit)
 /**
  * Validates data needed for text scrolling in widget
  *
- * @param __edit - edit for which walidate scrolling information
+ * @param __edit - edit for which validate scrolling information
  */
 static void
 edit_validate_scrolling           (w_edit_t *__edit)
@@ -273,9 +273,9 @@ edit_keydown                      (w_edit_t *__edit, wint_t __ch)
 
           size_t i, len=wcslen (__edit->text.data);
 
-          // Synchronize buffer to make shure that there is
-          // enought memory to append character
-          edit_sync_buffer (__edit);  
+          // Synchronize buffer to make sure that there is
+          // enough memory to append character
+          edit_sync_buffer (__edit);
 
           // Shift buffer
           for (i=len; i>__edit->caret_pos; --i)
@@ -303,7 +303,7 @@ edit_keydown                      (w_edit_t *__edit, wint_t __ch)
 /**
  * Creates new edit box
  *
- * @param __parent - parent of edit. Shoudld be CONTAINER
+ * @param __parent - parent of edit. Should be CONTAINER
  * @param __x, __y - coordinates of edit
  * @param __width - width of edit
  *
