@@ -36,7 +36,7 @@ menu_hotkey_callback              (void)
  * Callback for File->Exit
  */
 static int
-menu_exit_clicked                 (void)
+menu_exit_clicked                 (void *__user_data ATTR_UNUSED)
 {
   iface_act_exit ();
   return 0;

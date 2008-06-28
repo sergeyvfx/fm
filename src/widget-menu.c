@@ -528,10 +528,13 @@ menu_keydown                      (w_menu_t *__menu, wint_t __ch)
               (callback=__menu->cur_submenu->items.data[cur_index].callback)
              )
           {
+            void *user_data;
+            user_data=__menu->cur_submenu->items.data[cur_index].user_data;
+
 #ifdef END_MENU_ON_CALLBACK
             end_menu (__menu);
 #endif
-            callback ();
+            callback (user_data);
           }
         } else
           unfold_submenu (__menu->cur_submenu);
@@ -557,13 +560,17 @@ menu_keydown                      (w_menu_t *__menu, wint_t __ch)
         wchar_t tmp=towlower (__ch);
         if (__menu->unfolded && __menu->cur_submenu)
           {
+            w_sub_menu_item_t *item;
             for (i=0; i<__menu->cur_submenu->items.length; ++i)
               {
-                if (__menu->cur_submenu->items.data[i].shortcut==tmp)
+                item=&__menu->cur_submenu->items.data[i];
+                if (item->shortcut==tmp)
                   {
                     found=TRUE;
-                    if (__menu->cur_submenu->items.data[i].callback)
-                      __menu->cur_submenu->items.data[i].callback ();
+                    if (item->callback)
+                      {
+                        item->callback (item->user_data);
+                      }
                   }
               }
           }
@@ -748,8 +755,9 @@ w_menu_append_submenu             (w_menu_t *__menu, const wchar_t *__caption)
  * @param __sub_menu - sub-menu where you want to append an item
  * @param __caption - caption of item (shortcuts are avaliable)
  * @param __callback - callback to be called wgen user activates this item
+ * @return pointer to new created item
  */
-void
+w_sub_menu_item_t*
 w_submenu_append_item             (w_sub_menu_t      *__sub_menu,
                                    const wchar_t     *__caption,
                                    menu_item_callback __callback,
@@ -758,10 +766,10 @@ w_submenu_append_item             (w_sub_menu_t      *__sub_menu,
   short index; // For some optimization of deferences
 
   if (!__sub_menu)
-    return;
+    return 0;
 
   __sub_menu->items.data=realloc (__sub_menu->items.data,
-    ((index=__sub_menu->items.length)+1)*sizeof (*__sub_menu->items.data));
+    ((index=__sub_menu->items.length)+1)*sizeof (w_sub_menu_item_t));
 
   memset (&__sub_menu->items.data[index], 0,
     sizeof (__sub_menu->items.data[index]));
@@ -776,6 +784,8 @@ w_submenu_append_item             (w_sub_menu_t      *__sub_menu,
   __sub_menu->items.data[index].callback=__callback;
 
   __sub_menu->items.length++;
+
+  return &__sub_menu->items.data[index];
 }
 
 void

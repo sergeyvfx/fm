@@ -362,19 +362,22 @@ typedef struct {
 // Menus
 
 struct w_menu_t_entry;
-typedef int (*menu_item_callback) (void);
+typedef int (*menu_item_callback) (void *__user_data);
+
+typedef struct {
+  wchar_t            *caption; // Caption of item
+  wchar_t            shortcut;
+  unsigned int       flags;
+  void               *user_data;
+  menu_item_callback callback;
+} w_sub_menu_item_t;
 
 typedef struct {
   wchar_t                *caption;  // Caption of sub-menu
   wchar_t                shortcut;
 
   struct {
-    struct {
-      wchar_t            *caption; // Caption of item
-      wchar_t            shortcut;
-      unsigned int       flags;
-      menu_item_callback callback;
-    } *data;
+    w_sub_menu_item_t *data;
     unsigned short length;
   } items;
 
@@ -612,7 +615,7 @@ w_menu_append_submenu             (w_menu_t *__menu, const wchar_t *__caption);
 void
 w_menu_hide                       (w_menu_t *__menu);
 
-void
+w_sub_menu_item_t*
 w_submenu_append_item             (w_sub_menu_t       *__sub_menu,
                                    const wchar_t      *__caption,
                                    menu_item_callback  __callback,
