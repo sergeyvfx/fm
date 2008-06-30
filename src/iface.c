@@ -114,12 +114,12 @@ iface_init                        (void)
   // Create all widgets
   _INIT_ITERATOR (create_widgets);
 
+  file_panels_init (WIDGET (w_box_item (main_box, 1)));
+
   // Create menu
   _INIT_ITERATOR (iface_create_menu);
 
   hotkey_register (L"F10", exit_hotkey);
-
-  file_panels_init (WIDGET (w_box_item (main_box, 1)));
 
   return 0;
 }

@@ -11,6 +11,7 @@
  */
 
 #include "file_panel.h"
+#include "file_panel-defact.h"
 #include "dir.h"
 #include "util.h"
 #include "messages.h"
@@ -51,6 +52,16 @@
 
 // Count of columns for medium listing mode
 #define COLUMNS_PER_MEDIUM 2
+
+////
+// Macros
+
+#define PANEL_DATA(_panel)   ((fpd_data_t*)(_panel->user_data))
+#define _CREATE_MENU_ITEM(_caption, _callback) \
+  item=w_submenu_append_item (__submenu, _(_caption), _callback, 0); \
+  if (!item) \
+    return -1; \
+  item->user_data=__panel;
 
 ////////
 //
@@ -740,6 +751,61 @@ read_config                       (void)
   return 0;
 }
 
+/**
+ * Fills an user's data for panel with default values
+ *
+ * @param __panel - panel to operate with
+ */
+static void
+set_default_userdata              (file_panel_t *__panel)
+{
+  if (!__panel || !__panel->user_data)
+    return;
+
+  fpd_data_t *data=PANEL_DATA (__panel);
+
+  data->dir.comparator = wcscandir_alphasort_sep;
+  data->dir.filter     = scandir_filter_skip_hidden;
+}
+
+/**
+ * Opens specified item of panel
+ *
+ * @param __panel - panel, item from which will be opened
+ * @param __item - item to be opened
+ * @return zero on success, non-zero on failure
+ */
+static int
+open_file                         (file_panel_t      *__panel,
+                                   file_panel_item_t *__item)
+{
+  MESSAGE_ERROR (_(L"This feature is not implemented yet"));
+
+  //
+  // TODO:
+  //  1. Call an 'open-file' hook
+  //  2. Grep customized mime database
+  //  3. Grep default mime database
+  //
+
+  return -1;
+}
+
+/**
+ * Opens current item of panel
+ *
+ * @param __panel - panel, item from which will be opened
+ * @return zero on success, non-zero on failure
+ */
+static int
+open_current_file                 (file_panel_t *__panel)
+{
+  if (!__panel || __panel->items.current>=__panel->items.length)
+    return -1;
+
+  return open_file (__panel, &__panel->items.data[__panel->items.current]);
+}
+
 ////////
 //
 
@@ -764,6 +830,41 @@ file_panel_defact_init            (void)
 void
 file_panel_defact_done            (void)
 {
+}
+
+/**
+ * Handler of `create` action
+ *
+ * @param __panel - panel for which this action is applying
+ * @return zero on success, non-zero if failed
+ */
+int
+file_panel_defact_create          (file_panel_t *__panel)
+{
+  if (!__panel)
+    return -1;
+
+  __panel->user_data=malloc (sizeof (fpd_data_t));
+  set_default_userdata (__panel);
+
+  return 0;
+}
+
+/**
+ * Handler of `destroy` action
+ *
+ * @param __panel - panel for which this action is applying
+ * @return zero on success, non-zero if failed
+ */
+int
+file_panel_defact_destroy         (file_panel_t *__panel)
+{
+  if (!__panel || !__panel->user_data)
+    return -1;
+
+  free (__panel->user_data);
+
+  return 0;
 }
 
 /**
@@ -840,8 +941,12 @@ file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
 
           if (S_ISDIR (item->file->stat.st_mode))
             {
+              // Need to change CWD
               cwd_sink (__panel, item->file->name);
               file_panel_redraw (__panel);
+            } else {
+              // Need to open file
+              open_current_file (__panel);
             }
         }
       break;
@@ -873,8 +978,10 @@ file_panel_defact_collect_items   (file_panel_t *__panel)
 
   cwd_root=!wcscmp (__panel->cwd.data, L"/");
 
-  count=wcscandir (__panel->cwd.data, scandir_filter_skip_hidden,
-    wcscandir_alphasort_sep, &list);
+  count=wcscandir (__panel->cwd.data,
+    PANEL_DATA (__panel)->dir.filter,
+    PANEL_DATA(__panel)->dir.comparator,
+    &list);
 
   __panel->items.length=0;
 
@@ -1165,13 +1272,19 @@ file_panel_defact_walk            (file_panel_t *__panel, short __direction)
  *
  * @param __panel - panel to operate with
  * @param __name - name of item to select
+ * @return zero on success, non-zero on failure
  */
-void
+int
 file_panel_defact_centre_to_item   (file_panel_t *__panel, wchar_t *__name)
 {
+  if (!__panel || !__name)
+    return -1;
+
   cursor_to_item (__panel, __name);
   centralize_current_item (__panel);
   file_panel_draw (__panel);
+
+  return 0;
 }
 
 /**
@@ -1179,11 +1292,40 @@ file_panel_defact_centre_to_item   (file_panel_t *__panel, wchar_t *__name)
  *
  * @param __panel - panel to operate with
  * @param __name - name of item to select
+ * @return zero on success, non-zero on failure
  */
-void
+int
 file_panel_defact_scroll_to_item  (file_panel_t *__panel, wchar_t *__name)
 {
+  if (!__panel || !__name)
+    return -1;
+
   cursor_to_item (__panel, __name);
   update_scroll_data (__panel);
   file_panel_draw (__panel);
+
+  return 0;
+}
+
+/**
+ * Fills submenu with panel-related items
+ *
+ * @param __panel - for which panel this method has been called
+ * @param __submenu - in which submenu items will be added
+ * @return zero on success, non-zero on failure
+ */
+int
+file_panel_defact_fill_submenu    (file_panel_t *__panel,
+                                   w_sub_menu_t *__submenu)
+{
+  w_sub_menu_item_t *item;
+
+  if (!__panel || !__submenu)
+    return -1;
+
+  _CREATE_MENU_ITEM (L"_Listing mode...", 0);
+  w_submenu_append_item (__submenu, 0, 0, SMI_SEPARATOR);
+  _CREATE_MENU_ITEM (L"_Sort order...", fpd_sortorder_menu_callback);
+
+  return 0;
 }

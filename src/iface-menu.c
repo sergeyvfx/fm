@@ -14,6 +14,7 @@
 #include "widget.h"
 #include "hotkeys.h"
 #include "i18n.h"
+#include "file_panel.h"
 
 ///////
 // Variables
@@ -34,12 +35,38 @@ menu_hotkey_callback              (void)
 
 /**
  * Callback for File->Exit
+ *
+ * @return zero on success, non-zero otherwise
  */
 static int
 menu_exit_clicked                 (void *__user_data ATTR_UNUSED)
 {
   iface_act_exit ();
   return 0;
+}
+
+/**
+ * Creates submenu for specified file panel
+ *
+ * @param __panel - for which panel submenu will be created
+ */
+static void
+create_panel_submenu              (file_panel_t *__panel)
+{
+  w_sub_menu_t *sm;
+
+  sm=w_menu_append_submenu (menu, _(L"_Panel"));
+
+  // Panel-specified items
+  FILE_PANEL_DATA_ACTION_CALL (__panel, fill_submenu, sm);
+
+  // Hack to add separator if there are any
+  // items from panel added
+  if (sm->items.length)
+    w_submenu_append_item (sm, 0, 0, SMI_SEPARATOR);
+
+  // Add panel-independent items
+  w_submenu_append_item (sm, _(L"_Rescan"), 0, 0);
 }
 
 /**
@@ -60,6 +87,11 @@ fill_menu_items                   (void)
 
   // Creating of submenu 'Command'
   sm=w_menu_append_submenu (menu, _(L"_Options"));
+
+  //
+  // DEBUG CODE
+  //
+  create_panel_submenu (current_panel);
 
   // Creating of submenu 'Help'
   sm=w_menu_append_submenu (menu, _(L"_Help"));

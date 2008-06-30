@@ -154,24 +154,50 @@ typedef struct {
 
   unsigned int       listing_mode; // Listing mode
 
+  void*              user_data;    // Data for internal panel's
+                                   // stuff usage
+
   // Actions on the panel
   struct {
+    ////
+    // Construcotr/destructor
+    file_panel_action      create;
+    file_panel_action      destroy;
+
+    /////
+    // Misc.
     file_panel_action      collect_items;  // Fills items list
     file_panel_action      free_items;     // Frees items list
     file_panel_action      item_user_data_deleter; // Deleter of item's
                                                    // user-defined data
     file_panel_action      draw_items;     // Draws list of items
+
+    file_panel_data_action scroll_to_item; // Set cursor to item and
+                                           // scroll to view
+    file_panel_data_action centre_to_item; // Set cursor to item and
+                                           // centres view
+
+    ////
+    // Handlers
+    file_panel_data_action keydown_handler;// Handles keyboard input
+
+    ////
+    // Events
     file_panel_action      onrefresh;      // Action after re-filling item list
                                            // and before drawing a panel
     file_panel_action      onresize;       // Action after re-filling item list
                                            // and before drawing a panel
-    file_panel_data_action keydown_handler;// Handles keyboard input
-    file_panel_data_action scroll_to_item; // Set cursor to item and
-                                           // scroll to view
-    file_panel_data_action centre_to_item; // Set cursor to item and
-                                           // centers view
+
+    ////
+    // iface
+    file_panel_data_action fill_submenu;   // Creates items in specified
+                                           // submneu
   } actions;
 } file_panel_t;
+
+////////
+// Global variables
+extern file_panel_t *current_panel;
 
 ////////
 // Common stuff
@@ -226,6 +252,12 @@ void           // Unintialize file panels' default actions stuff
 file_panel_defact_done            (void);
 
 int
+file_panel_defact_create          (file_panel_t *__panel);
+
+int
+file_panel_defact_destroy         (file_panel_t *__panel);
+
+int
 file_panel_defact_collect_items   (file_panel_t *__panel);
 
 int
@@ -252,11 +284,15 @@ file_panel_defact_onresize        (file_panel_t *__panel);
 int
 file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch);
 
-void
+int
 file_panel_defact_centre_to_item  (file_panel_t *__panel, wchar_t *__name);
 
-void
+int
 file_panel_defact_scroll_to_item  (file_panel_t *__panel, wchar_t *__name);
+
+int
+file_panel_defact_fill_submenu    (file_panel_t *__panel,
+                                   w_sub_menu_t *__submenu);
 
 END_HEADER
 

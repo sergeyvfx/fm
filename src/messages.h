@@ -43,6 +43,9 @@ BEGIN_HEADER
 #define MB_BUTTON_CODE(_x)   ((_x>>8)%16%6)
 #define MB_DEFBUTTON(_x)     ((_x>>12)%4%3)
 
+#define MESSAGE_ERROR(_text) \
+  message_box (_(L"Error"), _(_text), MB_OK|MB_CRITICAL);
+
 //////
 //
 

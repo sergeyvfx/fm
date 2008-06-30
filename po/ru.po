@@ -9,20 +9,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+# Messages
+
 msgid "Information"
 msgstr "Информация"
-
-msgid "_File"
-msgstr "_Файл"
-
-msgid "_Exit"
-msgstr "_Выход"
-
-msgid "_About..."
-msgstr "_О программе..."
-
-msgid "_Help"
-msgstr "_Помощь"
 
 msgid "_Ok"
 msgstr "_Ок"
@@ -42,14 +32,60 @@ msgstr "_Повтор"
 msgid "_Skip"
 msgstr "_Пропустить"
 
-msgid "Are you sure you want to quit?"
-msgstr "Вы действительно хотите закончить работу?"
-
 msgid "Critical"
 msgstr "Важно!"
 
+msgid "Error"
+msgstr "Ошибка"
+
+# Strings from messages
+
+msgid "Are you sure you want to quit?"
+msgstr "Вы действительно хотите закончить работу?"
+
+msgid "Error creating window"
+msgstr "Ошибка создания окна"
+
+msgid "File panel isn't associated with menu item"
+msgstr "С этим пунктом меню не связана файловая панель"
+
+msgid "This feature is not implemented yet"
+msgstr "Эта возможность еще не реализована"
+
+# Menu
+
+msgid "_File"
+msgstr "_Файл"
+
+msgid "_Exit"
+msgstr "_Выход"
 msgid "_Command"
 msgstr "_Команда"
 
 msgid "_Options"
 msgstr "_Настройки"
+
+msgid "_Panel"
+msgstr "_Панель"
+
+msgid "_Listing mode..."
+msgstr "_Формат списка..."
+
+msgid "_Sort order..."
+msgstr "_Порядок сортировки..."
+
+msgid "_Rescan"
+msgstr "_Обновить список..."
+
+msgid "_Help"
+msgstr "_Помощь"
+
+msgid "_About..."
+msgstr "_О программе..."
+
+# Windows
+
+# Sort order
+
+msgid "Sort order"
+msgstr "Порядок сортировки"

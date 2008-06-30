@@ -10,12 +10,12 @@
  * See the file COPYING.
  */
 
-#include <malloc.h>
-#include <wchar.h>
-
+#include "hook.h"
 #include "types.h"
 #include "deque.h"
-#include "hook.h"
+
+#include <malloc.h>
+#include <wchar.h>
 
 typedef struct {
     hook_callback_proc  callback;

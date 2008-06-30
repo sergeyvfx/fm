@@ -11,6 +11,9 @@
  */
 
 #include "file_panel.h"
+
+
+#include "file_panel.h"
 #include "deque.h"
 
 ////////
@@ -26,6 +29,8 @@ static w_box_t *panels_grid;
 // Count of panels which will be created
 // during initialization of panels stuff
 static int default_panels_count = 2;
+
+file_panel_t *current_panel=NULL;
 
 ////////
 // Some helpful macroses
@@ -341,6 +346,9 @@ refill_items                      (file_panel_t *__panel)
 static void
 set_default_actions               (file_panel_t *__panel)
 {
+  SET_PANEL_ACTION (__panel, create,         file_panel_defact_create);
+  SET_PANEL_ACTION (__panel, destroy,        file_panel_defact_destroy);
+
   SET_PANEL_ACTION (__panel, collect_items,  file_panel_defact_collect_items);
   SET_PANEL_ACTION (__panel, free_items,     file_panel_defact_free_items);
   SET_PANEL_ACTION (__panel, item_user_data_deleter, 0);
@@ -364,6 +372,9 @@ set_default_actions               (file_panel_t *__panel)
   // make less scrolling.
   SET_PANEL_DATA_ACTION (__panel, scroll_to_item,
     file_panel_defact_scroll_to_item);
+
+  SET_PANEL_DATA_ACTION (__panel, fill_submenu,
+    file_panel_defact_fill_submenu);
 }
 
 /**
@@ -388,12 +399,17 @@ static file_panel_t*
 file_panel_create                 (void)
 {
   file_panel_t *res;
+  BOOL prev;
   widget_t *parent;
 
   // Allocate memory for panel and its widget
   MALLOC_ZERO (res, sizeof (file_panel_t));
 
   parent=WIDGET (w_box_append_item (panels_grid, -1));
+
+  // Fill up the actions
+  set_default_actions (res);
+  FILE_PANEL_ACTION_CALL (res, create);
 
   ////
   // General widget initialization
@@ -411,9 +427,6 @@ file_panel_create                 (void)
   // userdata in widget
   WIDGET_USER_DATA (WIDGET (res->widget))=res;
 
-  // Fill up the actions
-  set_default_actions (res);
-
   // Fill up callbacks
   WIDGET_CALLBACK (WIDGET (res->widget), keydown)=
     (widget_keydown_proc)file_panel_keydown;
@@ -428,9 +441,11 @@ file_panel_create                 (void)
 
   set_default_params (res);
 
+  prev=deque_head (panels)!=NULL;
+
   deque_push_back (panels, res);
 
-  if (!last_focused)
+  if (!prev)
     file_panel_set_focus (res); else
     file_panel_redraw (res);
 
@@ -450,6 +465,8 @@ file_panel_destructor             (void *__panel)
     return;
 
   file_panel_t *panel=__panel;
+
+  FILE_PANEL_ACTION_CALL (panel, destroy);
 
   // Delete widget from widget tree (destructor will be applied)
   w_container_delete (WIDGET_CONTAINER (panel->widget->parent),
@@ -718,6 +735,8 @@ file_panel_set_focus              (file_panel_t *__panel)
     __panel->actions.onrefresh (__panel);
 
   widget_set_focus (WIDGET (__panel->widget));
+
+  current_panel=__panel;
 
   // Store last focused panel
   last_focused=__panel;

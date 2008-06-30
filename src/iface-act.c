@@ -19,6 +19,9 @@
 ////////
 // User's backend
 
+/**
+ * Prompted exiting from program
+ */
 void
 iface_act_exit                    (void)
 {
