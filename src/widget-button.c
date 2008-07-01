@@ -30,6 +30,10 @@ button_destructor                 (w_button_t *__button)
   if (__button->caption)
     free (__button->caption);
 
+  // Destroy screen layout
+  if (WIDGET_LAYOUT (__button))
+      scr_destroy_window (WIDGET_LAYOUT (__button));
+
   free (__button);
   return 0;
 }

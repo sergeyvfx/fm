@@ -33,6 +33,10 @@ edit_destructor                   (w_edit_t *__edit)
   if (!__edit)
     return -1;
 
+  // Destroy screen layout
+  if (WIDGET_LAYOUT (__edit))
+      scr_destroy_window (WIDGET_LAYOUT (__edit));
+
   free (__edit);
   return 0;
 }
