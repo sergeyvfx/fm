@@ -35,6 +35,7 @@ SOURCES = \
 	dir.c \
 	util.c \
 	deque.c \
+	hashmap.c \
 	hook.c
 
 OBJECTS = ${SOURCES:.c=.o}
