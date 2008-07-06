@@ -122,6 +122,8 @@ AC_OUTPUT([
 Makefile
 mk/rules.mk
 src/Makefile
+src/vfs/Makefile
+src/vfs/plugins/file/Makefile
 po/Makefile
 ])
 

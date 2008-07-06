@@ -21,4 +21,7 @@ wchar_t*       // Fit string to specified length
 wcsfit                            (const wchar_t *__str, size_t __len,
                                    const wchar_t *__suffix);
 
+wchar_t*       // Copies at most n characters of string
+wcsndup                           (const wchar_t *__s, size_t __n);
+
 #endif

@@ -1,0 +1,20 @@
+.SILENT:
+
+top_builddir = ../..
+
+include ${top_builddir}/mk/rules.mk
+include ${top_builddir}/mk/init.mk
+
+SUBDIRS = plugins 
+
+OBJECTIVE_LIBS_NOINST = libvfs.a
+LDFLAGS += -Wl,-export-dynamic
+
+SOURCES = \
+	vfs.c \
+	url.c \
+	plugin.c
+
+OBJECTS = ${SOURCES:.c=.o}
+
+include ${top_builddir}/mk/objective.mk

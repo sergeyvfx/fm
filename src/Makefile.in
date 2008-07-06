@@ -5,12 +5,11 @@ top_builddir = ..
 include ${top_builddir}/mk/rules.mk
 include ${top_builddir}/mk/init.mk
 
-SUBDIRS = 
+SUBDIRS = vfs 
 
 OBJECTIVE_BINS = fm
 
-LIBADD = -Wl,-export-dynamic -ldl -lncursesw -lpanel -lm 
-CFLAGS += 
+LIBADD = -ldl -lncursesw -lpanel -lm -Lvfs -lvfs
 
 HEADERS = 
 SOURCES = \

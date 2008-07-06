@@ -39,9 +39,9 @@
  * @param __hash - hash value of element (need for optimized calls)
  */
 static hashmap_entry_t*
-get_entry_full                    (hashmap_t *__hashmap,
-                                   void      *__key,
-                                   hash_t    __hash)
+get_entry_full                    (const hashmap_t *__hashmap,
+                                   const void      *__key,
+                                   hash_t           __hash)
 {
   if (!__hashmap)
     return NULL;
@@ -65,8 +65,8 @@ get_entry_full                    (hashmap_t *__hashmap,
  * @param __key - key of element to return
  */
 static hashmap_entry_t*
-get_entry                         (hashmap_t *__hashmap,
-                                   void      *__key)
+get_entry                         (const hashmap_t *__hashmap,
+                                   const void      *__key)
 {
   if (!__hashmap)
     return NULL;
@@ -205,8 +205,8 @@ hashmap_destroy_full                (hashmap_t         *__hashmap,
  */
 void
 hashmap_set                         (hashmap_t         *__hashmap,
-                                     void              *__key,
-                                     void              *__value)
+                                     const void        *__key,
+                                     const void        *__value)
 {
   if (!__hashmap)
     return;
@@ -228,8 +228,8 @@ hashmap_set                         (hashmap_t         *__hashmap,
  */
 void
 hashmap_set_full                    (hashmap_t         *__hashmap,
-                                     void              *__key,
-                                     void              *__value,
+                                     const void        *__key,
+                                     const void        *__value,
                                      hashmap_deleter   __deleter)
 {
   if (!__hashmap)
@@ -244,17 +244,17 @@ hashmap_set_full                    (hashmap_t         *__hashmap,
 
       // Delete old value
       if (__deleter)
-        __deleter (__value);
+        __deleter (elem->value);
 
       // Set new value
-      elem->value=__value;
+      elem->value=(void*)__value;
     } else {
       // Need to create new entry
       hashmap_entry_t *new=malloc (sizeof (hashmap_entry_t));
 
       new->key=__hashmap->key_duplicator (__key);
 
-      new->value = __value;
+      new->value = (void*)__value;
       new->next  = __hashmap->data[h];
 
       __hashmap->data[h]=new;
@@ -270,7 +270,8 @@ hashmap_set_full                    (hashmap_t         *__hashmap,
  * NULL otherwise
  */
 void*
-hashmap_get                         (hashmap_t *__hashmap, void *__key)
+hashmap_get                         (const hashmap_t *__hashmap,
+                                     const void *__key)
 {
   hashmap_entry_t *elem=get_entry (__hashmap, __key);
 
@@ -288,7 +289,8 @@ hashmap_get                         (hashmap_t *__hashmap, void *__key)
  * @return TRUE is element is defined, FALSE otherwise
  */
 BOOL
-hashmap_isset                       (hashmap_t *__hashmap, void *__key)
+hashmap_isset                       (const hashmap_t *__hashmap,
+                                     const void *__key)
 {
   return get_entry (__hashmap, __key)!=NULL;
 }
@@ -300,7 +302,7 @@ hashmap_isset                       (hashmap_t *__hashmap, void *__key)
  * @param __key - key of element to unset
  */
 void
-hashmap_unset                       (hashmap_t *__hashmap, void *__key)
+hashmap_unset                       (hashmap_t *__hashmap, const void *__key)
 {
   if (!__hashmap)
     return;
@@ -316,7 +318,7 @@ hashmap_unset                       (hashmap_t *__hashmap, void *__key)
  */
 void
 hashmap_unset_full                  (hashmap_t       *__hashmap,
-                                     void            *__key,
+                                     const void      *__key,
                                      hashmap_deleter  __deleter)
 {
   if (!__hashmap)
@@ -399,11 +401,12 @@ hashmap_unset_all_full              (hashmap_t       *__hashmap,
  * @return hash of key
  */
 static hash_t
-wck_hash_func                       (hashmap_t *__hashmap, void *__key)
+wck_hash_func                       (const hashmap_t *__hashmap,
+                                     const void *__key)
 {
   hash_t h=0;
   size_t i, n;
-  wchar_t *key=__key;
+  wchar_t *key=(wchar_t*)__key;
 
   for (i=0, n=wcslen (key); i<n; i++)
     h=(h*WCK_MAGICK_CONST+key[i])%__hashmap->data_length;
@@ -428,7 +431,7 @@ wck_key_deleter                     (void *__key)
  * @return see wcscmp()
  */
 static short
-wck_key_comparator                  (void *__key1, void *__key2)
+wck_key_comparator                  (const void *__key1, const void *__key2)
 {
   return wcscmp (__key1, __key2);
 }
@@ -440,7 +443,7 @@ wck_key_comparator                  (void *__key1, void *__key2)
  * @return clone of key
  */
 static void*
-wck_keydup                          (void *__key)
+wck_keydup                          (const void *__key)
 {
   return wcsdup (__key);
 }

@@ -26,10 +26,12 @@ struct _hashmap_t;
 typedef struct _hashmap_t hashmap_t;
 typedef __u32_t hash_t;
 
-typedef hash_t  (*hashmap_hash_func)   (hashmap_t *__hashmap, void* __key);
+typedef hash_t  (*hashmap_hash_func)   (const hashmap_t *__hashmap,
+                                        const void* __key);
 typedef void    (*hashmap_key_deleter) (void *__key);
-typedef short   (*hashmap_keycmp)      (void *__key1, void *__key2);
-typedef void*   (*hashmap_keydup)      (void *__src);
+typedef short   (*hashmap_keycmp)      (const void *__key1,
+                                        const void *__key2);
+typedef void*   (*hashmap_keydup)      (const void *__src);
 typedef void    (*hashmap_deleter)     (void *__data);
 
 typedef struct
@@ -109,27 +111,29 @@ hashmap_destroy_full                (hashmap_t         *__hashmap,
 
 void
 hashmap_set                         (hashmap_t         *__hashmap,
-                                     void              *__key,
-                                     void              *__value);
+                                     const void        *__key,
+                                     const void        *__value);
 
 void
 hashmap_set_full                    (hashmap_t         *__hashmap,
-                                     void              *__key,
-                                     void              *__value,
+                                     const void        *__key,
+                                     const void        *__value,
                                      hashmap_deleter   __deleter);
 
 void*
-hashmap_get                         (hashmap_t *__hashmap, void *__key);
+hashmap_get                         (const hashmap_t *__hashmap,
+                                     const void *__key);
 
 BOOL
-hashmap_isset                       (hashmap_t *__hashmap, void *__key);
+hashmap_isset                       (const hashmap_t *__hashmap,
+                                     const void *__key);
 
 void
-hashmap_unset                       (hashmap_t *__hashmap, void *__key);
+hashmap_unset                       (hashmap_t *__hashmap, const void *__key);
 
 void
 hashmap_unset_full                  (hashmap_t       *__hashmap,
-                                     void            *__key,
+                                     const void      *__key,
                                      hashmap_deleter  __deleter);
 
 void

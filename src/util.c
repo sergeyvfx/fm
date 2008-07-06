@@ -63,3 +63,29 @@ wcsfit                            (const wchar_t *__str, size_t __len,
 
   return str;
 }
+
+/**
+ * Copies at most n characters of string. If s is longer than n, only
+ * n characters are copied, and a terminating null byte (’\0’) is added.
+ *
+ * @param __s - string to be duplicated
+ * @param __n - number of chars to be copied
+ * @return pointer to the duplicated string
+ */
+wchar_t*
+wcsndup                           (const wchar_t *__s, size_t __n)
+{
+  if (__s)
+    {
+      wchar_t *new_str;
+
+      // Check count of character to be copied
+      __n=MIN (__n, wcslen (__s));
+
+      new_str=malloc ((__n+1)*sizeof (wchar_t));
+      wcsncpy (new_str, __s, __n);
+      new_str[__n]=0;
+      return new_str;
+    } else
+      return NULL;
+}
