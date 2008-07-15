@@ -33,6 +33,7 @@
 #define WT_BUTTON     (WT_SINGLE+1)
 #define WT_EDIT       (WT_SINGLE+2)
 #define WT_MENU       (WT_SINGLE+3)
+#define WT_CHECKBOX   (WT_SINGLE+4)
 
 // Window show modes
 #define WSM_DEFAULT 0x00
@@ -348,7 +349,7 @@ typedef struct {
 
   struct {
     wchar_t         *data;              // Caption in edit box
-    size_t          allocated;          // Allocated bufefr size
+    size_t          allocated;          // Allocated buffer size
   } text;
 
   size_t            scrolled;           // How much characters where scrolled
@@ -357,6 +358,20 @@ typedef struct {
 
   scr_font_t         *font;             // Font for normal style
 } w_edit_t;
+
+// Checkbox
+typedef struct {
+  WIDGET_MEMBERS
+
+  scr_font_t    *font;
+  scr_font_t    *font_focus;
+
+  scr_font_t    *hotkey_font;
+  scr_font_t    *hotkey_focus;
+
+  wchar_t       *caption;
+  BOOL          ischeck;
+} w_checkbox_t;
 
 ////
 // Menus
@@ -587,6 +602,17 @@ w_window_hide                     (w_window_t *__window);
 void
 w_window_set_fonts                (w_window_t *__window, scr_font_t *__font,
                                    scr_font_t *__caption_font);
+
+////
+// Checkbox
+
+w_checkbox_t *
+widget_create_checkbox            (w_container_t *__parent,
+                                   const wchar_t *__caption,
+                                   int __x, int __y, BOOL __check);
+
+BOOL
+w_checkbox_get                    (const w_checkbox_t *__checkbox);
 
 ////
 // Button

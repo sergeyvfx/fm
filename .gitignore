@@ -5,3 +5,5 @@ nbproject/
 *.mo
 .cproject
 .project
+.settings/
+.gdbinit

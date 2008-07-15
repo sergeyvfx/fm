@@ -151,6 +151,7 @@ extern BOOL curs_wis;
 #  define KEY_TAB       9
 #  define KEY_RETURN    10
 #  define KEY_ESC       27
+#  define KEY_SPACE     32
 #  define KEY_DELETE    KEY_DC
 
 #  define KEY_ESC_ESC   539 /* Escaped escape */

@@ -72,7 +72,7 @@ hook_action_cmp(const void *ha0, const void *ha2)
 static int
 hook_callback_cmp(const void *hc0, const void *hc2)
 {
-    return ((__s64_t)HOOK_ACTION(hc0)->callback - (__s64_t)hc2);
+  return memcmp (HOOK_ACTION(hc0)->callback, hc2, sizeof(hc2));
 }
 
 /**
@@ -97,7 +97,7 @@ hook_destroy(void *__h)
  * @return 0 if successful, otherwise -1
  */
 int
-hook_call (wchar_t *__name, void *__data)
+hook_call (const wchar_t *__name, void *__data)
 {
     iterator_t *hook;
     if (!__name || !__data) {
@@ -131,7 +131,8 @@ hook_call (wchar_t *__name, void *__data)
  * @return 0 if successful, otherwise -1
  */
 int
-hook_register (wchar_t *__name, hook_callback_proc __callback, int __priority)
+hook_register (const wchar_t *__name, hook_callback_proc __callback,
+               int __priority)
 {
     iterator_t *iter;
 
@@ -174,7 +175,7 @@ hook_register (wchar_t *__name, hook_callback_proc __callback, int __priority)
  * @return 0 if successful, otherwise -1
  */
 int
-hook_unhook (wchar_t *__name, hook_callback_proc __callback)
+hook_unhook (const wchar_t *__name, hook_callback_proc __callback)
 {
     iterator_t *iter;
     if (!__name || !__callback) {
@@ -208,7 +209,7 @@ hook_unhook (wchar_t *__name, hook_callback_proc __callback)
  * @return 0 if successful, otherwise -1
  */
 int
-hook_unregister (wchar_t *__name)
+hook_unregister (const wchar_t *__name)
 {
     iterator_t *iter;
     if (!__name) return -1;

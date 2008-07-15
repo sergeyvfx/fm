@@ -342,7 +342,7 @@ widgets_init                      (void)
 }
 
 /**
- * Uninitializes widgets' stuff
+ * Uninitializes widget's stuff
  */
 void
 widgets_done                      (void)

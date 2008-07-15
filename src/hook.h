@@ -26,16 +26,17 @@ enum {
 typedef int (*hook_callback_proc) (void *__callData);
 
 int
-hook_register (wchar_t *__name, hook_callback_proc __callback, int __priority);
+hook_register (const wchar_t *__name, hook_callback_proc __callback,
+               int __priority);
 
 int
-hook_unregister (wchar_t *__name);
+hook_unregister (const wchar_t *__name);
 
 int
-hook_call (wchar_t *__name, void *__data);
+hook_call (const wchar_t *__name, void *__data);
 
 int
-hook_unhook (wchar_t *__name, hook_callback_proc __callback);
+hook_unhook (const wchar_t *__name, hook_callback_proc __callback);
 
 int
 hooks_destroy (void);

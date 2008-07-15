@@ -5,13 +5,13 @@ top_builddir = ..
 include ${top_builddir}/mk/rules.mk
 include ${top_builddir}/mk/init.mk
 
-SUBDIRS = vfs 
+SUBDIRS = vfs
 
 OBJECTIVE_BINS = fm
 
 LIBADD = -ldl -lncursesw -lpanel -lm -Lvfs -lvfs
 
-HEADERS = 
+HEADERS =
 SOURCES = \
 	main.c \
 	screen.c \
@@ -24,6 +24,7 @@ SOURCES = \
 	widget-menu.c \
 	widget-window.c \
 	widget-edit.c \
+	widget-checkbox.c \
 	messages.c \
 	hotkeys.c \
 	i18n.c \

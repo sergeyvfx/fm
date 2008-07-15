@@ -327,7 +327,7 @@ deque_sorted_insert (deque_t *__this, void *__data, comporator __compr)
  * @return iterator found element if successful, NULL otherwise
  */
 iterator_t *
-deque_find (deque_t *__this, void *__data, comporator __compr)
+deque_find (deque_t *__this, const void *__data, comporator __compr)
 {
     iterator_t *current;
     if (!__this || !__data || !__compr) return NULL;

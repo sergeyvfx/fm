@@ -1,7 +1,7 @@
 /**
  * ${project-name} - a GNU/Linux console-based file manager
  *
- * Deques
+ * Deques implementation
  *
  * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
  * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
@@ -93,7 +93,7 @@ iterator_t *
 deque_sorted_insert (deque_t *__this, void *__data, comporator __compr);
 
 iterator_t *
-deque_find (deque_t *__this, void *__data, comporator __compr);
+deque_find (deque_t *__this, const void *__data, comporator __compr);
 
 END_HEADER
 
