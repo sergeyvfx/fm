@@ -223,8 +223,8 @@ screen_on_resize                  (void)
 
   // Restore visibility of cursor
   if (!curs_wis)
-    scr_hide_curser (); else
-    scr_show_curser ();
+    scr_hide_cursor (); else
+    scr_show_cursor ();
 
 #endif
 }

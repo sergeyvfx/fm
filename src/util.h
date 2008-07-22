@@ -24,4 +24,10 @@ wcsfit                            (const wchar_t *__str, size_t __len,
 wchar_t*       // Copies at most n characters of string
 wcsndup                           (const wchar_t *__s, size_t __n);
 
+void           // Replaces substrings of string
+wcsrep                            (wchar_t       *__str,
+                                   size_t         __max_len,
+                                   const wchar_t *__substr,
+                                   const wchar_t *__newsubstr);
+
 #endif

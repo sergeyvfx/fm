@@ -20,6 +20,10 @@
 
 #define VFS_PLUGIN_DELIMETER L"::"
 
+#define USE_DEFAULT_PLUGIN
+#define VFS_DEFAULT_PLUGIN       L"file"
+#define VFS_DEFAULT_PLUGIN_IDENT '/'
+
 /**
  * Parses url string and returns responsible plugin and
  * local path inside plugin
@@ -41,24 +45,36 @@ vfs_url_parse                     (const wchar_t *__url,
   if (!__url || !__plugin || !__path)
     return VFS_ERROR;
 
+  wchar_t *plugin_name=0;
+
+#ifdef USE_DEFAULT_PLUGIN
+  if (__url[0]==VFS_DEFAULT_PLUGIN_IDENT)
+    {
+      (*__path)=wcsdup (__url);
+      plugin_name=wcsdup (VFS_DEFAULT_PLUGIN);
+    } else {
+#endif
   wchar_t *s=wcsstr (__url, VFS_PLUGIN_DELIMETER);
 
-  // Plugin name hasn't been found
+  // Plugin separator hasn't been found
   if (!s)
-    return VFS_ERR_INVLAID_ARGUMENT;
+    return VFS_ERR_INVALID_URL;
 
   size_t pos=wcslen (__url)-wcslen (s);  // Position of occurance
-  wchar_t *plugin_name=wcsndup (__url, pos); // Name of plugin
+  plugin_name=wcsndup (__url, pos); // Name of plugin
+  (*__path)=wcsdup (__url+pos+wcslen (VFS_PLUGIN_DELIMETER));
+#ifdef USE_DEFAULT_PLUGIN
+    }
+#endif
 
   // Set output parameters
   (*__plugin)=vfs_plugin_by_name (plugin_name);
   if (!*__plugin)
     {
+      vfs_context_save (L"plugin-name", plugin_name, 0);
       free (plugin_name);
-      return VFS_ERROR;
+      return VFS_ERR_PUGIN_NOT_FOUND;
     }
-
-  (*__path)=wcsdup (__url+pos+wcslen (VFS_PLUGIN_DELIMETER));
 
   // Free temporary variables
   free (plugin_name);

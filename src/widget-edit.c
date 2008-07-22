@@ -101,7 +101,7 @@ edit_focused                      (w_edit_t *__edit)
   _WIDGET_CALL_USER_CALLBACK (__edit, focused, __edit);
 
   // We shoud show a caret when edit box is focused
-  scr_show_curser ();
+  scr_show_cursor ();
 
   return 0;
 }
@@ -118,7 +118,7 @@ edit_blured                       (w_edit_t *__edit)
   _WIDGET_CALL_USER_CALLBACK (__edit, blured, __edit);
 
   // When edit box is blured we should hide caret
-  scr_hide_curser ();
+  scr_hide_cursor ();
 
   return 0;
 }

@@ -109,7 +109,7 @@ iface_init                        (void)
   signal (SIGWINCH, sig_winch);
 #endif
 
-  scr_hide_curser ();
+  scr_hide_cursor ();
 
   // Create all widgets
   _INIT_ITERATOR (create_widgets);

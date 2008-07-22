@@ -27,6 +27,10 @@
   if (!__plugin->procs._sym) \
     return VFS_PLUGIN_INVALID_FORMAT;
 
+#define _CALL_HANDLER(_plugin, _callback, _args...) \
+  if ((_plugin)->info._callback) \
+    (_plugin)->info._callback (##_args);
+
 ////////
 // Variables
 
@@ -82,7 +86,7 @@ load_symbols                     (vfs_plugin_t *__plugin)
   MALLOC_ZERO (mb_name, len);
 
   // Convert wide character file name of library to multibyte string
-  if (wcstombs (mb_name, __plugin->fn, len)==-1)
+  if (wcstombs (mb_name, __plugin->fn, len+1)==-1)
     {
       // Some errors while converting name to wide char
       free (mb_name);
@@ -197,9 +201,11 @@ vfs_plugin_load                   (const wchar_t *__file_name)
       return err;
     }
 
+  _CALL_HANDLER (plugin, onload);
+
   // Register plugin in hash map
   hashmap_set (plugins, plugin->info.name, plugin);
-  
+
   return VFS_OK;
 }
 

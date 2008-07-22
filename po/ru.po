@@ -89,3 +89,28 @@ msgstr "_О программе..."
 
 msgid "Sort order"
 msgstr "Порядок сортировки"
+
+## VFS
+
+# Errors
+
+msgid "Operation succeed"
+msgstr "Операция успешно завершена"
+
+msgid "Operation failed"
+msgstr "Операция завершена провалом"
+
+msgid "Invalid argument passed to the function"
+msgstr "В функцию был передан неверный параметр"
+
+msgid "Method '${method-name}' of plugin '${plugin-name}' not found"
+msgstr "Не найден метод '${method-name}' плагина '${plugin-name}'"
+
+msgid "Invalid plugin format"
+msgstr "Неверный формат плагина"
+
+msgid "Error initializating plugin"
+msgstr "Ошибка инициализации плагина"
+
+msgid "Plugin '${plugin-name}' not found"
+msgstr "Плагин '${plugin-name}' не найден"

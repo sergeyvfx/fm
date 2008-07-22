@@ -44,8 +44,8 @@ extern BOOL curs_wis;
 #  define scr_color_pair_t  int
 
 // Functions' call abstraction
-#  define scr_hide_curser()                     (curs_set (0),curs_wis=FALSE)
-#  define scr_show_curser()                     (curs_set (1),curs_wis=TRUE)
+#  define scr_hide_cursor()                     (curs_set (0),curs_wis=FALSE)
+#  define scr_show_cursor()                     (curs_set (1),curs_wis=TRUE)
 
 #  define scr_create_window(__x,__y,__w,__h)    newwin (__h, __w, __y, __x)
 

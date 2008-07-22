@@ -271,7 +271,7 @@ wcscandir_alphasort_sep           (const void *__a, const void *__b)
 {
   file_t *a=*(file_t**)__a, *b=*(file_t**)__b;
 
-  // Directories `.` and `,,` must be at the top op list
+  // Directories `.` and `..` must be at the top op list
   if (!wcscmp (a->name, L".") || !wcscmp (a->name, L".."))
     return -1;
 

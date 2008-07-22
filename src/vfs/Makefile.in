@@ -13,7 +13,9 @@ LDFLAGS += -Wl,-export-dynamic
 SOURCES = \
 	vfs.c \
 	url.c \
-	plugin.c
+	plugin.c \
+	error.c \
+	context.c
 
 OBJECTS = ${SOURCES:.c=.o}
 
