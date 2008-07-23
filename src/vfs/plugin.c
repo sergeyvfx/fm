@@ -25,7 +25,7 @@
 #define _LOAD_SYMBOL(_sym, _name) \
   __plugin->procs._sym=dlsym (__plugin->dl, VFS_PLUGIN_INIT_PROC); \
   if (!__plugin->procs._sym) \
-    return VFS_PLUGIN_INVALID_FORMAT;
+    return VFS_ERR_PLUGIN_FORMAT;
 
 #define _CALL_HANDLER(_plugin, _callback, _args...) \
   if ((_plugin)->info._callback) \
@@ -64,6 +64,7 @@ free_plugin                      (vfs_plugin_t *__plugin)
 static void
 unload_plugin                    (vfs_plugin_t *__plugin)
 {
+  _CALL_HANDLER (__plugin, onunload);
   free_plugin (__plugin);
 }
 
@@ -80,7 +81,7 @@ load_symbols                     (vfs_plugin_t *__plugin)
     return VFS_ERR_INVLAID_ARGUMENT;
 
   char *mb_name;
-  size_t len=(wcslen (__plugin->fn)+1)*MB_CUR_MAX;
+  size_t len=(wcslen (__plugin->fn)+2)*MB_CUR_MAX;
 
   // Allocate memory for multibyte buffer
   MALLOC_ZERO (mb_name, len);
@@ -100,7 +101,17 @@ load_symbols                     (vfs_plugin_t *__plugin)
   // Open library
   __plugin->dl=dlopen (mb_name, RTLD_LAZY);
   if (!__plugin->dl)
-    return VFS_PLUGIN_INVALID_FORMAT;
+    {
+      char *mb_err=dlerror ();
+      if (mb_err && strlen (mb_err))
+        {
+          wchar_t *wc_err;
+          MBS2WCS (wc_err, mb_err);
+          vfs_context_save (L"dl-error", wc_err, 0);
+          free (wc_err);
+        }
+      return VFS_ERR_PLUGIN_LOAD;
+    }
 
   // Getting symbols
   _LOAD_SYMBOL (init, VFS_PLUGIN_INIT_PROC);
@@ -140,7 +151,7 @@ plugin_from_file                  (const wchar_t *__file_name,
   if (plugin->procs.init (plugin)!=VFS_OK)
     {
       // Error initialising plugin
-      err=VFS_PLUGIN_INIT_ERROR;
+      err=VFS_ERR_PLUGIN_INIT;
       goto __failure_;
     }
 
@@ -218,6 +229,7 @@ vfs_plugin_load                   (const wchar_t *__file_name)
 int
 vfs_plugin_unload                 (const wchar_t *__plugin_name)
 {
+  unload_plugin (vfs_plugin_by_name (__plugin_name));
   return VFS_OK;
 }
 

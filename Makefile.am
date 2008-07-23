@@ -4,7 +4,7 @@ ACLOCAL_AMFLAGS = -I m4
 CFLAGS =
 LDFLAGS = 
 
-SUBDIRS = src po
+SUBDIRS = src t po
 
 distuninstallcheck_listfiles = find . -type f -print | grep -v scrollkeeper
 

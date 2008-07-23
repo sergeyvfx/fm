@@ -113,6 +113,7 @@ wcsrep                            (wchar_t       *__str,
     return;
 
   size_t i, n=wcslen (__str), m=wcslen (__substr), k;
+  size_t l=wcslen (__newsubstr);
   size_t *f, occur,
           prev=0;
 
@@ -144,8 +145,8 @@ wcsrep                            (wchar_t       *__str,
           wcsncat (res, __str+prev, MIN (occur-prev, len_remain));
           len_remain-=occur-prev;
           // Append new substring
-          wcsncat (res, __newsubstr, MIN (m, len_remain));
-          len_remain-=m;
+          wcsncat (res, __newsubstr, MIN (l, len_remain));
+          len_remain-=l;
 
           // To start searching new substring
           k=f[i]=0;

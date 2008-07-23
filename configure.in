@@ -124,6 +124,7 @@ mk/rules.mk
 src/Makefile
 src/vfs/Makefile
 src/vfs/plugins/file/Makefile
+t/vfs/Makefile
 po/Makefile
 ])
 

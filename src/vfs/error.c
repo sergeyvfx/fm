@@ -33,9 +33,10 @@ static error_t errors[]=
   {VFS_METHOD_NOT_FOUND,     L"Method '${method-name}' of "
      "plugin '${plugin-name}' not found"},
 
-  {VFS_PLUGIN_INVALID_FORMAT, L"Invalid plugin format"},
-  {VFS_PLUGIN_INIT_ERROR,     L"Error initializating plugin"},
-  {VFS_ERR_PUGIN_NOT_FOUND,   L"Plugin '${plugin-name}' not found"}
+  {VFS_ERR_PLUGIN_LOAD,        L"Error loading plugin: ${dl-error}"},
+  {VFS_ERR_PLUGIN_FORMAT,      L"Invalid plugin format"},
+  {VFS_ERR_PLUGIN_INIT,        L"Error initializating plugin"},
+  {VFS_ERR_PLUGIN_NOT_FOUND,   L"Plugin '${plugin-name}' not found"},
 };
 
 #define MAX_ERROR_LENGTH 1024

@@ -27,7 +27,7 @@ typedef struct {
 
 vfs_context_opt_t *context=NULL;
 
-#define MAX_VARIABLE_LEBGTH 100
+#define MAX_VARIABLE_LEBGTH 1024
 
 ////////
 //

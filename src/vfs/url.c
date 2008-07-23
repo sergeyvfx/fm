@@ -73,7 +73,7 @@ vfs_url_parse                     (const wchar_t *__url,
     {
       vfs_context_save (L"plugin-name", plugin_name, 0);
       free (plugin_name);
-      return VFS_ERR_PUGIN_NOT_FOUND;
+      return VFS_ERR_PLUGIN_NOT_FOUND;
     }
 
   // Free temporary variables

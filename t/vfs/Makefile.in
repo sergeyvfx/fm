@@ -1,0 +1,20 @@
+.SILENT:
+
+top_builddir = ../..
+
+include ${top_builddir}/mk/rules.mk
+include ${top_builddir}/mk/init.mk
+
+OBJECTIVE_BINS = test
+
+LIBADD = -L${top_builddir}/src/vfs -lvfs -ldl
+
+SOURCES = \
+	main.c \
+	${top_builddir}/src/hashmap.c \
+	${top_builddir}/src/util.c \
+	${top_builddir}/src/i18n.c
+
+OBJECTS = ${SOURCES:.c=.o}
+
+include ${top_builddir}/mk/objective.mk

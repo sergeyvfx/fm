@@ -52,6 +52,13 @@ BEGIN_HEADER
 #define TEST_FLAG(__flags, __f)  ((__flags)&(__f))
 #define CLEAR_FLAG(__flags, __f) ((__flags)&=~(__f))
 
+#define MBS2WCS(_res,_src) \
+  { \
+    size_t len=strlen (_src); \
+    _res=malloc (sizeof (wchar_t)*(len+2)); \
+    mbstowcs (_res, _src, len+1); \
+  }
+
 END_HEADER
 
 #endif

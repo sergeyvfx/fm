@@ -107,7 +107,7 @@ file_open                         (const wchar_t *__fn,
           res=malloc (sizeof (int));
           *res=fd;
         } else
-          SET_ERROR (ACTUAL_ERRCODE (res));
+          SET_ERROR (ACTUAL_ERRCODE (errno));
     } else
       SET_ERROR (VFS_ERROR);
 
