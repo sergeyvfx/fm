@@ -72,10 +72,12 @@ enum {
 enum {
   COLUMN_UNKNOWN = -1,
   COLUMN_NAME    =  0,
-  COLUMN_SIZE    =  1,
-  COLUMN_TIME    =  2,
-  COLUMN_PERM    =  3,
-  COLUMN_OCTPERM =  4
+  COLUMN_SIZE,
+  COLUMN_MTIME,
+  COLUMN_ATIME,
+  COLUMN_CTIME,
+  COLUMN_PERM,
+  COLUMN_OCTPERM
 };
 
 enum {

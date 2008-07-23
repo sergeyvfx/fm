@@ -288,14 +288,21 @@ draw_full_row                     (const file_panel_t *__panel,
                 swprintf (pchar, MAX_SCREEN_WIDTH, format, size, suffix);
               }
             break;
-            case COLUMN_TIME:
+            case COLUMN_MTIME:
+            case COLUMN_ATIME:
+            case COLUMN_CTIME:
               {
                 struct tm tm;
                 time_t *t, now;
                 wchar_t *format;
 
                 // Get current time_t and time_t of item
-                t=&item->file->lstat.st_mtim.tv_sec;
+                if (column->type==COLUMN_MTIME)
+                  t=&item->file->lstat.st_mtim.tv_sec; else
+                if (column->type==COLUMN_ATIME)
+                  t=&item->file->lstat.st_atim.tv_sec; else
+                  t=&item->file->lstat.st_ctim.tv_sec;
+
                 now=time (0);
 
                 // Convert time_t to struct tm

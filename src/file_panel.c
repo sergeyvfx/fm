@@ -51,7 +51,7 @@ file_panel_t *current_panel=NULL;
 // perm - permissions of file in format rwxrwxrwx
 // octperm - permissions in octal format
 //
-#define DEFAULT_FULL_ROW_MASK L"name size time"
+#define DEFAULT_FULL_ROW_MASK L"name size mtime"
 
 ////////
 //
@@ -62,7 +62,9 @@ static struct {
 } column_parser_info[]={
   {L"name",    COLUMN_NAME},
   {L"size",    COLUMN_SIZE},
-  {L"time",    COLUMN_TIME},
+  {L"mtime",   COLUMN_MTIME},
+  {L"atime",   COLUMN_ATIME},
+  {L"ctime",   COLUMN_CTIME},
   {L"perm",    COLUMN_PERM},
   {L"octperm", COLUMN_OCTPERM},
   {0, COLUMN_UNKNOWN}
@@ -72,7 +74,9 @@ static struct {
 static wchar_t *orig_column_titles[]={
     L"Name",
     L"Size",
-    L"Time",
+    L"MTime",
+    L"ATime",
+    L"CTime",
     L"Perm",
     L"Perm"
   };
@@ -81,6 +85,8 @@ static wchar_t *orig_column_titles[]={
 static unsigned short orig_columns_widths[]={
   0,
   9,
+  12,
+  12,
   12,
   10,
   4
