@@ -1,20 +1,16 @@
 .SILENT:
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS =
 
 CFLAGS =
 LDFLAGS = 
 
 SUBDIRS = src t po
 
-distuninstallcheck_listfiles = find . -type f -print | grep -v scrollkeeper
-
+distuninstallcheck_listfiles = 
 EXTRA_DIST = 
-
 DISTCLEANFILES = 
-
-DISTCHECK_CONFIGURE_FLAGS = --disable-scrollkeeper
-
-AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
+DISTCHECK_CONFIGURE_FLAGS =
+AUTOMAKE_OPTIONS =
 
 pkgconfigdir=${libdir}/pkgconfig
 pkgconfig_DATA=

@@ -28,8 +28,6 @@ dnl ===================
 dnl Check for libraries
 dnl ===================
 
-AC_SUBST(GLIB_REQ)
-
 dnl plugin stuff
 dnl ========================
 

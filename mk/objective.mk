@@ -271,6 +271,7 @@ depend:
 		done; \
 	fi
 	if [ ! -f .depend-done ]; then \
+		touch .depend; \
 		for i in ${SOURCES}; do \
 			echo "[generating dependencies for objective: $$i]"; \
 			${CC} -MM ${PICFLAGS} ${CPPFLAGS} ${CFLAGS} $$i >> .depend; \
@@ -281,4 +282,4 @@ depend:
 # compatibility with automake follows
 am--refresh:
 
-include .depend
+-include .depend
