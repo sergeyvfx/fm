@@ -79,7 +79,7 @@
  * @return plugin-based descriptor of file
  */
 static vfs_plugin_fd_t
-file_open                         (const wchar_t *__fn,
+localfs_open                      (const wchar_t *__fn,
                                    int            __flags,
                                    int           *__error,
                                    ...)
@@ -123,7 +123,7 @@ file_open                         (const wchar_t *__fn,
  * @return @return zero on success, non-zero otherwise
  */
 static int 
-file_close                        (vfs_plugin_fd_t __fd)
+localfs_close                     (vfs_plugin_fd_t __fd)
 {
   if (!__fd)
     return -1;
@@ -143,7 +143,7 @@ file_close                        (vfs_plugin_fd_t __fd)
  * @param the number of bytes read if succeed, value less than zero otherwise
  */
 static vfs_size_t
-file_read                         (vfs_plugin_fd_t  __fd,
+localfs_read                      (vfs_plugin_fd_t  __fd,
                                    void            *__buf,
                                    vfs_size_t       __nbytes)
 {
@@ -159,7 +159,7 @@ file_read                         (vfs_plugin_fd_t  __fd,
  * @param the number of bytes written if succeed, value less than zero otherwise
  */
 static vfs_size_t
-file_write                        (vfs_plugin_fd_t  __fd,
+localfs_write                     (vfs_plugin_fd_t  __fd,
                                    void            *__buf,
                                    vfs_size_t       __nbytes)
 {
@@ -174,7 +174,7 @@ file_write                        (vfs_plugin_fd_t  __fd,
  * @return zero on success, non-zero otherwise
  */
 static int
-file_unlink                       (const wchar_t *__fn)
+localfs_unlink                    (const wchar_t *__fn)
 {
   _FILEOP (unlink);
 }
@@ -187,7 +187,7 @@ file_unlink                       (const wchar_t *__fn)
  * @return zero on success, non-zero otherwise
  */
 static int
-file_mkdir                        (const wchar_t *__fn,
+localfs_mkdir                     (const wchar_t *__fn,
                                    vfs_mode_t     __mode)
 {
   _FILEOP (mkdir, __mode);
@@ -200,7 +200,7 @@ file_mkdir                        (const wchar_t *__fn,
  * @return zero on success, non-zero otherwise
  */
 static int
-file_rmdir                        (const wchar_t *__fn)
+localfs_rmdir                     (const wchar_t *__fn)
 {
   _FILEOP (rmdir);
 }
@@ -212,7 +212,7 @@ file_rmdir                        (const wchar_t *__fn)
  * @return zero on success, non-zero otherwise
  */
 static int
-file_chmod                        (const wchar_t *__fn, vfs_mode_t __mode)
+localfs_chmod                     (const wchar_t *__fn, vfs_mode_t __mode)
 {
   _FILEOP (chmod, __mode);
 }
@@ -226,7 +226,7 @@ file_chmod                        (const wchar_t *__fn, vfs_mode_t __mode)
  * @return zero on success, non-zero otherwise
  */
 static int
-file_chown                        (const wchar_t *__fn,
+localfs_chown                     (const wchar_t *__fn,
                                    vfs_uid_t      __owner,
                                    vfs_gid_t      __group)
 {
@@ -242,7 +242,7 @@ file_chown                        (const wchar_t *__fn,
  * @return zero on success, non-zero otherwise
  */
 static int
-file_rename                       (const wchar_t *__old_path,
+localfs_rename                    (const wchar_t *__old_path,
                                    const wchar_t *__new_path)
 {
   _RENAME_ENTRY (rename);
@@ -256,7 +256,7 @@ file_rename                       (const wchar_t *__old_path,
  * @return zero on success, non-zero otherwise
  */
 static int
-file_stat                         (const wchar_t *__fn,
+localfs_stat                      (const wchar_t *__fn,
                                    vfs_stat_t    *__stat)
 {
   _FILEOP (stat, __stat);
@@ -271,7 +271,7 @@ file_stat                         (const wchar_t *__fn,
  * @return zero on success, non-zero otherwise
  */
 static int
-file_lstat                        (const wchar_t *__fn,
+localfs_lstat                     (const wchar_t *__fn,
                                    vfs_stat_t    *__stat)
 {
   _FILEOP (lstat, __stat);
@@ -289,7 +289,7 @@ file_lstat                        (const wchar_t *__fn,
  * if an error occurs
  */
 int
-file_scandir                      (const wchar_t  *__path,
+localfs_scandir                   (const wchar_t  *__path,
                                    vfs_dirent_t   ***__name_list,
                                    vfs_filter_proc __filter,
                                    vfs_cmp_proc    __compar)
@@ -381,7 +381,7 @@ file_scandir                      (const wchar_t  *__path,
  * the beginning of the file. Otherwise, a value less than zero is returned.
  */
 vfs_offset_t
-file_lseek                        (vfs_plugin_fd_t __fd,
+localfs_lseek                     (vfs_plugin_fd_t __fd,
                                    vfs_offset_t    __offset,
                                    int             __whence)
 {
@@ -402,7 +402,7 @@ file_lseek                        (vfs_plugin_fd_t __fd,
  * @return @return zero on success, non-zero otherwise
  */
 int
-file_utime                        (const wchar_t        *__fn,
+localfs_utime                     (const wchar_t        *__fn,
                                    const struct utimbuf *__buf)
 {
   if (!__fn | !__buf)
@@ -420,7 +420,7 @@ file_utime                        (const wchar_t        *__fn,
  * @return zero on success, non-zero otherwise
  */
 static int
-file_symlink                      (const wchar_t *__old_path,
+localfs_symlink                   (const wchar_t *__old_path,
                                    const wchar_t *__new_path)
 {
   _RENAME_ENTRY (symlink);
@@ -435,7 +435,7 @@ file_symlink                      (const wchar_t *__old_path,
  * @return zero on success, non-zero otherwise
  */
 static int
-file_link                         (const wchar_t *__old_path,
+localfs_link                      (const wchar_t *__old_path,
                                    const wchar_t *__new_path)
 {
   _RENAME_ENTRY (link);
@@ -449,7 +449,7 @@ file_link                         (const wchar_t *__old_path,
  * @param __bufsize - size of buffer
  */
 static int
-file_readlink                     (const wchar_t *__fn,
+localfs_readlink                  (const wchar_t *__fn,
                                    wchar_t       *__buf,
                                    size_t         __bufsize)
 {
@@ -482,39 +482,39 @@ file_readlink                     (const wchar_t *__fn,
 
 // Fill information of plugin
 static vfs_plugin_info_t plugin_info = {
-  L"file",
+  L"localfs",
 
   0,
   0,
 
-  file_open,
-  file_close,
+  localfs_open,
+  localfs_close,
 
-  file_read,
-  file_write,
+  localfs_read,
+  localfs_write,
 
-  file_unlink,
+  localfs_unlink,
 
-  file_mkdir,
-  file_rmdir,
+  localfs_mkdir,
+  localfs_rmdir,
 
-  file_chmod,
-  file_chown,
+  localfs_chmod,
+  localfs_chown,
 
-  file_rename,
+  localfs_rename,
 
-  file_stat,
-  file_lstat,
+  localfs_stat,
+  localfs_lstat,
 
-  file_scandir,
+  localfs_scandir,
 
-  file_lseek,
+  localfs_lseek,
 
-  file_utime,
+  localfs_utime,
 
-  file_symlink,
-  file_link,
-  file_readlink
+  localfs_symlink,
+  localfs_link,
+  localfs_readlink
 };
 
 // Initialize plugin

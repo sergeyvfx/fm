@@ -48,7 +48,7 @@ test                              (void)
   printf ("* Global testing started\n");
 
   printf ("  vfs_open:");
-  if (!(fd=vfs_open (L"file::/tmp/vfs.test", O_CREAT | O_RDWR, &res)))
+  if (!(fd=vfs_open (L"localfs::/tmp/vfs.test", O_CREAT | O_RDWR, &res)))
     FAILED ("    %ls\n", vfs_get_error (res)) else
     OK ();
 
@@ -64,7 +64,7 @@ test                              (void)
     FAILED ("    %ls\n", vfs_get_error (res)) else
     OK ();
 
-  TEST (vfs_unlink, L"file::/tmp/vfs.test");
+  TEST (vfs_unlink, L"localfs::/tmp/vfs.test");
 }
 
 int
@@ -83,12 +83,12 @@ main                              (int __argc, char **__argv)
   printf ("* VFS initialization succeed.\n");
 
   // Load standart plugin
-  if ((res=vfs_plugin_load (L"./plugins/libfile.so")))
+  if ((res=vfs_plugin_load (L"./plugins/liblocalfs.so")))
     {
-      printf ("* Error loading plugin 'file': %ls\n", vfs_get_error (res));
+      printf ("* Error loading plugin 'localfs': %ls\n", vfs_get_error (res));
       return EXIT_FAILURE;
     }
-  printf ("* Plugin 'file' loaded successfully\n");
+  printf ("* Plugin 'localfs' loaded successfully\n");
 
   test ();
 

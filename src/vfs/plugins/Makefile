@@ -5,7 +5,7 @@ top_builddir=../../..
 include ${top_builddir}/mk/rules.mk
 include ${top_builddir}/mk/init.mk
 
-SUBDIRS = file
+SUBDIRS = localfs
 
 include ${top_builddir}/mk/objective.mk
 

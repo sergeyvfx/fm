@@ -41,7 +41,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(top_srcdir)/mk/rules.mk.in \
 	$(top_srcdir)/po/Makefile.in $(top_srcdir)/src/Makefile.in \
 	$(top_srcdir)/src/vfs/Makefile.in \
-	$(top_srcdir)/src/vfs/plugins/file/Makefile.in \
+	$(top_srcdir)/src/vfs/plugins/localfs/Makefile.in \
 	$(top_srcdir)/t/vfs/Makefile.in AUTHORS COPYING ChangeLog \
 	INSTALL NEWS TODO config.guess config.sub install-sh ltmain.sh \
 	missing mkinstalldirs
@@ -55,7 +55,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = mk/rules.mk src/Makefile src/vfs/Makefile \
-	src/vfs/plugins/file/Makefile t/vfs/Makefile po/Makefile
+	src/vfs/plugins/localfs/Makefile t/vfs/Makefile po/Makefile
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -268,7 +268,7 @@ src/Makefile: $(top_builddir)/config.status $(top_srcdir)/src/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 src/vfs/Makefile: $(top_builddir)/config.status $(top_srcdir)/src/vfs/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-src/vfs/plugins/file/Makefile: $(top_builddir)/config.status $(top_srcdir)/src/vfs/plugins/file/Makefile.in
+src/vfs/plugins/localfs/Makefile: $(top_builddir)/config.status $(top_srcdir)/src/vfs/plugins/localfs/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 t/vfs/Makefile: $(top_builddir)/config.status $(top_srcdir)/t/vfs/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
@@ -437,7 +437,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/mk $(distdir)/po $(distdir)/src $(distdir)/src/vfs $(distdir)/src/vfs/plugins/file $(distdir)/t/vfs
+	$(mkdir_p) $(distdir)/mk $(distdir)/po $(distdir)/src $(distdir)/src/vfs $(distdir)/src/vfs/plugins/localfs $(distdir)/t/vfs
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
