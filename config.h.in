@@ -42,6 +42,9 @@
 /* definition of HOST */
 #undef HOST
 
+/* Directory of i18n files */
+#undef LOCALEDIR
+
 /* Name of package */
 #undef PACKAGE
 
