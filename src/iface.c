@@ -13,8 +13,12 @@
 #include "widget.h"
 #include "hotkeys.h"
 #include "file_panel.h"
+#include "messages.h"
+#include "i18n.h"
 
 #include <signal.h>
+
+#include <vfs/vfs.h>
 
 ////////
 // Some helpful macroses
@@ -85,6 +89,56 @@ exit_hotkey                       (void)
   iface_act_exit ();
 }
 
+/**
+ * Loads VFS plugin
+ *
+ * @param __fn - name of file to load as VFS plugin
+ * @return zero on success, non-zero otherwise
+ */
+static int
+load_vfs_plugin                   (wchar_t *__fn)
+{
+  int res=0;
+
+  if ((res=vfs_plugin_load (__fn)))
+    {
+      wchar_t error[1024];
+      swprintf (error, 1024, _(L"%ls\n\nContinue executong without this plugin?"),
+        vfs_get_error (res));
+
+      if (message_box (_(L"VFS error"), error,
+        MB_YESNO | MB_CRITICAL | MB_DEFBUTTON_1)==MR_YES)
+          res=0;
+
+      return res;
+    }
+
+  return 0;
+}
+
+/**
+ * Initializes VFS stuff
+ *
+ * @param zero on success, non-zero otherwise
+ */
+static int
+init_vfs                          (void)
+{
+  int res;
+  _INIT_ITERATOR (vfs_init);
+
+#ifdef DEBUG
+  _INIT_ITERATOR  (load_vfs_plugin,  L"vfs/plugins/localfs/liblocalfs.so");
+#endif
+
+  //
+  // TODO:
+  //  Add loading VFS plugins here
+  //
+
+  return 0;
+}
+
 ////////
 // User's backend
 
@@ -110,6 +164,9 @@ iface_init                        (void)
 #endif
 
   scr_hide_cursor ();
+
+  // Initialize VFS
+  _INIT_ITERATOR (init_vfs);
 
   // Create all widgets
   _INIT_ITERATOR (create_widgets);

@@ -47,11 +47,16 @@ file_panel_t *current_panel=NULL;
 //
 // name - name of file
 // size - size of file
-// time - last modification time
+// mtime - last modification time
+// atime - access time
+// ctime - change time
 // perm - permissions of file in format rwxrwxrwx
 // octperm - permissions in octal format
 //
 #define DEFAULT_FULL_ROW_MASK L"name size mtime"
+
+// Name of default virtual file system
+#define DEFAULT_VFS_NAME      L"localfs"
 
 ////////
 //
@@ -392,6 +397,7 @@ static void
 set_default_params                (file_panel_t *__panel)
 {
   file_panel_set_listing_mode (__panel, LISTING_MODE_MEDIUM);
+  file_panel_set_vfs (__panel, DEFAULT_VFS_NAME);
   file_panel_set_cwd (__panel, L"/");
   file_panel_set_columns (__panel, DEFAULT_FULL_ROW_MASK);
 }
@@ -645,8 +651,9 @@ file_panels_init                  (widget_t *__parent)
       read_config () ||
 
       // Initialize file panels' default actions stuff
-      file_panel_defact_init ())
-    return -1;
+      file_panel_defact_init ()
+    )
+      return -1;
 
   // Create grid to manage panels' position
   panels_grid=widget_create_box (WIDGET_CONTAINER (__parent),
@@ -672,10 +679,33 @@ file_panels_done                  (void)
   deque_destroy (panels, file_panel_destructor);
 
   // Delete grid from widget tree
-  w_container_delete (WIDGET_CONTAINER (panels_grid->parent),
-    WIDGET (panels_grid));
+  if (panels_grid)
+    w_container_delete (WIDGET_CONTAINER (panels_grid->parent),
+      WIDGET (panels_grid));
 
   file_panel_defact_done ();
+}
+
+/**
+ * Set name of virtual file system
+ *
+ * @param __panel - panel where set the VFS
+ * @param __vfs - name of virtual file system
+ * @return zero on success, non-zero otherwise
+ */
+int
+file_panel_set_vfs                (file_panel_t  *__panel,
+                                   const wchar_t *__vfs)
+{
+  if (!__panel || !__vfs)
+    return -1;
+
+  if (__panel->vfs)
+    free (__panel->vfs);
+
+  __panel->vfs=wcsdup (__vfs);
+
+  return 0;
 }
 
 /**
@@ -683,6 +713,7 @@ file_panels_done                  (void)
  *
  * @param __panel - panel where set the CWD
  * @param __cwn - CWD to set
+ * @return zro on success, non-zero otherwise
  */
 int
 file_panel_set_cwd                (file_panel_t *__panel,

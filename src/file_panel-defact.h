@@ -26,8 +26,8 @@ BEGIN_HEADER
 
 typedef struct {
   struct {
-    dircmp_proc    comparator;
-    dirfilter_proc filter;
+    vfs_cmp_proc    comparator;
+    vfs_filter_proc filter;
   } dir;
 } fpd_data_t;
 

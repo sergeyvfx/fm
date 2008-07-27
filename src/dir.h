@@ -18,21 +18,22 @@
 BEGIN_HEADER
 
 #include "file.h"
+#include <vfs/vfs.h>
 
 #include <dirent.h>
 
 ////////
 // Type definitions
 
-typedef int (*dirfilter_proc) (const struct dirent*);
 typedef int (*dircmp_proc)    (const void*, const void*);
 
 ////////
 //
 
-int            // Wide character analog for system scandir
-wcscandir                         (const wchar_t  *__name,
-                                   dirfilter_proc  __filer,
+int            // Wrapper of VFS function vfs_scandir()
+wcscandir                         (const wchar_t  *__vfs,
+                                   const wchar_t  *__name,
+                                   vfs_filter_proc __filer,
                                    dircmp_proc     __compar,
                                    file_t       ***__res);
 
@@ -49,7 +50,7 @@ wchar_t*       // Strip non-directory suffix from file name
 wcdirname                         (const wchar_t *__name);
 
 int            // Filter for scandir which skips all hidden files
-scandir_filter_skip_hidden        (const struct dirent * __data);
+scandir_filter_skip_hidden        (const vfs_dirent_t * __data);
 
 int            // Alphabetically sorter for wcscandir
 wcscandir_alphasort               (const void *__a, const void *__b);

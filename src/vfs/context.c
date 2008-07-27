@@ -109,6 +109,9 @@ vfs_context_save                  (wchar_t *__optname1, ...)
       count++;
     }
 
+  context=realloc (context, (count+1)*sizeof (vfs_context_opt_t));
+  memset (&context[count], 0, sizeof (vfs_context_opt_t));
+
   va_end (args);
 }
 

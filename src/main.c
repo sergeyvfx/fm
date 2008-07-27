@@ -19,17 +19,22 @@
 int
 main                               (int __argc, char **__argv)
 {
-  i18n_init();
+  i18n_init ();
 
-  if (iface_init ()) {
-      i18n_release();
+  if (iface_init ())
+    {
+      // To uninitialize all stuff, which
+      // has been initialized
+      iface_done ();
+
+      i18n_release ();
       return EXIT_FAILURE;
-  }
+    }
 
   iface_mainloop ();
 
   iface_done ();
-  i18n_release();
+  i18n_release ();
 
   return EXIT_SUCCESS;
 }

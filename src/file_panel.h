@@ -134,6 +134,9 @@ typedef struct {
   // draw panel on screen and caught messages from user
   file_panel_widget_t *widget;
 
+  // Name of virtual file system
+  wchar_t             *vfs;
+
   // Use this complex structure because I don't want to use
   // static array because this will limit max. length of CWD and
   // I dislike this limitation in Midnight Commander
@@ -209,6 +212,10 @@ file_panels_init                  (widget_t *__parent);
 
 void           // Uninitialize file panels
 file_panels_done                  (void);
+
+int            // Set name of VFS
+file_panel_set_vfs                (file_panel_t  *__panel,
+                                   const wchar_t *__vfs);
 
 int            // Set the panel's CWD
 file_panel_set_cwd                (file_panel_t *__panel,

@@ -19,6 +19,7 @@
 //
 
 #define MAX_BUTTONS 4
+#define MAX_WIDTH_PERC 0.8
 
 static widget_action old_drawer;
 
@@ -74,7 +75,7 @@ msg_wnd_pos                       (const wchar_t     *__caption,
   // Check is there is a wider line of text
   for (i=len=0, n=wcslen (__text); i<n; ++i)
     {
-      if (__text[i]=='\n' || i==n-1)
+      if (__text[i]=='\n' || i==n-1 || len>=SCREEN_WIDTH*MAX_WIDTH_PERC-2)
         {
           res.width=MAX (res.width, len+4+(__text[i]!='\n'?1:0));
           res.height++;
@@ -122,7 +123,8 @@ static int
 msg_window_drawer                 (w_window_t *__window)
 {
   wchar_t *text=WIDGET_USER_DATA (__window);
-  int i, n, prev, j, m, line, width;
+  int i, n, prev, j, m, line, width, len=0;
+  int max_len;
   scr_window_t layout=WIDGET_LAYOUT (__window);
 
   // Call to default window drawer
@@ -133,17 +135,19 @@ msg_window_drawer                 (w_window_t *__window)
   line=1;
   width=__window->position.width;
 
+  max_len=__window->position.width-2;
   for (i=prev=0, n=wcslen (text); i<n; ++i)
     {
-      if (text[i]=='\n' || i==n-1)
+      if (text[i]=='\n' || i==n-1 || len>=max_len)
         {
           scr_wnd_move_caret (layout, (width-i+prev)/2, line++);
           for (j=prev, m=i+(i==n-1&&text[i]!='\n'); j<m; j++)
             scr_wnd_add_wchar (layout, text[j]);
-
-          i+=text[i]=='\n';
-          prev=i;
-        }
+ 
+          prev=i+(text[i]=='\n');
+          len=1;
+        } else
+          len++;
     }
 
   return 0;

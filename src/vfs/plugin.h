@@ -22,6 +22,7 @@ BEGIN_HEADER
 
 #define VFS_PLUGIN_INIT_ENTRY __vfs_lugin_init_entry__
 #define VFS_PLUGIN_INIT_PROC "__vfs_lugin_init_entry__"
+#define VFS_PLUGIN_DELIMETER L"::"
 
 ////////
 // Type defenitions

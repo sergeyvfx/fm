@@ -38,6 +38,9 @@ msgstr "Важно!"
 msgid "Error"
 msgstr "Ошибка"
 
+msgid "VFS error"
+msgstr "Ошибка VFS"
+
 # Strings from messages
 
 msgid "Are you sure you want to quit?"
@@ -51,6 +54,9 @@ msgstr "С этим пунктом меню не связана файловая
 
 msgid "This feature is not implemented yet"
 msgstr "Эта возможность еще не реализована"
+
+msgid "%ls\n\nContinue executong without this plugin?"
+msgstr "%ls\n\nПродолжить выполнение без этого плагина?"
 
 # Menu
 
@@ -114,3 +120,6 @@ msgstr "Ошибка инициализации плагина"
 
 msgid "Plugin '${plugin-name}' not found"
 msgstr "Плагин '${plugin-name}' не найден"
+
+msgid "Error loading plugin: ${dl-error}"
+msgstr "Ошибка загрузки плагина: ${dl-error}"

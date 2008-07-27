@@ -133,7 +133,7 @@ int
 vfs_lstat                         (const wchar_t *__url, vfs_stat_t *__stat);
 
 int
-vfs_scandir                       (const wchar_t  *__path,
+vfs_scandir                       (const wchar_t  *__url,
                                    vfs_dirent_t   ***__name_list,
                                    vfs_filter_proc __filter,
                                    vfs_cmp_proc    __compar);

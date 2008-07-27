@@ -976,8 +976,8 @@ file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
 int
 file_panel_defact_collect_items   (file_panel_t *__panel)
 {
-  file_t **list;
-  unsigned long i, count, ptr=0;
+  file_t **list=NULL;
+  int i, count, ptr=0;
   BOOL cwd_root;
 
   if (!__panel || !__panel->cwd.data)
@@ -985,7 +985,7 @@ file_panel_defact_collect_items   (file_panel_t *__panel)
 
   cwd_root=!wcscmp (__panel->cwd.data, L"/");
 
-  count=wcscandir (__panel->cwd.data,
+  count=wcscandir (__panel->vfs, __panel->cwd.data,
     PANEL_DATA (__panel)->dir.filter,
     PANEL_DATA(__panel)->dir.comparator,
     &list);
@@ -993,7 +993,7 @@ file_panel_defact_collect_items   (file_panel_t *__panel)
   __panel->items.length=0;
 
   // Errors while getting list of files
-  if (count==-1)
+  if (count<0)
     return -1;
 
   __panel->items.length=count-1-(cwd_root?1:0);

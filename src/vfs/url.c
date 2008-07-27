@@ -18,8 +18,6 @@
 
 #include <wchar.h>
 
-#define VFS_PLUGIN_DELIMETER L"::"
-
 #define USE_DEFAULT_PLUGIN
 #define VFS_DEFAULT_PLUGIN       L"file"
 #define VFS_DEFAULT_PLUGIN_IDENT '/'

@@ -17,7 +17,7 @@
 #include <dirent.h>
 
 /**
- * Wide character analog for system scandir
+ * Wrapper of VFS function vfs_scandir()
  * Returned array and its elements must be freed
  *
  * @param __name - name of directory to scan
@@ -25,98 +25,64 @@
  * @return count of elements or -1 on error
  */
 int
-wcscandir                         (const wchar_t  *__name,
-                                   dirfilter_proc  __filer,
+wcscandir                         (const wchar_t  *__vfs,
+                                   const wchar_t  *__name,
+                                   vfs_filter_proc __filer,
                                    dircmp_proc     __compar,
-                                   file_t       ***__res){
-  char *mb_name,   // Multibyte name of directory
-       *full_name;
-  struct dirent **eps=0;
+                                   file_t       ***__res)
+{
+  vfs_dirent_t **eps=NULL;
+  wchar_t *url, *full_name;
+  size_t len, fn_len;
   int count, i;
 
-  if (!__name || !__res)
+  if (!__vfs || !__name || !__res)
     return -1;
 
-  // Because of strange bag with scanning '/'
-  // It should be scanned '//' instead of '/'
-  if (!wcscmp (__name, L"/"))
-    {
-      mb_name=strdup ("//");
-    } else {
-      size_t len=(wcslen (__name)+1)*MB_CUR_MAX;
+  len=wcslen (__vfs)+wcslen (__name)+wcslen (VFS_PLUGIN_DELIMETER);
+  url=malloc ((len+1)*sizeof (wchar_t));
 
-      // Allocate memory for multibyte buffer
-      MALLOC_ZERO (mb_name, len);
+  swprintf (url, len+1, L"%ls%ls%ls", __vfs, VFS_PLUGIN_DELIMETER, __name);
 
-      // Convert wide character name of directory to
-      // multibyte string
-      if (wcstombs (mb_name, __name, len)==-1)
-        {
-          // Some errors while converting name to wide char
-          free (mb_name);
-          return -1;
-        }
-    }
-
-  // Scan directory
-  count=scandir (mb_name, &eps, __filer,  alphasort);
+  // Do not use VFS-related sorting, because
+  // comparator may want STAT information
+  count=vfs_scandir (url, &eps, __filer, 0);
 
   // Error scanning directory
-  if (count==-1)
-    return -1;
+  if (count<0)
+    return count;
+
+  fn_len=len+MAX_FILENAME_LEN+1;
+  full_name=malloc ((fn_len+1)*sizeof (wchar_t));
 
   // Allocate memory for result
   (*__res)=malloc (sizeof (file_t*)*count);
 
-  full_name=malloc (strlen (mb_name)+MAX_FILENAME_LEN+2);
-
-  // Convert dirent-s to file_t-s
+  // Get stat information
   for (i=0; i<count; i++)
     {
       MALLOC_ZERO ((*__res)[i], sizeof (file_t));
 
-      sprintf (full_name, "%s/%s", mb_name, eps[i]->d_name);
+      swprintf (full_name, fn_len, L"%ls%ls%ls/%ls",
+        __vfs, VFS_PLUGIN_DELIMETER, __name, eps[i]->name);
+      wcscpy ((*__res)[i]->name, eps[i]->name);
+      (*__res)[i]->type=eps[i]->type;
 
-      // Convert multibyte item name to wide-charactered string
-      if (mbstowcs ((*__res)[i]->name, eps[i]->d_name, MAX_FILENAME_LEN)==-1)
-        {
-          // If some error had been occurred while converting,
-          // free all allocated memory and return -1
-          int j;
-          for (j=0; j<=i; j++)
-            free ((*__res)[i]);
-          free (*__res);
-        }
+      // Get STAT information of file
+      vfs_stat (full_name, &(*__res)[i]->stat);
+      vfs_lstat (full_name, &(*__res)[i]->lstat);
 
-      if (stat (full_name, &(*__res)[i]->stat)==-1)
-        {
-          //
-          // TODO:
-          //  Add handling of STAT error here
-          //
-        }
-
-      if (lstat (full_name, &(*__res)[i]->lstat)==-1)
-        {
-          //
-          // TODO:
-          //  Add handling of STAT error here
-          //
-        }
-
-      (*__res)[i]->type=eps[i]->d_type;
-
-      free (eps[i]);
+      vfs_free_dirent (eps[i]);
     }
-
-  qsort ((*__res), count, sizeof (file_t*),
-    (__compar?__compar:wcscandir_alphasort));
 
   // Free used variables
   SAFE_FREE (eps);
 
-  free (mb_name);
+  qsort ((*__res), count, sizeof (file_t*),
+    (__compar?__compar:wcscandir_alphasort));
+
   free (full_name);
+  free (url);
 
   return count;
 }
@@ -228,10 +194,10 @@ wcdirname                         (const wchar_t *__name)
  * @return 0 if file is hidden, 1 if file is listingable
  */
 int
-scandir_filter_skip_hidden        (const struct dirent * __data)
+scandir_filter_skip_hidden        (const vfs_dirent_t * __data)
 {
-  if (strcmp (__data->d_name, ".") && strcmp (__data->d_name, "..") &&
-    __data->d_name[0]=='.')
+  if (wcscmp (__data->name, L".") && wcscmp (__data->name, L"..") &&
+    __data->name[0]=='.')
     return 0;
   return 1;
 }
