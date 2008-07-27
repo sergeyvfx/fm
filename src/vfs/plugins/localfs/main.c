@@ -37,7 +37,7 @@
     char *fn=malloc ((len+1)*MB_CUR_MAX); \
     int res=VFS_ERROR; \
   \
-    if (wcstombs (fn, __fn, len+1)!=-1) \
+    if (wcstombs (fn, __fn, (len+1)*MB_CUR_MAX)!=-1) \
       res=ACTUAL_ERRCODE (_proc (fn, ##_params)); \
   \
     free (fn);\
@@ -54,8 +54,8 @@
   char *npath=malloc ((nlen+1)*MB_CUR_MAX); \
   int res=VFS_ERROR; \
  \
-  if (wcstombs (opath, __old_path, olen+1)!=-1 && \
-      wcstombs (npath, __new_path, nlen+1)!=-1) \
+  if (wcstombs (opath, __old_path, (olen+1)*MB_CUR_MAX)!=-1 && \
+      wcstombs (npath, __new_path, (nlen+1)*MB_CUR_MAX)!=-1) \
     res=ACTUAL_ERRCODE (_proc (opath, npath)); \
  \
   free (opath); \
@@ -96,7 +96,7 @@ localfs_open                      (const wchar_t *__fn,
 
   SET_ERROR (0);
 
-  if (wcstombs (fn, __fn, len+1)!=-1)
+  if (wcstombs (fn, __fn, (len+1)*MB_CUR_MAX)!=-1)
     {
       int mode;
       VFS_GET_MODE (__error, mode);
@@ -303,7 +303,7 @@ localfs_scandir                   (const wchar_t  *__path,
 
   (*__name_list)=0;
 
-  if (wcstombs (path, __path, len+1)!=-1)
+  if (wcstombs (path, __path, (len+1)*MB_CUR_MAX)!=-1)
     {
       struct dirent **eps;
 
@@ -461,7 +461,7 @@ localfs_readlink                  (const wchar_t *__fn,
   int res=VFS_ERROR;
 
   // Conver input widechar filename to multibyte
-  if (wcstombs (fn, __fn, len+1)!=-1)
+  if (wcstombs (fn, __fn, (len+1)*MB_CUR_MAX)!=-1)
     {
       char *mbbuf=malloc (__bufsize+1);
       res=readlink (fn, mbbuf, __bufsize);

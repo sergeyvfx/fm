@@ -12,9 +12,8 @@
 
 #include "file_panel.h"
 
-
-#include "file_panel.h"
 #include "deque.h"
+#include "hook.h"
 
 ////////
 //
@@ -734,6 +733,9 @@ file_panel_set_cwd                (file_panel_t *__panel,
 
   // Copy new data
   wcscpy (__panel->cwd.data, __cwd);
+
+  if (__panel==current_panel)
+    hook_call (L"cwd.changed", (void*)__cwd);
 
   return file_panel_refresh (__panel);
 }

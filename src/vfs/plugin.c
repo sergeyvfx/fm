@@ -87,7 +87,7 @@ load_symbols                     (vfs_plugin_t *__plugin)
   MALLOC_ZERO (mb_name, len);
 
   // Convert wide character file name of library to multibyte string
-  if (wcstombs (mb_name, __plugin->fn, len+1)==-1)
+  if (wcstombs (mb_name, __plugin->fn, (len+1)*MB_CUR_MAX)==-1)
     {
       // Some errors while converting name to wide char
       free (mb_name);
