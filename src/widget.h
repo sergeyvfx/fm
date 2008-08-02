@@ -34,6 +34,7 @@
 #define WT_EDIT       (WT_SINGLE+2)
 #define WT_MENU       (WT_SINGLE+3)
 #define WT_CHECKBOX   (WT_SINGLE+4)
+#define WT_TEXT       (WT_SINGLE+5)
 
 // Window show modes
 #define WSM_DEFAULT 0x00
@@ -88,6 +89,9 @@
 // to such widgets after sending those messages to widgets without
 // this flag
 #define WF_ONTOP         0x0008
+
+// Widget can't be focused
+#define WF_UNFOCUSABE    0x0008
 
 ////////
 // Macroses
@@ -341,6 +345,16 @@ typedef struct {
   unsigned int      style;
   unsigned short    modal_result;       // Modal result code for window
 } w_button_t;
+
+// Text
+typedef struct {
+  // Inherit from widget
+  WIDGET_MEMBERS
+
+  wchar_t            *text;             // Text
+
+  scr_font_t         *font;             // Font of text
+} w_text_t;
 
 // Edit box
 typedef struct {
@@ -692,5 +706,16 @@ w_box_delete_item                  (w_box_t     *__box, w_box_item_t *__item);
 
 void
 w_box_delete_by_index              (w_box_t     *__box, unsigned int __index);
+
+////
+// Text
+
+w_text_t*
+widget_create_text                (w_container_t *__parent,
+                                   const wchar_t *__text,
+                                   int __x, int __y);
+
+void
+w_text_set_font                   (w_text_t *__text, scr_font_t *__font);
 
 #endif
