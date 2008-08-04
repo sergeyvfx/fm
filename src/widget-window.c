@@ -382,15 +382,7 @@ w_window_show_modal               (w_window_t *__window)
 void
 w_window_show                     (w_window_t *__window)
 {
-  if (!__window || !WIDGET_LAYOUT (__window))
-    return;
-
-  // Window is now visible
-  WIDGET_POSITION (__window).z=1;
-
-  panel_show (__window->panel);
-
-  WIDGET_CALL_CALLBACK (__window, focused, __window);
+  window_show_entry (__window, WSM_DEFAULT);
 }
 
 /**
