@@ -77,6 +77,8 @@ define_default_fonts              (void)
      {CID_WHITE,   CID_RED,  TRUE},
      {CID_YELLOW,  CID_RED,  TRUE},
 
+     {CID_WHITE,   CID_BLACK, FALSE},
+
      {-1, -1, -1}
    };
 

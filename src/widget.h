@@ -35,6 +35,7 @@
 #define WT_MENU       (WT_SINGLE+3)
 #define WT_CHECKBOX   (WT_SINGLE+4)
 #define WT_TEXT       (WT_SINGLE+5)
+#define WT_PROGRESS   (WT_SINGLE+6)
 
 // Window show modes
 #define WSM_DEFAULT 0x00
@@ -355,6 +356,19 @@ typedef struct {
 
   scr_font_t         *font;             // Font of text
 } w_text_t;
+
+// Progress bar
+typedef struct {
+  // Inherit from widget
+  WIDGET_MEMBERS
+
+  unsigned long       max_pos; // Maximal position
+  unsigned long       cur_pos; // Current position
+
+  scr_font_t         *font;
+  scr_font_t         *background_font;
+  scr_font_t         *progress_font;
+} w_progress_t;
 
 // Edit box
 typedef struct {
@@ -717,5 +731,27 @@ widget_create_text                (w_container_t *__parent,
 
 void
 w_text_set_font                   (w_text_t *__text, scr_font_t *__font);
+
+void
+w_text_set                        (w_text_t *__w_text, const wchar_t *__text);
+
+
+////
+// Progress bar
+
+w_progress_t*
+widget_create_progress            (w_container_t *__parent,
+                                   unsigned long __max_pos,
+                                   int __x, int __y, int __w);
+
+void
+w_progress_set_font               (w_progress_t *__progress,
+                                   scr_font_t *__font,
+                                   scr_font_t *__background_font,
+                                   scr_font_t *__progress_font);
+
+void
+w_progress_set_pos                (w_progress_t *__progress,
+                                   unsigned long __pos);
 
 #endif

@@ -18,7 +18,7 @@
 /**
  * Destroys a text widget
  *
- * @param __button - text to be destroyed
+ * @param __text - text to be destroyed
  * @return zero on success, non-zero on failure
  */
 static int
@@ -37,7 +37,7 @@ text_destructor                   (w_text_t *__text)
 /**
  * Draws a text
  *
- * @param __button - text to be drawn
+ * @param __text - text to be drawn
  * @return zero on success, non-zero on failure
  */
 static int
@@ -53,7 +53,7 @@ text_drawer                       (w_text_t *__text)
 
   scr_wnd_move_caret (layout, __text->position.x, __text->position.y);
 
-  // Draw caption of button
+  // Draw text
   if (__text->text)
     {
       scr_wnd_font (layout, *__text->font);
@@ -83,7 +83,7 @@ widget_create_text                (w_container_t *__parent,
 {
   w_text_t *res;
 
-  // There is no parent or caption is null, so we can't create button
+  // There is no parent or text is null, so we can't create text
   if (!__parent || !__text)
     return 0;
 
@@ -94,9 +94,9 @@ widget_create_text                (w_container_t *__parent,
   WIDGET_INIT (res, w_text_t, WT_TEXT, __parent, WF_NOLAYOUT | WF_UNFOCUSABE,
                text_destructor, text_drawer, __x, __y, 1, w, 1);
 
-  res->text=wcsdup (__text);
+  res->text = wcsdup (__text);
 
-  res->font         = &FONT (CID_BLACK, CID_WHITE);
+  res->font = &FONT (CID_BLACK, CID_WHITE);
 
   WIDGET_POST_INIT (res);
 
@@ -106,12 +106,8 @@ widget_create_text                (w_container_t *__parent,
 /**
  * Sets font used in text
  *
- * @param __button - for which button fonts are to be set
- * @param __font - font of default text in normal state
- * @param __focused_font - font of default text in focused state
- * @param __font - font of highlighted text (i.e. shortcut) in normal state
- * @param __focused_font - font of highlighted text
- * (i.e. shortcut) in focused state
+ * @param __text - for which text widget fonts are to be set
+ * @param __font - font of text
  */
 void
 w_text_set_font                   (w_text_t *__text, scr_font_t *__font)
@@ -121,5 +117,22 @@ w_text_set_font                   (w_text_t *__text, scr_font_t *__font)
 
   WIDGET_SAFE_SET_FONT (__text, font, __font);
 
+  widget_redraw (WIDGET (__text));
+}
+
+/**
+ * Sets new text to widget
+ *
+ * @param __w_text - for which widget text will be set
+ * @param __text - new text of widget
+ */
+void
+w_text_set                        (w_text_t *__w_text, const wchar_t *__text)
+{
+  if (!__w_text || !__text)
+    return;
+
+  SAFE_FREE (__w_text->text);
+  __w_text->text=wcsdup (__text);
   widget_redraw (WIDGET (__text));
 }

@@ -26,6 +26,7 @@ SOURCES = \
 	widget-edit.c \
 	widget-checkbox.c \
 	widget-text.c \
+	widget-progress.c \
 	messages.c \
 	hotkeys.c \
 	i18n.c \
