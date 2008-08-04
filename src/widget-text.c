@@ -65,6 +65,31 @@ text_drawer                       (w_text_t *__text)
   return 0;
 }
 
+static void
+text_clear                        (w_text_t *__text)
+{
+  scr_window_t layout=WIDGET_LAYOUT (__text);
+
+  // Widget is invisible or there is no layout
+  if (!WIDGET_VISIBLE (__text) || !layout)
+    return;
+
+  scr_wnd_attr_backup (layout);
+
+  scr_wnd_move_caret (layout, __text->position.x, __text->position.y);
+
+  // Draw text
+  if (__text->text)
+    {
+      size_t i, len=wcslen (__text->text);
+      scr_wnd_font (layout, *__text->font);
+      for (i=0; i<len; i++)
+        scr_wnd_putch (layout, ' ');
+    }
+
+  scr_wnd_attr_restore (layout);
+}
+
 //////
 // User's backend
 
@@ -132,7 +157,8 @@ w_text_set                        (w_text_t *__w_text, const wchar_t *__text)
   if (!__w_text || !__text)
     return;
 
+  text_clear (__w_text);
   SAFE_FREE (__w_text->text);
   __w_text->text=wcsdup (__text);
-  widget_redraw (WIDGET (__text));
+  widget_redraw (WIDGET (__w_text));
 }

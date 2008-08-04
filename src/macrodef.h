@@ -43,9 +43,9 @@ BEGIN_HEADER
 
 #define PACK_ARGS(__text,__buf,__size) \
   va_list ap;\
-  strcpy (__buf, "");\
+  wcscpy (__buf, L"");\
   va_start (ap, __text);\
-  vsnprintf (__buf, __size, __text, ap); \
+  vswprintf (__buf, __size, __text, ap); \
   va_end (ap);
 
 #define SET_FLAG(__flags, __f)   (__flags)|=(__f)

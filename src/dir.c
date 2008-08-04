@@ -25,34 +25,28 @@
  * @return count of elements or -1 on error
  */
 int
-wcscandir                         (const wchar_t  *__vfs,
-                                   const wchar_t  *__name,
+wcscandir                         (const wchar_t  *__url,
                                    vfs_filter_proc __filer,
                                    dircmp_proc     __compar,
                                    file_t       ***__res)
 {
   vfs_dirent_t **eps=NULL;
-  wchar_t *url, *full_name;
-  size_t len, fn_len;
+  wchar_t *full_name;
+  size_t fn_len;
   int count, i;
 
-  if (!__vfs || !__name || !__res)
+  if (!__url || !__res)
     return -1;
-
-  len=wcslen (__vfs)+wcslen (__name)+wcslen (VFS_PLUGIN_DELIMETER);
-  url=malloc ((len+1)*sizeof (wchar_t));
-
-  swprintf (url, len+1, L"%ls%ls%ls", __vfs, VFS_PLUGIN_DELIMETER, __name);
 
   // Do not use VFS-related sorting, because
   // comparator may want STAT information
-  count=vfs_scandir (url, &eps, __filer, 0);
+  count=vfs_scandir (__url, &eps, __filer, 0);
 
   // Error scanning directory
   if (count<0)
     return count;
 
-  fn_len=len+MAX_FILENAME_LEN+1;
+  fn_len=wcslen (__url)+MAX_FILENAME_LEN+1;
   full_name=malloc ((fn_len+1)*sizeof (wchar_t));
 
   // Allocate memory for result
@@ -63,8 +57,7 @@ wcscandir                         (const wchar_t  *__vfs,
     {
       MALLOC_ZERO ((*__res)[i], sizeof (file_t));
 
-      swprintf (full_name, fn_len, L"%ls%ls%ls/%ls",
-        __vfs, VFS_PLUGIN_DELIMETER, __name, eps[i]->name);
+      swprintf (full_name, fn_len, L"%ls/%ls", __url, eps[i]->name);
       wcscpy ((*__res)[i]->name, eps[i]->name);
       (*__res)[i]->type=eps[i]->type;
 
@@ -82,7 +75,6 @@ wcscandir                         (const wchar_t  *__vfs,
     (__compar?__compar:wcscandir_alphasort));
 
   free (full_name);
-  free (url);
 
   return count;
 }
@@ -254,4 +246,27 @@ wcscandir_alphasort_sep           (const void *__a, const void *__b)
     return 1;
 
   return wcscmp (a->name, b->name);
+}
+
+/**
+ * Checks is specified URL is a directory
+ *
+ * @param __url - URL to check
+ * @return non-zero if specified URL is a directory and zero otherwise
+ */
+BOOL
+isdir                             (const wchar_t *__url)
+{
+  vfs_stat_t stat;
+
+  if (vfs_stat (__url, &stat))
+    {
+      //
+      // TODO:
+      // Add error handling here
+      //
+      return FALSE;
+    }
+
+  return S_ISDIR (stat.st_mode);
 }

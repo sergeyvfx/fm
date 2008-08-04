@@ -157,3 +157,20 @@ w_progress_set_pos                (w_progress_t *__progress,
   __progress->cur_pos=__pos;
   widget_redraw (WIDGET (__progress));
 }
+
+/**
+ * Sets maximal position of progress bar
+ *
+ * @param __progress - for which widget position will be set
+ * @param __max - new max position of progress bar
+ */
+void
+w_progress_set_max                (w_progress_t *__progress,
+                                   unsigned long __max)
+{
+  if (!__progress)
+    return;
+
+  __progress->max_pos=__max;
+  widget_redraw (WIDGET (__progress));
+}

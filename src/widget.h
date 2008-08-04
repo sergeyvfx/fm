@@ -71,6 +71,8 @@
 #define MR_IGNORE 0x0007
 #define MR_SKIP   0x0008
 
+#define MR_CUSTOM 0x0100
+
 ////
 // Widgets' flags
 
@@ -753,5 +755,9 @@ w_progress_set_font               (w_progress_t *__progress,
 void
 w_progress_set_pos                (w_progress_t *__progress,
                                    unsigned long __pos);
+
+void
+w_progress_set_max                (w_progress_t *__progress,
+                                   unsigned long __max);
 
 #endif

@@ -15,7 +15,8 @@ SOURCES = \
 	url.c \
 	plugin.c \
 	error.c \
-	context.c
+	context.c \
+	util.c
 
 OBJECTS = ${SOURCES:.c=.o}
 

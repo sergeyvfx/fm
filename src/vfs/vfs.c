@@ -413,16 +413,31 @@ vfs_lseek                         (vfs_file_t   __file,
  * Change access and/or modification times of a file.
  *
  * @param __url - url to scan
- * @param __buf - buffer of times:
- *  __buf[0] - Access time
- *  __buf[0] - Modification time
+ * @param __buf - buffer of times
  * @return zero on success, non-zero otherwise
  */
 int
-vfs_utime                         (wchar_t              *__url,
+vfs_utime                         (const wchar_t        *__url,
                                    const struct utimbuf *__buf)
 {
   _FILEOP (utime, __buf);
+}
+
+/**
+ * Abstraction for POSIX function utimes()
+ * Change access and/or modification times of a file.
+ *
+ * @param __url - url to scan
+ * @param __times - buffer of times
+ *  __times[0] - Access time
+ *  __times[1] - Modification time
+ * @return zero on success, non-zero otherwise
+ */
+int
+vfs_utimes                        (const wchar_t        *__url,
+                                   const struct timeval *__times)
+{
+  _FILEOP (utimes, __times);
 }
 
 /**

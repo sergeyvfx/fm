@@ -14,6 +14,9 @@ msgstr ""
 msgid "Information"
 msgstr "Информация"
 
+msgid "Question"
+msgstr "Вопрос"
+
 msgid "_Ok"
 msgstr "_Ок"
 
@@ -40,6 +43,27 @@ msgstr "Ошибка"
 
 msgid "VFS error"
 msgstr "Ошибка VFS"
+
+msgid "A_ppend"
+msgstr "Дописать в _конец"
+
+msgid "A_ll"
+msgstr "_Все"
+
+msgid "_Update"
+msgstr "_Устаревшие"
+
+msgid "Non_e"
+msgstr "Ни _одного"
+
+msgid "If _size differs"
+msgstr "_Различающиеся по длине"
+
+msgid "_Abort"
+msgstr "_Прервать"
+
+msgid "_Ignore"
+msgstr "_Игнорировать"
 
 # Strings from messages
 
@@ -123,3 +147,84 @@ msgstr "Плагин '${plugin-name}' не найден"
 
 msgid "Error loading plugin: ${dl-error}"
 msgstr "Ошибка загрузки плагина: ${dl-error}"
+
+##
+# File actions
+
+msgid "File"
+msgstr "Файл"
+
+msgid "Cannot create target file \"%ls\":\n%ls"
+msgstr "Невозможно создать целевой файл \"%ls\":\n%ls"
+
+msgid "Cannot open source file \"%ls\":\n%ls"
+msgstr "Невозможно открыть исходный файл \"%ls\":\n%ls"
+
+msgid "Cannot copy \"%ls\" to itself"
+msgstr "Невозможно скопировать \"%ls\" в самого себя"
+
+msgid "File exists"
+msgstr "Файл существует"
+
+msgid "Target file \"%ls\" already exists!"
+msgstr "Целевой файл \"%ls\" уже существует!"
+
+msgid "Source: %ls"
+msgstr "Исходный файл : %ls"
+
+msgid "Target: %ls"
+msgstr "Целевой файл  : %ls"
+
+msgid "date %ls, size %ld bytes"
+msgstr "дата %ls, размер %ld байт"
+
+msgid "date %ls, size %lld bytes"
+msgstr "дата %ls, размер %lld байт"
+
+msgid "Overwrite this target?"
+msgstr "Переписать этот файл?"
+
+msgid "Overwrite all targets?"
+msgstr "Переписать все файлы?"
+
+msgid "Cannot chmod target file \"%ls\":\n%ls"
+msgstr "Невозможно сменить права целевого файла \"%ls\":\n%ls"
+
+msgid "Incomplete file was retrieved. Keep it?"
+msgstr "Был получен неполный файл; Сохранить его?"
+
+msgid "Cannot read source file \"%ls\":\n%ls"
+msgstr "Невозможно прочитать исходный файл \"%ls\":\n%ls"
+
+msgid "Cannot write target file \"%ls\":\n%ls"
+msgstr "Невозможно записать в целевой файл \"%ls\":\n%ls"
+
+msgid "Cannot stat source file \"%ls\":\n%ls"
+msgstr "Невозможно получить свойства исходного файла \"%ls\":\n%ls"
+
+msgid "Cannot stat source directory \"%ls\":\n%ls"
+msgstr "Невозможно получить свойства исходного каталога \"%ls\":\n%ls"
+
+msgid "Cannot create target directory \"%ls\":\n%ls"
+msgstr "Невозможно создать целевой каталог \"%ls\":\n%ls"
+
+msgid "Cannot chmod target directory \"%ls\":\n%ls"
+msgstr "Невозможно сменить права целевого кталога \"%ls\":\n%ls"
+
+msgid "Cannot listing source directory \"%ls\":\n%ls"
+msgstr "Невозможно получить листинг каталога \"%ls\":\n%ls"
+
+##
+# POSIX errors
+
+msgid "Permission denied"
+msgstr "Отказано в доступе"
+
+msgid "Is a directory"
+msgstr "Это директория"
+
+msgid "No such file or directory"
+msgstr "Файл или каталог не найден"
+
+msgid "Operation not permitted"
+msgstr "Операция не поддерживается"

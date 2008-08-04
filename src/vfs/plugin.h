@@ -89,6 +89,7 @@ typedef struct {
   vfs_lseek_proc     lseek;
 
   vfs_utime_proc     utime;
+  vfs_utimes_proc    utimes;
 
   vfs_symlink_proc  symlink;
   vfs_symlink_proc  link;

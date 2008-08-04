@@ -18,6 +18,7 @@
 BEGIN_HEADER
 
 #include <sys/stat.h>
+#include <time.h>
 
 ////////
 // Constants
@@ -57,6 +58,11 @@ fsizetohuman                      (__u64_t __size, char *__suffix);
 __u32_t       // Convert file size to human-readable format
 fsizetohuman                      (__u32_t __size, char *__suffix);
 #endif
+
+void
+format_file_time                  (wchar_t *__buf,
+                                   size_t   __buf_size,
+                                   time_t   __time);
 
 END_HEADER
 

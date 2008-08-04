@@ -31,8 +31,7 @@ typedef int (*dircmp_proc)    (const void*, const void*);
 //
 
 int            // Wrapper of VFS function vfs_scandir()
-wcscandir                         (const wchar_t  *__vfs,
-                                   const wchar_t  *__name,
+wcscandir                         (const wchar_t  *__name,
                                    vfs_filter_proc __filer,
                                    dircmp_proc     __compar,
                                    file_t       ***__res);
@@ -57,6 +56,9 @@ wcscandir_alphasort               (const void *__a, const void *__b);
 
 int            // Separately alphabetically sorter for wcscandir
 wcscandir_alphasort_sep           (const void *__a, const void *__b);
+
+BOOL          // Is URL points to a directory?
+isdir                             (const wchar_t *__url);
 
 END_HEADER
 

@@ -13,7 +13,6 @@
 #include "iface.h"
 #include "i18n.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 int
