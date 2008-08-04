@@ -132,7 +132,16 @@ w_text_set                        (w_text_t *__w_text, const wchar_t *__text)
   if (!__w_text || !__text)
     return;
 
+  int w;
+
   SAFE_FREE (__w_text->text);
   __w_text->text=wcsdup (__text);
+
+  /* Resize widget */
+  w=wcslen (__text);
+  widget_resize (WIDGET (__w_text),
+    __w_text->position.x, __w_text->position.y,
+    w, 1);
+
   widget_redraw (WIDGET (__text));
 }
