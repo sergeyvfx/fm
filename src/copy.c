@@ -16,6 +16,7 @@
 #include "dir.h"
 #include "widget.h"
 #include "widget.h"
+#include "file.h"
 
 #include <vfs/vfs.h>
 
@@ -107,7 +108,8 @@
  * If some errors occurred, asks user what to do
  */
 #define OPEN_FD(_fd, _url, _flags, _res, _error, _error_args...) \
-  REP (_fd=vfs_open (_url, _flags, &_res, 0), error, _error, ##_error_args)
+  COPY_FILE_REP (_fd=vfs_open (_url, _flags, &_res, 0), \
+  error, _error, ##_error_args)
 
 /**
  * Allocates memory for full file name in directory listing cycle
@@ -211,9 +213,7 @@ static wchar_t*
 get_real_dst                      (const wchar_t *__src, const wchar_t *__dst)
 {
   wchar_t *rdst, *fn=wcfilename (__src);
-  size_t len=wcslen (__dst)+wcslen (fn)+1;
-  rdst=malloc ((len+1)*sizeof (wchar_t));
-  swprintf (rdst, len+1, L"%ls/%ls", __dst, fn);
+  rdst=wcdircatsubdir (__dst, fn);
   free (fn);
   return rdst;
 }
@@ -223,7 +223,7 @@ get_real_dst                      (const wchar_t *__src, const wchar_t *__dst)
  *
  * @param __buf - destination buffer
  * @param __buf_size - size of buffer
- * @param __url - url of file for which information is generating
+ * @param __url - URL of file for which information is generating
  */
 static void
 format_exists_file_data           (wchar_t       *__buf,
@@ -361,6 +361,83 @@ create_process_window             (void)
 }
 
 /**
+ * Gets caption for field 'To'
+ *
+ * @param __src - source file name
+ * @param __buf - buffer where result will be stored
+ * @param __buf_size - size of buffer
+ */
+static void
+get_to_field_caption              (const wchar_t *__src,
+                                   wchar_t       *__buf,
+                                   size_t         __buf_size)
+{
+  wchar_t *fn, fit_fn[20], *format;
+
+  if (isdir (__src))
+    format=_(L"Copy directory \"%ls\" to:"); else
+    format=_(L"Copy file \"%ls\" to:");
+
+  fn=wcfilename (__src);
+  fit_filename (fn, 20, fit_fn);
+  swprintf (__buf, __buf_size, format, fit_fn);
+  free (fn);
+}
+
+/**
+ * Shows copy dialog to confirm destination file name
+ * and other additional information
+ *
+ * @param __src - source
+ * @param __dst - default destination
+ * @return MR_CANCEL if user canceled copying, MR_OK otherwise
+ */
+static int
+show_copy_dialog                  (const wchar_t *__src, wchar_t **__dst)
+{
+  int res, left, dummy;
+  w_window_t *wnd;
+  w_button_t *btn;
+  w_edit_t *to;
+  w_container_t *cnt;
+  wchar_t msg[1024];
+
+  wnd=widget_create_window (_(L"Copy"), 0, 0, 50, 6, WMS_CENTERED);
+  cnt=WIDGET_CONTAINER (wnd);
+
+  /* Create caption for 'To' field */
+  get_to_field_caption (__src, msg, BUF_LEN (msg));
+  widget_create_text (cnt, msg, 1, 1);
+
+  /* Create 'To' field */
+  to=widget_create_edit (cnt, 1, 2, wnd->position.width-2);
+  w_edit_set_text (to, *__dst);
+
+  /* Create buttons */
+  dummy=widget_shortcut_length (_(L"_Ok"));
+  left=(wnd->position.width-dummy-
+    widget_shortcut_length (_(L"_Cancel"))-11)/2;
+
+  btn=widget_create_button (cnt, _(L"_Ok"), left,
+    wnd->position.height-2, WBS_DEFAULT);
+  btn->modal_result=MR_OK;
+
+  left+=dummy+7;
+  btn=widget_create_button (cnt, _(L"_Cancel"), left,
+    wnd->position.height-2, 0);
+  btn->modal_result=MR_CANCEL;
+
+  res=w_window_show_modal (wnd);
+
+  /* Return values from dialog */
+  *__dst=wcsdup (w_edit_get_text (to));
+
+  widget_destroy (WIDGET (wnd));
+
+  return res;
+}
+
+/**
  * Compares sizes of two files
  *
  * @param __src - URL of source file
@@ -428,17 +505,27 @@ copy_file                         (const wchar_t    *__src,
 
   /* Initialize current info on screen */
   w_progress_set_pos (__proc_wnd->file_progress, 0);
+
+  /*
+   * TODO:
+   *  Replace displaying full source filename with relative file name
+   */
+
+  /*
+   * TODO:
+   *  Add skipping displaying localfs plugin name?
+   */
   COPY_SET_FN (__src, source, L"Source");
   COPY_SET_FN (__dst, target, L"Target");
 
   /* Check is file copying to itself */
-  if (!wcscmp (__src, __dst))
+  if (!filename_compare (__src, __dst))
     {
       wchar_t buf[4096];
       swprintf (buf, BUF_LEN (buf),
         _(L"Cannot copy \"%ls\" to itself"), __src);
 
-      message_box (_(L"Error"), buf, MB_OK | MB_CRITICAL);
+      MESSAGE_ERROR (buf);
       return -1;
     }
 
@@ -573,7 +660,7 @@ copy_dir                          (const wchar_t    *__src,
         __dst, vfs_get_error (res));
 
   /* Set mode of destination directory */
-  COPY_DIR_REP ( res=vfs_chmod (__dst, stat.st_mode);, error,
+  COPY_DIR_REP ( res=vfs_chmod (__dst, stat.st_mode), error,
         _(L"Cannot chmod target directory \"%ls\":\n%ls"),
         __dst, vfs_get_error (res));
 
@@ -628,10 +715,6 @@ copy_dir                          (const wchar_t    *__src,
   return res;
 }
 
-/********
- * User's backend
- */
-
 /**
  * Copies file or directory
  *
@@ -639,11 +722,27 @@ copy_dir                          (const wchar_t    *__src,
  * @param __dst - URL of destination
  * @return zero on success, non-zero otherwise
  */
-int
-action_copy                       (const wchar_t *__src,
+static int
+make_copy                         (const wchar_t *__src,
                                    const wchar_t *__dst)
 {
   process_window_t wnd;
+  int res;
+  wchar_t *dst=(wchar_t*)__dst;
+
+  if (!*__src || !dst)
+    return -1;
+
+  /* Get customized settings from user */
+  res=show_copy_dialog (__src, &dst);
+
+  /* User canceled copying */
+  if (res==MR_CANCEL)
+    {
+      SAFE_FREE (dst);
+      return MR_ABORT;
+    }
+
   wnd=create_process_window ();
   w_window_show (wnd.window);
 
@@ -655,10 +754,10 @@ action_copy                       (const wchar_t *__src,
       vfs_stat_t stat;
 
       /* Get full destination directory name */
-      if (vfs_stat (__dst, &stat))
-        rdst=wcsdup (__dst); else
-      if (isdir (__dst))
-        rdst=get_real_dst (__src, __dst); else
+      if (vfs_stat (dst, &stat))
+        rdst=wcsdup (dst); else
+      if (isdir (dst))
+        rdst=get_real_dst (__src, dst); else
         {
           /*
            * TODO:
@@ -672,17 +771,79 @@ action_copy                       (const wchar_t *__src,
     } else
     {
       /* Get full destination filename */
-      if (isdir (__dst))
-        rdst=get_real_dst (__src, __dst); else
-        rdst=wcsdup (__dst);
+      if (isdir (dst))
+        rdst=get_real_dst (__src, dst); else
+        rdst=wcsdup (dst);
 
       /* Copy single file */
       copy_file (__src, rdst, &owr_all_rule, &wnd);
     }
 
   SAFE_FREE (rdst);
+  free (dst);
 
   widget_destroy (WIDGET (wnd.window));
+
+  return 0;
+}
+
+/********
+ * User's backend
+ */
+
+/**
+ * Copies list of files from specified panel
+ *
+ * @param __panel - from which panel files will be copied
+ * @return zero on success, non-zero otherwise
+ */
+int
+action_copy                       (file_panel_t *__panel)
+{
+  file_panel_t *opposite_panel;
+  wchar_t *src, *dst, *dummy, *cur;
+
+  if (!__panel)
+    return -1;
+
+  /* Check file panels count */
+  if (file_panel_get_count ()<=1)
+    {
+      MESSAGE_ERROR (_(L"File copying may be start at least "
+        "with two file panels"));
+      return -1;
+    }
+
+  /* Get second panel to start copying */
+  opposite_panel=action_choose_file_panel ();
+  if (!opposite_panel)
+    {
+      /* User canceled operation */
+      return 0;
+    }
+
+  /* Full source and destination URLs */
+  dummy=file_panel_get_full_cwd (__panel);
+  cur=__panel->items.data [__panel->items.current].file->name;
+  src=wcdircatsubdir (dummy, cur);
+
+  dst=file_panel_get_full_cwd (opposite_panel);
+
+  /*
+   * TODO:
+   *  Replace single source file name with list of selected items
+   */
+
+  /* Copy files */
+  make_copy (src, dst);
+
+  free (src);
+  free (dst);
+  free (dummy);
+
+  /* There is new items on opposite panel */
+  /* so, we need to rescan it */
+  file_panel_rescan (opposite_panel);
 
   return 0;
 }

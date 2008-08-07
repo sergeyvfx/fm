@@ -890,9 +890,8 @@ file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
     case 'l':
       file_panel_set_listing_mode (__panel, (__panel->listing_mode+1)%3);
       break;
-    case 'c':
-      action_copy (L"/home/nazgul/tmp/2", L"/home/nazgul/tmp/3");
-      //action_copy (L"/home/nazgul/tmp/1.txt", L"/home/nazgul/tmp/2.txt");
+    case KEY_F(5):
+      action_copy (__panel);
       break;
     //
     ////////

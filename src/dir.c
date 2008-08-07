@@ -112,7 +112,7 @@ wcdircatsubdir                    (const wchar_t *__name,
 
   // Build new directory
   wcscpy (new_name, __name);
-  if (wcscmp (__name, L"/"))
+  if (__name[wcslen (__name)-1]!='/')
     wcscat (new_name, L"/");
   wcscat (new_name, __subname);
 
@@ -149,7 +149,7 @@ fit_dirname                       (const wchar_t *__dir_name,
  * Strip non-directory suffix from file name
  *
  * @param __name - name of file name from which strip non-directory suffix
- * @return pointer to new directory name< which must be freed and
+ * @return pointer to new directory name, which must be freed, and
  * zero in case of errors
  */
 wchar_t*

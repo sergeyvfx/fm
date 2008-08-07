@@ -154,6 +154,18 @@ msgstr "Ошибка загрузки плагина: ${dl-error}"
 msgid "File"
 msgstr "Файл"
 
+msgid "Copy"
+msgstr "Копирование"
+
+msgid "File copying may be start at least with two file panels"
+msgstr "Копирование файлов может быть произведено минимум\nс двумя файловыми панелями"
+
+msgid "Copy directory \"%ls\" to:"
+msgstr "Копировать директорию \"%ls\" в:"
+
+msgid "Copy file \"%ls\" to:"
+msgstr "Копировать файл \"%ls\" в:"
+
 msgid "Cannot create target file \"%ls\":\n%ls"
 msgstr "Невозможно создать целевой файл \"%ls\":\n%ls"
 

@@ -209,3 +209,52 @@ format_file_time                  (wchar_t *__buf,
 
   wcsftime (__buf, __buf_size, format, &tm);
 }
+
+/**
+ * Trims file name
+ * (Deletes duplicated '/' from file name)
+ * Returned buffer must be freed
+ *
+ * @return truncated file name.
+ */
+wchar_t*
+filename_trim                     (const wchar_t *__fn)
+{
+  size_t i, len, ptr=0;
+  wchar_t *res;
+
+  len=wcslen (__fn);
+
+  /* Length of file name can not become longer after trim */
+  res=malloc ((len+1)*sizeof (wchar_t));
+
+  for (i=0; i<len; i++)
+    if (__fn[i]=='/' && ptr>0 && res[ptr-1]=='/')
+      continue; else
+      res[ptr++]=__fn[i];
+
+  res[ptr]=0;
+
+  return res;
+}
+
+/**
+ * Compares two file names
+ *
+ * @return value of wcscmp() with trimed file names as arguments
+ */
+int
+filename_compare                  (const wchar_t *__a, const wchar_t *__b)
+{
+  int res;
+  wchar_t *a, *b;
+  a=filename_trim (__a);
+  b=filename_trim (__b);
+
+  res=wcscmp (a, b);
+
+  free (a);
+  free (b);
+
+  return res;
+}

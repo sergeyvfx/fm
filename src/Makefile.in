@@ -39,6 +39,7 @@ SOURCES = \
 	deque.c \
 	hashmap.c \
 	hook.c \
+	choose_panel.c \
 	copy.c
 
 OBJECTS = ${SOURCES:.c=.o}

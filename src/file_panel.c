@@ -11,9 +11,9 @@
  */
 
 #include "file_panel.h"
-
-#include "deque.h"
 #include "hook.h"
+
+#include <vfs/vfs.h>
 
 ////////
 //
@@ -24,6 +24,7 @@
 static deque_t *panels = NULL;
 static file_panel_t *last_focused = NULL;
 static w_box_t *panels_grid;
+static int panels_count = 0;
 
 // Count of panels which will be created
 // during initialization of panels stuff
@@ -454,6 +455,8 @@ file_panel_create                 (void)
 
   prev=deque_head (panels)!=NULL;
 
+  ++panels_count;
+
   deque_push_back (panels, res);
 
   if (!prev)
@@ -478,6 +481,8 @@ file_panel_destructor             (void *__panel)
   file_panel_t *panel=__panel;
 
   FILE_PANEL_ACTION_CALL (panel, destroy);
+
+  --panels_count;
 
   // Delete widget from widget tree (destructor will be applied)
   w_container_delete (WIDGET_CONTAINER (panel->widget->parent),
@@ -990,4 +995,54 @@ file_panel_update_columns_widths  (file_panel_t *__panel)
     }
 
   validate_colums_widths (__panel);
+}
+
+/**
+ * Returns count of file panels
+ *
+ * @return count of panels
+ */
+int
+file_panel_get_count              (void)
+{
+  return panels_count;
+}
+
+/**
+ * Returns list of file panels
+ *
+ * @return list of file panels
+ */
+deque_t*
+file_panel_get_list               (void)
+{
+  return panels;
+}
+
+/**
+ * Returns full URL to panel's CWD
+ * Returned buffer must be freed
+ *
+ * @return url to CWD
+ */
+wchar_t*
+file_panel_get_full_cwd           (file_panel_t *__panel)
+{
+  wchar_t *res;
+  size_t len;
+
+  if (!__panel)
+    return NULL;
+
+  /* Length of URL */
+  len=wcslen (__panel->vfs)+wcslen (__panel->cwd.data)+
+    wcslen (VFS_PLUGIN_DELIMETER)+1;
+
+  /* Allocate memory */
+  res=malloc (len*sizeof (wchar_t));
+
+  swprintf (res, len, L"%ls%ls%ls", __panel->vfs, VFS_PLUGIN_DELIMETER,
+    __panel->cwd.data);
+
+  return res;
 }

@@ -20,6 +20,7 @@ BEGIN_HEADER
 #include "screen.h"
 #include "widget.h"
 #include "file.h"
+#include "deque.h"
 
 #include <wchar.h>
 
@@ -250,6 +251,15 @@ file_panel_set_listing_mode       (file_panel_t *__panel, int __mode);
 
 void
 file_panel_update_columns_widths  (file_panel_t *__panel);
+
+int
+file_panel_get_count              (void);
+
+deque_t*
+file_panel_get_list               (void);
+
+wchar_t*
+file_panel_get_full_cwd           (file_panel_t *__panel);
 
 ////////
 // Default actions
