@@ -154,11 +154,21 @@ w_text_set_font                   (w_text_t *__text, scr_font_t *__font)
 void
 w_text_set                        (w_text_t *__w_text, const wchar_t *__text)
 {
+  int w;
+
   if (!__w_text || !__text)
     return;
 
   text_clear (__w_text);
+
   SAFE_FREE (__w_text->text);
   __w_text->text=wcsdup (__text);
+
+  /* Resize widget */
+  w=wcslen (__text);
+  widget_resize (WIDGET (__w_text),
+    __w_text->position.x, __w_text->position.y,
+    w, 1);
+
   widget_redraw (WIDGET (__w_text));
 }

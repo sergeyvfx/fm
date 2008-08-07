@@ -445,14 +445,27 @@ vfs_utimes                        (const wchar_t        *__url,
  * Creates a new symbolic link.
  *
  * @param __old_url - url of existing file
- * @param __new_path - name of symbolic link
+ * @param __new_url - name of symbolic link
  * @return zero on success, non-zero otherwise
  */
 int
 vfs_symlink                       (const wchar_t *__old_url,
-                                   const wchar_t *__new_path)
+                                   const wchar_t *__new_url)
 {
-  _RENAME_ENTRY (symlink);
+  int res;
+  vfs_plugin_t *plugin;
+  wchar_t *new_url;
+
+  if (!__old_url | !__new_url)
+    return VFS_ERR_INVLAID_ARGUMENT;
+
+  if (!(res=vfs_url_parse (__new_url, &plugin, &new_url)))
+    {
+      res=VFS_CALL_POSIX (plugin, symlink, __old_url, new_url);
+      free (new_url);
+      return res;
+    }
+  return res;
 }
 
 /**

@@ -153,7 +153,7 @@ vfs_utimes                        (const wchar_t        *__url,
 
 int
 vfs_symlink                       (const wchar_t *__old_url,
-                                   const wchar_t *__new_path);
+                                   const wchar_t *__new_url);
 
 int
 vfs_link                          (const wchar_t *__old_url,
