@@ -28,8 +28,13 @@
  * Constants and other definitions
  */
 
+/* Size of buffer in copying operation */
 #define BUF_SIZE 4096
 
+/* Maximal size of content of symbolic link */
+#define MAX_SYMLINK_CONTENT 4096
+
+/* Length of static wide-string buffer */
 #define BUF_LEN(_buf) \
   sizeof (_buf)/sizeof (wchar_t)
 
@@ -146,11 +151,27 @@
       &FONT (CID_YELLOW, CID_WHITE)); \
   }
 
+/* Gets file overwrite rule */
+#define GET_OWR_RULE(_use_lstat) \
+  ((__owr_all_rule && *__owr_all_rule)? \
+    (*__owr_all_rule): \
+    (file_exists_question (__src, __dst, _use_lstat)))
+
 /**
  * Save answer about overwriting all existent targets
  */
 #define SAVE_OWR_ALL_RULE(_a) \
   if (__owr_all_rule) (*__owr_all_rule)=_a;
+
+/*
+ * Unlink symlink in copy_symlink()
+ */
+#define SYMLINK_UNLINK() \
+  REP (res=vfs_unlink (__dst), error, \
+  return (res==MR_CANCEL?MR_ABORT:res), \
+   _(L"Cannot unlink target file \"%ls\":\n%ls"), __dst, \
+  vfs_get_error (res))
+
 
 /**
  * Modal results for overwrite answers
@@ -221,19 +242,23 @@ get_real_dst                      (const wchar_t *__src, const wchar_t *__dst)
 /**
  * Formats information of file for file_exists_question()
  *
+ * @param __use_lstat - use vfs_lstat() instead of vfs_stat()
  * @param __buf - destination buffer
  * @param __buf_size - size of buffer
  * @param __url - URL of file for which information is generating
  */
 static void
-format_exists_file_data           (wchar_t       *__buf,
+format_exists_file_data           (BOOL           __use_lstat,
+                                   wchar_t       *__buf,
                                    size_t         __buf_size,
                                    const wchar_t *__url)
 {
   wchar_t date[100];
   vfs_stat_t stat;
 
-  vfs_stat (__url, &stat);
+  if (__use_lstat)
+    vfs_lstat (__url, &stat); else
+    vfs_stat (__url, &stat);
 
   format_file_time (date, 100, stat.st_mtim.tv_sec);
 
@@ -276,11 +301,13 @@ file_exists_msg_width             (void)
  *
  * @param __src - URL of source file
  * @param __dst - URL of destination file
+ * @param __use_lstat - use vfs_lstat() instead of vfs_stat()
  * @return modal result of question
  */
 static int
 file_exists_question              (const wchar_t *__src,
-                                   const wchar_t *__dst)
+                                   const wchar_t *__dst,
+                                   BOOL           __use_lstat)
 {
   w_window_t *wnd;
   w_text_t *text;
@@ -301,10 +328,10 @@ file_exists_question              (const wchar_t *__src,
   fit_filename (__dst, fn_len, dummy);
   EXIST_QUESTION_TEXT (1, L"Target file \"%ls\" already exists!", dummy);
 
-  format_exists_file_data (dummy, BUF_LEN (dummy), __src);
+  format_exists_file_data (__use_lstat, dummy, BUF_LEN (dummy), __src);
   EXIST_QUESTION_TEXT (3, L"Source: %ls", dummy);
 
-  format_exists_file_data (dummy, BUF_LEN (dummy), __dst);
+  format_exists_file_data (__use_lstat, dummy, BUF_LEN (dummy), __dst);
   EXIST_QUESTION_TEXT (4, L"Target: %ls", dummy);
 
   EXIST_QUESTION_TEXT (6, L"Overwrite this target?");
@@ -329,7 +356,10 @@ file_exists_question              (const wchar_t *__src,
   EXIST_QUESTION_BUTTON (11, L"_Abort", MR_ABORT);
 
   res=w_window_show_modal (wnd);
-  
+
+  if (res==MR_CANCEL)
+    res=MR_ABORT;
+
   /* Destroy any created data */
   widget_destroy (WIDGET (wnd));
   
@@ -450,8 +480,8 @@ is_size_differs                   (const wchar_t *__src,
 {
   vfs_stat_t s1, s2;
 
-  vfs_stat (__src, &s1);
-  vfs_stat (__dst, &s2);
+  vfs_lstat (__src, &s1);
+  vfs_lstat (__dst, &s2);
 
   return s1.st_size!=s2.st_size;
 }
@@ -469,8 +499,8 @@ is_newer                          (const wchar_t *__src,
 {
   vfs_stat_t s1, s2;
 
-  vfs_stat (__src, &s1);
-  vfs_stat (__dst, &s2);
+  vfs_lstat (__src, &s1);
+  vfs_lstat (__dst, &s2);
 
   if (s1.st_mtim.tv_sec>s2.st_mtim.tv_sec)
     return TRUE;
@@ -482,15 +512,15 @@ is_newer                          (const wchar_t *__src,
 }
 
 /**
- * Copies a single file
+ * Copies a regular file
  *
  * @param __src - URL of source
  * @param __dst - URL of destination
- * @param __owr_all_rule - Rule for overwriting existing files 
+ * @param __owr_all_rule - Rule for overwriting existing files
  * @return zero on success, non-zero otherwise
  */
 static int
-copy_file                         (const wchar_t    *__src,
+copy_regular_file                 (const wchar_t    *__src,
                                    const wchar_t    *__dst,
                                    int              *__owr_all_rule,
                                    process_window_t *__proc_wnd)
@@ -499,35 +529,8 @@ copy_file                         (const wchar_t    *__src,
   int res, create_flags=O_WRONLY | O_CREAT | O_TRUNC;
   vfs_stat_t stat;
   char buffer[BUF_SIZE];
-  wchar_t msg[1024], fn[1024];
   vfs_size_t remain, copied, read, written;
   struct utimbuf times;
-
-  /* Initialize current info on screen */
-  w_progress_set_pos (__proc_wnd->file_progress, 0);
-
-  /*
-   * TODO:
-   *  Replace displaying full source filename with relative file name
-   */
-
-  /*
-   * TODO:
-   *  Add skipping displaying localfs plugin name?
-   */
-  COPY_SET_FN (__src, source, L"Source");
-  COPY_SET_FN (__dst, target, L"Target");
-
-  /* Check is file copying to itself */
-  if (!filename_compare (__src, __dst))
-    {
-      wchar_t buf[4096];
-      swprintf (buf, BUF_LEN (buf),
-        _(L"Cannot copy \"%ls\" to itself"), __src);
-
-      MESSAGE_ERROR (buf);
-      return -1;
-    }
 
   /* Open descriptor of source file */
   OPEN_FD (fd_src, __src, O_RDONLY, res,
@@ -537,9 +540,7 @@ copy_file                         (const wchar_t    *__src,
   /* Check is file already exists */
   if (!vfs_stat (__dst, &stat))
     {
-      if (__owr_all_rule && *__owr_all_rule)
-        res=*__owr_all_rule; else
-        res=file_exists_question (__src, __dst);
+      res=GET_OWR_RULE (FALSE);
 
       switch (res)
         {
@@ -576,7 +577,7 @@ copy_file                         (const wchar_t    *__src,
     }
 
   /* Stat of source file */
-  COPY_FILE_REP ( res=vfs_stat (__src, &stat);, error,
+  COPY_FILE_REP ( res=vfs_stat (__src, &stat), error,
         _(L"Cannot stat source file \"%ls\":\n%ls"),
         __src, vfs_get_error (res));
 
@@ -625,6 +626,192 @@ copy_file                         (const wchar_t    *__src,
 
   /* Close descriptors  */
   CLOSE_FD ();
+
+  return 0;
+}
+
+/**
+ * Copies a symbolic link
+ *
+ * @param __src - URL of source
+ * @param __dst - URL of destination
+ * @param __owr_all_rule - Rule for overwriting existing files
+ * @return zero on success, non-zero otherwise
+ */
+static int
+copy_symlink                      (const wchar_t    *__src,
+                                   const wchar_t    *__dst,
+                                   int              *__owr_all_rule,
+                                   process_window_t *__proc_wnd)
+{
+  vfs_stat_t stat;
+  wchar_t content[MAX_SYMLINK_CONTENT];
+  int res;
+
+  /* Read content of source symbolic link */
+  vfs_readlink (__src, content, BUF_LEN (content));
+
+  for (;;)
+    {
+      /* Check for file existment */
+      if (!(res=vfs_lstat (__dst, &stat)))
+        {
+          /* File has been successfully stat'ed */
+          if (S_ISLNK (stat.st_mode))
+            {
+              /* If found file is a symbolic link, */
+              /* read it and compare it's content with content */
+              /* of source symbolic link */
+
+              wchar_t e_content[MAX_SYMLINK_CONTENT];
+              vfs_readlink (__dst, e_content, BUF_LEN (e_content));
+
+              /* Compare contents */
+              if (!wcscmp (content, e_content))
+                {
+                  /* Contents are equal, so we can think, that */
+                  /* symbolic link has been copied successfully */
+                  return 0;
+                }
+            }
+
+          /* Symlinks are different or target is not a symlink */
+          res=GET_OWR_RULE (TRUE);
+
+          /* Review user's answer */
+          switch (res)
+            {
+            case MR_YES:
+            case MR_APPEND:
+              /*
+               * NOTE: Appending of symlinks is equal
+               * to it's replacement.
+               */
+              SYMLINK_UNLINK ();
+              break;
+
+            case MR_NO:
+              return 0;
+
+            case MR_ALL:
+              SAVE_OWR_ALL_RULE (MR_ALL);
+              SYMLINK_UNLINK ();
+              break;
+
+            case MR_UPDATE:
+              SAVE_OWR_ALL_RULE (MR_UPDATE);
+              if (!is_newer (__src, __dst))
+                return 0;
+              SYMLINK_UNLINK ();
+              break;
+
+            case MR_MY_NONE:
+              SAVE_OWR_ALL_RULE (MR_MY_NONE);
+              return 0;
+
+            case MR_SIZE_DIFFERS:
+              SAVE_OWR_ALL_RULE (MR_SIZE_DIFFERS);
+              if (!is_size_differs (__src, __dst))
+                return 0;
+              SYMLINK_UNLINK ();
+              break;
+
+            case MR_ABORT:
+              return MR_ABORT;
+            }
+        } else {
+          if (res!=-ENOENT)
+            {
+              /* Error STAT'ing*/
+              res=error (_(L"Cannot stat target file \"%ls\":\n%ls"), __dst,
+                vfs_get_error (res));
+
+              /* Review user's answer */
+              switch (res)
+                {
+                case MR_RETRY:
+                  continue;
+
+                case MR_CANCEL:
+                  return MR_ABORT;
+
+                case MR_SKIP:
+                  return 0;
+                }
+            }
+        }
+
+      /* Create symlink only if 'File not found' error returned */
+      if (!vfs_symlink (content, __dst))
+        return 0;
+    }
+
+  return 0;
+}
+
+/**
+ * Copies a single file
+ *
+ * @param __src - URL of source
+ * @param __dst - URL of destination
+ * @param __owr_all_rule - Rule for overwriting existing files
+ * @return zero on success, non-zero otherwise
+ */
+static int
+copy_file                         (const wchar_t    *__src,
+                                   const wchar_t    *__dst,
+                                   int              *__owr_all_rule,
+                                   process_window_t *__proc_wnd)
+{
+  int res;
+  vfs_stat_t stat;
+  wchar_t msg[1024], fn[1024];
+
+  /* Initialize current info on screen */
+  w_progress_set_pos (__proc_wnd->file_progress, 0);
+
+  /*
+   * TODO:
+   *  Replace displaying full source filename with relative file name
+   */
+
+  /*
+   * TODO:
+   *  Add skipping displaying localfs plugin name?
+   */
+  COPY_SET_FN (__src, source, L"Source");
+  COPY_SET_FN (__dst, target, L"Target");
+
+  /* Check is file copying to itself */
+  if (!filename_compare (__src, __dst))
+    {
+      wchar_t buf[4096];
+      swprintf (buf, BUF_LEN (buf),
+        _(L"Cannot copy \"%ls\" to itself"), __src);
+
+      MESSAGE_ERROR (buf);
+      return -1;
+    }
+
+  /* Stat source file to determine it's type */
+  REP ( res=vfs_lstat (__src, &stat), error,
+        if (res==MR_CANCEL) res=MR_ABORT; return res,
+        _(L"Cannot stat source file \"%ls\":\n%ls"),
+        __src, vfs_get_error (res));
+
+  if (S_ISREG (stat.st_mode))
+    {
+      copy_regular_file (__src, __dst, __owr_all_rule, __proc_wnd);
+    } else
+  if (S_ISLNK (stat.st_mode))
+    {
+      copy_symlink (__src, __dst, __owr_all_rule, __proc_wnd);
+    } else {
+      swprintf (msg, BUF_LEN (msg),
+        _(L"Cannot copy special file \"%ls\":\n%ls"),
+        __src, _(L"This feature is not implemented yet"));
+      MESSAGE_ERROR (msg);
+    }
 
   return 0;
 }

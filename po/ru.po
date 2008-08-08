@@ -175,6 +175,9 @@ msgstr "Невозможно открыть исходный файл \"%ls\":\n
 msgid "Cannot copy \"%ls\" to itself"
 msgstr "Невозможно скопировать \"%ls\" в самого себя"
 
+msgid "Cannot copy special file \"%ls\":\n%ls"
+msgstr "Невозможно скопировать специальный файл \"%ls\":\n%ls"
+
 msgid "File exists"
 msgstr "Файл существует"
 
@@ -213,6 +216,9 @@ msgstr "Невозможно записать в целевой файл \"%ls\"
 
 msgid "Cannot stat source file \"%ls\":\n%ls"
 msgstr "Невозможно получить свойства исходного файла \"%ls\":\n%ls"
+
+msgid "Cannot stat target file \"%ls\":\n%ls"
+msgstr "Невозможно получить свойства целевого файла \"%ls\":\n%ls"
 
 msgid "Cannot stat source directory \"%ls\":\n%ls"
 msgstr "Невозможно получить свойства исходного каталога \"%ls\":\n%ls"

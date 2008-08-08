@@ -259,7 +259,7 @@ isdir                             (const wchar_t *__url)
 {
   vfs_stat_t stat;
 
-  if (vfs_stat (__url, &stat))
+  if (vfs_lstat (__url, &stat))
     {
       //
       // TODO:
