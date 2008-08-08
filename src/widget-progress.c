@@ -55,7 +55,10 @@ progress_drawer                   (w_progress_t *__progress)
 
   // Draw bar
   scr_wnd_font (layout, *__progress->progress_font);
-  perc=(double)__progress->cur_pos/__progress->max_pos*100;
+
+  if (__progress->max_pos)
+    perc=(double)__progress->cur_pos/__progress->max_pos*100; else
+    perc=100;
   count=(double)perc/100*width;
 
   scr_wnd_font (layout, *__progress->progress_font);
