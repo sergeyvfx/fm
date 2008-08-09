@@ -41,6 +41,7 @@ static btn_array_t buttons[]={
     { 3, -1, { {MR_YES,   -1, L"_Yes"},     {MR_NO,     -1, L"_No"},    {MR_CANCEL, -1, L"_Cancel"} } },
     { 2, -1, { {MR_RETRY, -1, L"_Retry"},   {MR_CANCEL, -1, L"_Cancel"} } },
     { 3, -1, { {MR_RETRY, -1, L"_Retry"},   {MR_SKIP,   -1, L"_Skip"},  {MR_CANCEL, -1, L"_Cancel"} } },
+    { 3, -1, { {MR_RETRY, -1, L"_Retry"},   {MR_IGNORE, -1, L"_Ignore"},{MR_CANCEL, -1, L"_Cancel"} } },
   };
 
 ////////

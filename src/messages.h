@@ -33,6 +33,7 @@ BEGIN_HEADER
 #define MB_YESNOCANCEL     0x0300
 #define MB_RETRYCANCEL     0x0400
 #define MB_RETRYSKIPCANCEL 0x0500
+#define MB_RETRYIGNCANCEL  0x0600
 
 // Determines an index of initially focused button
 #define MB_DEFBUTTON_0     0x0000
@@ -40,7 +41,7 @@ BEGIN_HEADER
 #define MB_DEFBUTTON_2     0x2000
 
 // Some helpers for deep-core usage
-#define MB_BUTTON_CODE(_x)   ((_x>>8)%16%6)
+#define MB_BUTTON_CODE(_x)   ((_x>>8)%16%7)
 #define MB_DEFBUTTON(_x)     ((_x>>12)%4%3)
 
 #define MESSAGE_ERROR(_text) \

@@ -21,6 +21,14 @@
 #define FILE_TRUNCATOR '~'
 #define DIGITS_IN_HUMAN_SIZE 7
 
+// Default Formats of date strings for recent and older dates
+#define DEFAULT_DATE_FORMAT     L"%b %d %H:%M"
+#define DEFAULT_OLD_DATE_FORMAT L"%b %d  %Y"
+
+// Default timedists of recent date (in days)
+#define DEFAULT_RECENT_PAST     (24*30*6)
+#define DEFAULT_RECENT_FUTURE   (24*30*6)
+
 ////////
 //
 
@@ -162,6 +170,91 @@ fsizetohuman                      (__u32_t __size, char *__suffix)
 
   if (__suffix)
     (*__suffix)=suffixes[suff_ptr];
+
+  return res;
+}
+
+/**
+ * Formats time of file
+ * This function uses different date format string for recent and
+ * old files
+ *
+ * @param __buf - buffer for result
+ * @param __buf_size - size of buffer
+ * @param __time - time of file
+ */
+void
+format_file_time                  (wchar_t *__buf,
+                                   size_t   __buf_size,
+                                   time_t   __time)
+{
+  wchar_t *format;
+  struct tm tm;
+  time_t now;
+
+  now=time (0);
+
+  // Convert time_t to struct tm
+  gmtime_r (&__time, &tm);
+
+  // Get format for date string
+  if (__time<now)
+    {
+      format=((now-__time)<DEFAULT_RECENT_PAST*3600)?
+        DEFAULT_DATE_FORMAT:DEFAULT_OLD_DATE_FORMAT;
+    } else {
+      format=((__time-now)<DEFAULT_RECENT_FUTURE*3600)?
+        DEFAULT_DATE_FORMAT:DEFAULT_OLD_DATE_FORMAT;
+    }
+
+  wcsftime (__buf, __buf_size, format, &tm);
+}
+
+/**
+ * Trims file name
+ * (Deletes duplicated '/' from file name)
+ * Returned buffer must be freed
+ *
+ * @return truncated file name.
+ */
+wchar_t*
+filename_trim                     (const wchar_t *__fn)
+{
+  size_t i, len, ptr=0;
+  wchar_t *res;
+
+  len=wcslen (__fn);
+
+  /* Length of file name can not become longer after trim */
+  res=malloc ((len+1)*sizeof (wchar_t));
+
+  for (i=0; i<len; i++)
+    if (__fn[i]=='/' && ptr>0 && res[ptr-1]=='/')
+      continue; else
+      res[ptr++]=__fn[i];
+
+  res[ptr]=0;
+
+  return res;
+}
+
+/**
+ * Compares two file names
+ *
+ * @return value of wcscmp() with trimed file names as arguments
+ */
+int
+filename_compare                  (const wchar_t *__a, const wchar_t *__b)
+{
+  int res;
+  wchar_t *a, *b;
+  a=filename_trim (__a);
+  b=filename_trim (__b);
+
+  res=wcscmp (a, b);
+
+  free (a);
+  free (b);
 
   return res;
 }

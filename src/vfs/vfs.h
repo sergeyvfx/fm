@@ -144,8 +144,12 @@ vfs_lseek                         (vfs_file_t   __file,
                                    int          __whence);
 
 int
-vfs_utime                         (wchar_t              *__url,
+vfs_utime                         (const wchar_t        *__url,
                                    const struct utimbuf *__buf);
+
+int
+vfs_utimes                        (const wchar_t        *__url,
+                                   const struct timeval *__times);
 
 int
 vfs_symlink                       (const wchar_t *__old_url,
@@ -159,6 +163,14 @@ int
 vfs_readlink                      (const wchar_t *__url,
                                    wchar_t       *__buf,
                                    size_t         __bufsize);
+
+
+/********
+ * Different utilities
+ */
+
+int
+vfs_alphasort                     (const void *__a, const void *__b);
 
 ////////
 //

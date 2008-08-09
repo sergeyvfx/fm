@@ -19,7 +19,7 @@
 #include <wchar.h>
 
 #define USE_DEFAULT_PLUGIN
-#define VFS_DEFAULT_PLUGIN       L"file"
+#define VFS_DEFAULT_PLUGIN       VFS_LOCALFS_PLUGIN
 #define VFS_DEFAULT_PLUGIN_IDENT '/'
 
 /**

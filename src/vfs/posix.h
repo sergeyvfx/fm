@@ -69,6 +69,9 @@ typedef vfs_offset_t (*vfs_lseek_proc) (vfs_plugin_fd_t __fd,
 typedef int (*vfs_utime_proc)     (const wchar_t        *__fn,
                                    const struct utimbuf *__buf);
 
+typedef int (*vfs_utimes_proc)    (const wchar_t        *__fn,
+                                   const struct timeval *__times);
+
 typedef int (*vfs_symlink_proc)   (const wchar_t *__old_path,
                                    const wchar_t *__new_path);
 

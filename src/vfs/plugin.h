@@ -24,6 +24,8 @@ BEGIN_HEADER
 #define VFS_PLUGIN_INIT_PROC "__vfs_lugin_init_entry__"
 #define VFS_PLUGIN_DELIMETER L"::"
 
+#define VFS_LOCALFS_PLUGIN   L"localfs"
+
 ////////
 // Type defenitions
 
@@ -89,6 +91,7 @@ typedef struct {
   vfs_lseek_proc     lseek;
 
   vfs_utime_proc     utime;
+  vfs_utimes_proc    utimes;
 
   vfs_symlink_proc  symlink;
   vfs_symlink_proc  link;

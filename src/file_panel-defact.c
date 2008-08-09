@@ -16,6 +16,7 @@
 #include "util.h"
 #include "messages.h"
 #include "i18n.h"
+#include "actions.h"
 
 #include <time.h>
 
@@ -36,17 +37,6 @@
 #define UPDIR_CAPTION          L"<Up--Dir>"
 #define COLUMN_TEXT_TRUNCATOR  L"..."
 
-// Default Formats of date strings for recent and older dates
-#define DEFAULT_DATE_FORMAT     L"%b %d %H:%M"
-#define DEFAULT_OLD_DATE_FORMAT L"%b %d  %Y"
-
-// Max. length of format string
-#define MAX_DATE_FORMAT_LEN 128
-
-// Default timedists of recent date (in days)
-#define DEFAULT_RECENT_PAST     (24*30*6)
-#define DEFAULT_RECENT_FUTURE   (24*30*6)
-
 // Count of columns for brief listing mode
 #define COLUMNS_PER_BRIEF 3
 
@@ -62,16 +52,6 @@
   if (!item) \
     return -1; \
   item->user_data=__panel;
-
-////////
-//
-
-// Formats of date strings for recent and older dates
-static wchar_t date_format[MAX_DATE_FORMAT_LEN];
-static wchar_t old_date_format[MAX_DATE_FORMAT_LEN];
-
-// Timedists of recent date (in days)
-static int recent_past, recent_future;
 
 ////////
 //
@@ -292,33 +272,16 @@ draw_full_row                     (const file_panel_t *__panel,
             case COLUMN_ATIME:
             case COLUMN_CTIME:
               {
-                struct tm tm;
-                time_t *t, now;
-                wchar_t *format;
+                time_t t;
 
                 // Get current time_t and time_t of item
                 if (column->type==COLUMN_MTIME)
-                  t=&item->file->lstat.st_mtim.tv_sec; else
+                  t=item->file->lstat.st_mtim.tv_sec; else
                 if (column->type==COLUMN_ATIME)
-                  t=&item->file->lstat.st_atim.tv_sec; else
-                  t=&item->file->lstat.st_ctim.tv_sec;
+                  t=item->file->lstat.st_atim.tv_sec; else
+                  t=item->file->lstat.st_ctim.tv_sec;
 
-                now=time (0);
-
-                // Convert time_t to struct tm
-                gmtime_r (t, &tm);
-
-                // Get format for date string
-                if (*t<now)
-                  {
-                    format=((now-*t)<recent_past*3600)?
-                      date_format:old_date_format;
-                  } else {
-                    format=((*t-now)<recent_future*3600)?
-                      date_format:old_date_format;
-                  }
-
-                wcsftime (pchar, MAX_SCREEN_WIDTH, format, &tm);
+                format_file_time (pchar, MAX_SCREEN_WIDTH, t);
                 break;
               }
           case COLUMN_PERM:
@@ -744,13 +707,6 @@ cwd_sink                          (file_panel_t  *__panel,
 static int
 read_config                       (void)
 {
-  // Set default configuration
-  wcscpy (date_format,     DEFAULT_DATE_FORMAT);
-  wcscpy (old_date_format, DEFAULT_OLD_DATE_FORMAT);
-
-  recent_past   = DEFAULT_RECENT_PAST;
-  recent_future = DEFAULT_RECENT_FUTURE;
-
   //
   // TODO:
   //  Add getting data from config here
@@ -934,6 +890,9 @@ file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
     case 'l':
       file_panel_set_listing_mode (__panel, (__panel->listing_mode+1)%3);
       break;
+    case KEY_F(5):
+      action_copy (__panel);
+      break;
     //
     ////////
 
@@ -979,16 +938,28 @@ file_panel_defact_collect_items   (file_panel_t *__panel)
   file_t **list=NULL;
   int i, count, ptr=0;
   BOOL cwd_root;
+  wchar_t *url;
+  size_t len;
 
   if (!__panel || !__panel->cwd.data)
     return -1;
 
   cwd_root=!wcscmp (__panel->cwd.data, L"/");
 
-  count=wcscandir (__panel->vfs, __panel->cwd.data,
+  // Get full URL
+  len=wcslen (__panel->vfs)+wcslen (__panel->cwd.data)+
+    wcslen (VFS_PLUGIN_DELIMETER);
+  url=malloc ((len+1)*sizeof (wchar_t));
+
+  swprintf (url, len+1, L"%ls%ls%ls", __panel->vfs, VFS_PLUGIN_DELIMETER,
+    __panel->cwd.data);
+
+  count=wcscandir (url,
     PANEL_DATA (__panel)->dir.filter,
     PANEL_DATA(__panel)->dir.comparator,
     &list);
+
+  free (url);
 
   __panel->items.length=0;
 

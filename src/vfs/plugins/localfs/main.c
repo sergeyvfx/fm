@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <errno.h>
 #include <dirent.h>
 #include <stdlib.h>
@@ -102,6 +103,7 @@ localfs_open                      (const wchar_t *__fn,
       VFS_GET_MODE (__error, mode);
 
       int fd=open (fn, __flags, mode);
+
       if (fd!=-1)
         {
           res=malloc (sizeof (int));
@@ -396,9 +398,7 @@ localfs_lseek                     (vfs_plugin_fd_t __fd,
  * Wrapper for POSIX function utime()
  *
  * @param __fn - name of file for which times will be changed
- * @param __buf - buffer of times:
- *  __buf[0] - Access time
- *  __buf[1] - Modification time
+ * @param __buf - buffer of times
  * @return @return zero on success, non-zero otherwise
  */
 int
@@ -409,6 +409,26 @@ localfs_utime                     (const wchar_t        *__fn,
     return VFS_ERR_INVLAID_ARGUMENT;
 
   _FILEOP (utime, __buf);
+}
+
+/**
+ * Change access and/or modification times of a file.
+ * Wrapper for POSIX function utime()
+ *
+ * @param __fn - name of file for which times will be changed
+ * @param __times - buffer of times
+ *  __times[0] - Access time
+ *  __times[1] - Modification time
+ * @return @return zero on success, non-zero otherwise
+ */
+int
+localfs_utimes                    (const wchar_t        *__fn,
+                                   const struct timeval *__times)
+{
+  if (!__fn | !__times)
+    return VFS_ERR_INVLAID_ARGUMENT;
+
+  _FILEOP (utimes, __times);
 }
 
 /**
@@ -511,6 +531,7 @@ static vfs_plugin_info_t plugin_info = {
   localfs_lseek,
 
   localfs_utime,
+  localfs_utimes,
 
   localfs_symlink,
   localfs_link,
