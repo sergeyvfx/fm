@@ -13,8 +13,6 @@
 #ifndef _types_h_
 #define _types_h_
 
-#include "smartinclude.h"
-
 #ifdef LINUX
 #  include <sys/types.h>
 #endif

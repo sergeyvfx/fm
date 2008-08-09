@@ -13,8 +13,6 @@
 #ifndef _macrodef_h_
 #define _macrodef_h_
 
-#include "smartinclude.h"
-
 BEGIN_HEADER
 
 #include <stdio.h>

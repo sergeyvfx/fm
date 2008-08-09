@@ -34,7 +34,6 @@ BEGIN_HEADER
 #include "package.h"
 #include "version.h"
 
-#include "types.h"
 #include "macrodef.h"
 
 // Some definitions to tell compiler use
@@ -50,6 +49,8 @@ BEGIN_HEADER
 #else
 #  define ATTR_UNUSED
 #endif
+
+#include "types.h"
 
 END_HEADER
 
