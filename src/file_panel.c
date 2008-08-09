@@ -56,7 +56,7 @@ file_panel_t *current_panel=NULL;
 #define DEFAULT_FULL_ROW_MASK L"name size mtime"
 
 // Name of default virtual file system
-#define DEFAULT_VFS_NAME      L"localfs"
+#define DEFAULT_VFS_NAME      VFS_LOCALFS_PLUGIN
 
 ////////
 //
@@ -1033,6 +1033,9 @@ file_panel_get_full_cwd           (file_panel_t *__panel)
 
   if (!__panel)
     return NULL;
+
+  if (wcscmp (__panel->vfs, VFS_LOCALFS_PLUGIN)==0)
+    return wcsdup (__panel->cwd.data);
 
   /* Length of URL */
   len=wcslen (__panel->vfs)+wcslen (__panel->cwd.data)+
