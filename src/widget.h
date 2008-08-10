@@ -299,7 +299,9 @@ typedef struct
   unsigned long           flags;           /* Different flags of widget */ \
   widget_methods_t        methods;         /* Methods of widget */ \
   widget_callbacks_t      callbacks;       /* Callbacks of widget */ \
-  widget_user_callbacks_t user_callbacks;  /* Callbacks of widget for user's usage */ \
+ \
+  /* Callbacks of widget for user's usage */ \
+  widget_user_callbacks_t user_callbacks;  \
   scr_window_t       layout;          /* Layout where the widgets draws */ \
   widget_position_t  position;        /* Position of widget */ \
   BOOL               focused;         /* Is widget focused  */ \

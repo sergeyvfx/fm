@@ -358,7 +358,9 @@ file_exists_question (const wchar_t *__src,
   cur_left = buttons_left;
   EXIST_QUESTION_BUTTON (9, L"If _size differs", MR_SIZE_DIFFERS);
 
-  cur_left = (wnd->position.width - widget_shortcut_length (_(L"_Abort")) - 4) / 2;
+  cur_left = (wnd->position.width - widget_shortcut_length (_(L"_Abort"))
+          - 4) / 2;
+
   EXIST_QUESTION_BUTTON (11, L"_Abort", MR_ABORT);
 
   res = w_window_show_modal (wnd);

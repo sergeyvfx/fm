@@ -427,7 +427,8 @@ draw_brief_row (const file_panel_t *__panel, unsigned long __index,
   last_column = column_number == __column_count - 1;
 
   /* Get width of current column */
-  initial_width = width = (__panel->widget->position.width - 2) / __column_count;
+  initial_width = width = (__panel->widget->position.width -
+          2) / __column_count;
 
   /* For last column use the rest space of panel */
   /* width=<full width of panel>-<borders>-<widths of standard columns>- */
@@ -477,7 +478,8 @@ draw_brief_row (const file_panel_t *__panel, unsigned long __index,
           scr_wnd_putch (layout, ACS_TTEE);
 
           /* Bottom enclosing */
-          scr_wnd_move_caret (layout, left_offset - 1, row_number + per_column + 2);
+          scr_wnd_move_caret (layout, left_offset - 1,
+                              row_number + per_column + 2);
           scr_wnd_putch (layout, ACS_BTEE);
         }
     }
@@ -604,7 +606,8 @@ draw_brief_file_panel_items (const file_panel_t *__panel)
   for (i = 0; i < per_page; i++)
     {
       scr_wnd_font (layout, *__panel->widget->font);
-      draw_brief_row (__panel, i + start, i + start >= __panel->items.length, column_count);
+      draw_brief_row (__panel, i + start, i + start >= __panel->items.length,
+                      column_count);
     }
 
   widget = __panel->widget;

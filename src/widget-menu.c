@@ -159,8 +159,8 @@ menu_drawer (w_menu_t *__menu)
       SUBMENU_PADDING ();
 
       widget_shortcut_print (layout, __menu->sub_menus.data[i].caption,
-                             focused ? *__menu->focused_font : *__menu->font,
-                             focused ? *__menu->hot_focused_font : *__menu->hot_font);
+                     focused ? *__menu->focused_font : *__menu->font,
+                     focused ? *__menu->hot_focused_font : *__menu->hot_font);
 
       SUBMENU_PADDING ();
     }
