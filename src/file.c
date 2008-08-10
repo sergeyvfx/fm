@@ -15,63 +15,69 @@
 #include <wchar.h>
 #include <math.h>
 
-////////
-//
+/********
+ *
+ */
 
 #define FILE_TRUNCATOR '~'
 #define DIGITS_IN_HUMAN_SIZE 7
 
-// Default Formats of date strings for recent and older dates
+/* Default Formats of date strings for recent and older dates */
 #define DEFAULT_DATE_FORMAT     L"%b %d %H:%M"
 #define DEFAULT_OLD_DATE_FORMAT L"%b %d  %Y"
 
-// Default timedists of recent date (in days)
+/* Default timedists of recent date (in days) */
 #define DEFAULT_RECENT_PAST     (24*30*6)
 #define DEFAULT_RECENT_FUTURE   (24*30*6)
 
-////////
-//
+/********
+ *
+ */
 
 /**
- * Fits filename to specified length
+ * Fit filename to specified length
  *
  * @param __file_name - file name to be fitted
  * @param __len - length to which fit the file name
  * @param __res - pointer to buffer where result will be stored
  */
 void
-fit_filename                      (const wchar_t *__file_name,
-                                   long           __len,
-                                   wchar_t       *__res)
+fit_filename (const wchar_t *__file_name, long __len, wchar_t *__res)
 {
   size_t len;
 
-  if (__len<=0)
+  if (__len <= 0)
     {
-      // Wanted length of file name is too short
-      *__res=0;
+      /* Wanted length of file name is too short */
+      *__res = 0;
       return;
     }
 
-  if ((len=wcslen (__file_name))<=__len)
+  if ((len = wcslen (__file_name)) <= __len)
     {
-      // Do not call any specific stuff
+      /* Do not call any specific stuff */
       wcscpy (__res, __file_name);
-  } else {
-    // Cast truncation
-    size_t i, t=__len/2-(__len%2?0:1), ptr=0;
+    }
+  else
+    {
+      /* Cast truncation */
+      size_t i, t = __len / 2 - (__len % 2 ? 0 : 1), ptr = 0;
 
-    // Copy prefix
-    for (i=0; i<t; i++)
-      __res[ptr++]=__file_name[i];
+      /* Copy prefix */
+      for (i = 0; i < t; i++)
+        {
+          __res[ptr++] = __file_name[i];
+        }
 
-    __res[ptr++]=FILE_TRUNCATOR;
+      __res[ptr++] = FILE_TRUNCATOR;
 
-    for (i=len-__len+ptr; i<len; i++)
-      __res[ptr++]=__file_name[i];
+      for (i = len - __len + ptr; i < len; i++)
+        {
+          __res[ptr++] = __file_name[i];
+        }
 
-    __res[ptr]=0;
-  }
+      __res[ptr] = 0;
+    }
 }
 
 /**
@@ -82,68 +88,80 @@ fit_filename                      (const wchar_t *__file_name,
  * zero in case of errors
  */
 wchar_t*
-wcfilename                        (const wchar_t *__name)
+wcfilename (const wchar_t *__name)
 {
-  size_t i, len=wcslen (__name), ptr=0;
+  size_t i, len = wcslen (__name), ptr = 0;
   wchar_t *res;
 
   if (!__name)
-    return 0;
+    {
+      return 0;
+    }
 
   if (!wcscmp (__name, L"/"))
-    return wcsdup (L"/");
+    {
+      return wcsdup (L"/");
+    }
 
-  // Search last '/'
-  for (i=len-1; i>=0; i--)
-    if (__name[i]=='/')
-      break;
+  /* Search last '/' */
+  for (i = len - 1; i >= 0; i--)
+    {
+      if (__name[i] == '/')
+        {
+          break;
+        }
+    }
 
-  // Allocate memory for new filename
-  res=malloc (sizeof (wchar_t)*(len-i+1));
+  /* Allocate memory for new filename */
+  res = malloc (sizeof (wchar_t)*(len - i + 1));
 
-  // Copy data to new filename
+  /* Copy data to new filename */
   i++;
-  while (i<len)
-    res[ptr++]=__name[i++];
+  while (i < len)
+    {
+      res[ptr++] = __name[i++];
+    }
 
-  res[ptr]=0;
+  res[ptr] = 0;
 
   return res;
 }
 
 /**
- * Converts file mode creation mask to string
+ * Convert file mode creation mask to string
  *
  * @param __mask - mode creation mask to be converted to string
  * @param __res - pointer to string where save result of converting
  */
 void
-umasktowcs                        (mode_t __mask, wchar_t *__res)
+umasktowcs (mode_t __mask, wchar_t *__res)
 {
   if (!__res)
-    return;
+    {
+      return;
+    }
 
-  // Permissions for owner
-  __res[0]=__mask&S_IRUSR?'r':'-';
-  __res[1]=__mask&S_IWUSR?'w':'-';
-  __res[2]=__mask&S_IXUSR?'x':'-';
+  /* Permissions for owner */
+  __res[0] = __mask & S_IRUSR ? 'r' : '-';
+  __res[1] = __mask & S_IWUSR ? 'w' : '-';
+  __res[2] = __mask & S_IXUSR ? 'x' : '-';
 
-  // Permissions for group
-  __res[3]=__mask&S_IRGRP?'r':'-';
-  __res[4]=__mask&S_IWGRP?'w':'-';
-  __res[5]=__mask&S_IXGRP?'x':'-';
+  /* Permissions for group */
+  __res[3] = __mask & S_IRGRP ? 'r' : '-';
+  __res[4] = __mask & S_IWGRP ? 'w' : '-';
+  __res[5] = __mask & S_IXGRP ? 'x' : '-';
 
-  // Permissions for others
-  __res[6]=__mask&S_IROTH?'r':'-';
-  __res[7]=__mask&S_IWOTH?'w':'-';
-  __res[8]=__mask&S_IXOTH?'x':'-';
+  /* Permissions for others */
+  __res[6] = __mask & S_IROTH ? 'r' : '-';
+  __res[7] = __mask & S_IWOTH ? 'w' : '-';
+  __res[8] = __mask & S_IXOTH ? 'x' : '-';
 
-  // Null-terminator
-  __res[9]=0;
+  /* Null-terminator */
+  __res[9] = 0;
 }
 
 /**
- * Converts file size to human-readable format
+ * Convert file size to human-readable format
  *
  * @param __size - original size of file
  * @param __suffix - returned suffix of human-readable size
@@ -151,31 +169,34 @@ umasktowcs                        (mode_t __mask, wchar_t *__res)
  */
 #ifdef __USE_FILE_OFFSET64
 __u64_t
-fsizetohuman                      (__u64_t __size, char *__suffix)
+fsizetohuman (__u64_t __size, char *__suffix)
 #else
+
 __u32_t
-fsizetohuman                      (__u32_t __size, char *__suffix)
+fsizetohuman (__u32_t __size, char *__suffix)
 #endif
 {
   static char suffixes[] = {'\0', 'K', 'M', 'G', 'T'};
-  __u64_t res=__size;
-  short suff_ptr=0;
-  double log10=log (10);
+  __u64_t res = __size;
+  short suff_ptr = 0;
+  double log10 = log (10);
 
-  while (log (res)/log10>DIGITS_IN_HUMAN_SIZE)
+  while (log (res) / log10 > DIGITS_IN_HUMAN_SIZE)
     {
-      res/=1024;
+      res /= 1024;
       suff_ptr++;
     }
 
   if (__suffix)
-    (*__suffix)=suffixes[suff_ptr];
+    {
+      (*__suffix) = suffixes[suff_ptr];
+    }
 
   return res;
 }
 
 /**
- * Formats time of file
+ * Format time of file
  * This function uses different date format string for recent and
  * old files
  *
@@ -184,74 +205,81 @@ fsizetohuman                      (__u32_t __size, char *__suffix)
  * @param __time - time of file
  */
 void
-format_file_time                  (wchar_t *__buf,
-                                   size_t   __buf_size,
-                                   time_t   __time)
+format_file_time (wchar_t *__buf, size_t __buf_size, time_t __time)
 {
   wchar_t *format;
   struct tm tm;
   time_t now;
 
-  now=time (0);
+  now = time (0);
 
-  // Convert time_t to struct tm
+  /* Convert time_t to struct tm */
   gmtime_r (&__time, &tm);
 
-  // Get format for date string
-  if (__time<now)
+  /* Get format for date string */
+  if (__time < now)
     {
-      format=((now-__time)<DEFAULT_RECENT_PAST*3600)?
-        DEFAULT_DATE_FORMAT:DEFAULT_OLD_DATE_FORMAT;
-    } else {
-      format=((__time-now)<DEFAULT_RECENT_FUTURE*3600)?
-        DEFAULT_DATE_FORMAT:DEFAULT_OLD_DATE_FORMAT;
+      format = ((now - __time) < DEFAULT_RECENT_PAST * 3600) ?
+              DEFAULT_DATE_FORMAT : DEFAULT_OLD_DATE_FORMAT;
+    }
+  else
+    {
+      format = ((__time - now) < DEFAULT_RECENT_FUTURE * 3600) ?
+              DEFAULT_DATE_FORMAT : DEFAULT_OLD_DATE_FORMAT;
     }
 
   wcsftime (__buf, __buf_size, format, &tm);
 }
 
 /**
- * Trims file name
+ * Trim file name
  * (Deletes duplicated '/' from file name)
  * Returned buffer must be freed
  *
  * @return truncated file name.
  */
 wchar_t*
-filename_trim                     (const wchar_t *__fn)
+filename_trim (const wchar_t *__fn)
 {
-  size_t i, len, ptr=0;
+  size_t i, len, ptr = 0;
   wchar_t *res;
 
-  len=wcslen (__fn);
+  len = wcslen (__fn);
 
   /* Length of file name can not become longer after trim */
-  res=malloc ((len+1)*sizeof (wchar_t));
+  res = malloc ((len + 1) * sizeof (wchar_t));
 
-  for (i=0; i<len; i++)
-    if (__fn[i]=='/' && ptr>0 && res[ptr-1]=='/')
-      continue; else
-      res[ptr++]=__fn[i];
+  for (i = 0; i < len; i++)
+    {
+      if (__fn[i] == '/' && ptr > 0 && res[ptr - 1] == '/')
+        {
+          continue;
+        }
+      else
+        {
+          res[ptr++] = __fn[i];
+        }
+    }
 
-  res[ptr]=0;
+  res[ptr] = 0;
 
   return res;
 }
 
 /**
- * Compares two file names
+ * Compare two file names
  *
  * @return value of wcscmp() with trimed file names as arguments
  */
 int
-filename_compare                  (const wchar_t *__a, const wchar_t *__b)
+filename_compare (const wchar_t *__a, const wchar_t *__b)
 {
   int res;
   wchar_t *a, *b;
-  a=filename_trim (__a);
-  b=filename_trim (__b);
+  a = filename_trim (__a);
+  b = filename_trim (__b);
 
-  res=wcscmp (a, b);
+  res = wcscmp (a, b);
 
   free (a);
   free (b);

@@ -22,24 +22,32 @@
  *  - If there is more than two file panels, user'll see a list of
  */
 file_panel_t*
-action_choose_file_panel          (void)
+action_choose_file_panel (void)
 {
-  int count=file_panel_get_count ();
-  deque_t *panels=file_panel_get_list ();
+  int count = file_panel_get_count ();
+  deque_t *panels = file_panel_get_list ();
 
-  if (count<=1)
-    return NULL;
-
-  if (count==2)
+  if (count <= 1)
     {
-      /* Return oppsite file panel  */
-      if (deque_data (deque_head (panels))!=current_panel)
-        return deque_data (deque_head (panels)); else
-        return deque_data (deque_tail (panels));
-    } else {
+      return NULL;
+    }
+
+  if (count == 2)
+    {
+      /* Return oppsite file panel */
+      if (deque_data (deque_head (panels)) != current_panel)
+        {
+          return deque_data (deque_head (panels));
+        }
+      else
+        {
+          return deque_data (deque_tail (panels));
+        }
+    }
+  else
+    {
       /*
-       * TODO:
-       *  Add displaying of file panels list here
+       * TODO: Add displaying of file panels list here
        */
     }
 

@@ -15,26 +15,30 @@
 
 BEGIN_HEADER
 
-int            // Initialize interface
-iface_init                        (void);
+/* Initialize interface */
+int
+iface_init (void);
 
-void           // Uninitialize interface
-iface_done                        (void);
+/* Uninitialize interface */
+void
+iface_done (void);
 
 int
-iface_mainloop                    (void);
+iface_mainloop (void);
 
-////
-// Menu
+/***
+ * Menu
+ */
 
 int
-iface_create_menu                 (void);
+iface_create_menu (void);
 
-////
-// Actions
+/***
+ * Actions
+ */
 
 void
-iface_act_exit                    (void);
+iface_act_exit (void);
 
 END_HEADER
 

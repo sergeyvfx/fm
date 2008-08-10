@@ -20,41 +20,45 @@
 
 #include <vfs/vfs.h>
 
-////////
-// Some helpful macroses
+/********
+ * Some helpful macroses
+ */
 
 #define _INIT_ITERATOR(_proc, _args...) \
   if ((res=_proc (_args))) \
     return res;
 
-////////
-// Variables
+/********
+ * Variables
+ */
 
-static w_box_t *main_box=NULL;
+static w_box_t *main_box = NULL;
 
-////////
-//
+/********
+ *
+ */
 
 /**
- * Creates all widgets needed by iface
+ * Create all widgets needed by iface
  *
  * @return zero on success, non-zero on failure
  */
 static int
-create_widgets                    (void)
+create_widgets (void)
 {
-  // Create box for basic layout
-  main_box=widget_create_box (NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
-    WBS_HORISONTAL, 3);
+  /* Create box for basic layout */
+  main_box = widget_create_box (NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
+                                WBS_HORISONTAL, 3);
 
   if (!main_box)
-    return -1;
+    {
+      return -1;
+    }
 
-  //
-  // NOTE:
-  //  First item of box is reserved for menu
-  //  when it hasn't got style WMS_HIDE_UNFOCUSED
-  //
+  /*
+   * NOTE: First item of box is reserved for menu
+   *       when it hasn't got style WMS_HIDE_UNFOCUSED
+   */
   w_box_set_item_szie (main_box, 0, 0);
 
   w_box_set_item_szie (main_box, 2, 1);
@@ -63,6 +67,7 @@ create_widgets                    (void)
 }
 
 #ifdef SIGWINCH
+
 /**
  * Handler for signal SIGWINCH which is called
  * when a terminal is resized
@@ -70,45 +75,49 @@ create_widgets                    (void)
  * @param sig(unused) - code of returned signal
  */
 static void
-sig_winch                         (int sig ATTR_UNUSED)
+sig_winch (int sig ATTR_UNUSED)
 {
   screen_on_resize ();
   widget_on_scr_resize ();
 }
 #endif
 
-////
-// Handlers
+/********
+ * Handlers
+ */
 
 /**
  * Handler for global hotkey for action Exit
  */
 static void
-exit_hotkey                       (void)
+exit_hotkey (void)
 {
   iface_act_exit ();
 }
 
 /**
- * Loads VFS plugin
+ * Load VFS plugin
  *
  * @param __fn - name of file to load as VFS plugin
  * @return zero on success, non-zero otherwise
  */
 static int
-load_vfs_plugin                   (wchar_t *__fn)
+load_vfs_plugin (wchar_t *__fn)
 {
-  int res=0;
+  int res = 0;
 
-  if ((res=vfs_plugin_load (__fn)))
+  if ((res = vfs_plugin_load (__fn)))
     {
       wchar_t error[1024];
-      swprintf (error, 1024, _(L"%ls\n\nContinue executong without this plugin?"),
-        vfs_get_error (res));
+      swprintf (error, 1024,
+                _(L"%ls\n\nContinue executong without this plugin?"),
+                vfs_get_error (res));
 
       if (message_box (_(L"VFS error"), error,
-        MB_YESNO | MB_CRITICAL | MB_DEFBUTTON_1)==MR_YES)
-          res=0;
+                       MB_YESNO | MB_CRITICAL | MB_DEFBUTTON_1) == MR_YES)
+        {
+          res = 0;
+        }
 
       return res;
     }
@@ -117,63 +126,63 @@ load_vfs_plugin                   (wchar_t *__fn)
 }
 
 /**
- * Initializes VFS stuff
+ * Initialize VFS stuff
  *
  * @param zero on success, non-zero otherwise
  */
 static int
-init_vfs                          (void)
+init_vfs (void)
 {
   int res;
   _INIT_ITERATOR (vfs_init);
 
 #ifdef DEBUG
-  _INIT_ITERATOR  (load_vfs_plugin,  L"vfs/plugins/localfs/liblocalfs.so");
+  _INIT_ITERATOR (load_vfs_plugin, L"vfs/plugins/localfs/liblocalfs.so");
 #endif
 
-  //
-  // TODO:
-  //  Add loading VFS plugins here
-  //
+  /*
+   * TODO: Add loading VFS plugins here
+   */
 
   return 0;
 }
 
-////////
-// User's backend
+/********
+ * User's backend
+ */
 
 /**
- * Initializes interface
+ * Initialize interface
  *
  * @return zero on success, non-zero on failure
  */
 int
-iface_init                        (void)
+iface_init (void)
 {
   int res;
 
-  // Initialize terminal control
+  /* Initialize terminal control */
   _INIT_ITERATOR (screen_init, SM_COLOR);
 
-  // Initialize widgets
+  /* Initialize widgets */
   _INIT_ITERATOR (widgets_init);
 
 #ifdef SIGWINCH
-  // For caughting terminal resizing
+  /* For catching terminal resizing */
   signal (SIGWINCH, sig_winch);
 #endif
 
   scr_hide_cursor ();
 
-  // Initialize VFS
+  /* Initialize VFS */
   _INIT_ITERATOR (init_vfs);
 
-  // Create all widgets
+  /* Create all widgets */
   _INIT_ITERATOR (create_widgets);
 
   file_panels_init (WIDGET (w_box_item (main_box, 1)));
 
-  // Create menu
+  /* Create menu */
   _INIT_ITERATOR (iface_create_menu);
 
   hotkey_register (L"F10", exit_hotkey);
@@ -182,15 +191,15 @@ iface_init                        (void)
 }
 
 /**
- * Uninitialized interface
+ * Uninitialize interface
  */
 void
-iface_done                        (void)
+iface_done (void)
 {
   file_panels_done ();
   widgets_done ();
 
-  // We don't need screen now!
+  /* We don't need screen now! */
   screen_done ();
 }
 
@@ -200,7 +209,7 @@ iface_done                        (void)
  * @return zero on success, non-zero on failure
  */
 int
-iface_mainloop                    (void)
+iface_mainloop (void)
 {
   widget_main_loop ();
 

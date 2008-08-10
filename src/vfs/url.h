@@ -20,9 +20,8 @@ BEGIN_HEADER
 #include "vfs.h"
 
 int
-vfs_url_parse                     (const wchar_t *__url,
-                                   vfs_plugin_t **__plugin,
-                                   wchar_t      **__path);
+vfs_url_parse (const wchar_t *__url, vfs_plugin_t **__plugin,
+               wchar_t **__path);
 
 END_HEADER
 

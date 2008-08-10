@@ -13,8 +13,9 @@
 #include "screen.h"
 #include "widget.h"
 
-////////
-//
+/********
+ *
+ */
 
 #define BOX_ITEM(__box, i) \
   ((w_box_item_t*)(WIDGET_CONTAINER_DATA (__box)[i]))
@@ -32,36 +33,44 @@
         break; \
     }
 
-///////
-//
+/********
+ *
+ */
 
 static void
-eval_sizes                        (w_box_t *__box);
+eval_sizes (w_box_t *__box);
 
-////////
-//
+/********
+ *
+ */
 
 /**
- * Destroys a box widget
+ * Destroy a box widget
  *
  * @param __box - box to be destroyed
  * @return zero on success, non-zero on failure
  */
 static int
-box_destructor                    (w_box_t *__box)
+box_destructor (w_box_t *__box)
 {
   if (!__box)
-    return -1;
+    {
+      return -1;
+    }
 
-  // Delete panel associated with layout
+  /* Delete panel associated with layout */
   if (__box->panel)
-    panel_del (__box->panel);
+    {
+      panel_del (__box->panel);
+    }
 
-  // Destroy screen layout
+  /* Destroy screen layout */
   if (WIDGET_LAYOUT (__box))
+    {
       scr_destroy_window (WIDGET_LAYOUT (__box));
+    }
 
-  //  Destroy all items
+  /*  Destroy all items */
   WIDGET_CONTAINER_DELETER (__box);
 
   free (__box);
@@ -70,23 +79,27 @@ box_destructor                    (w_box_t *__box)
 }
 
 /**
- * Destroys a box item widget
+ * Destroy a box item widget
  *
  * @param __box_item - box item to be destroyed
  * @return zero on success, non-zero on failure
  */
 static int
-box_item_destructor               (w_box_item_t *__box_item)
+box_item_destructor (w_box_item_t *__box_item)
 {
   if (!__box_item)
-    return -1;
+    {
+      return -1;
+    }
 
-  // Call deleter inherited from container
+  /* Call deleter inherited from container */
   WIDGET_CONTAINER_DELETER (__box_item);
 
-  // Destroy screen layout
+  /* Destroy screen layout */
   if (WIDGET_LAYOUT (__box_item))
+    {
       scr_destroy_window (WIDGET_LAYOUT (__box_item));
+    }
 
   free (__box_item);
 
@@ -94,16 +107,18 @@ box_item_destructor               (w_box_item_t *__box_item)
 }
 
 /**
- * Draws a box
+ * Draw a box
  *
  * @param __box - box to be drawn
  * @return zero on success, non-zero on failure
  */
 static int
-box_drawer                        (w_box_t *__box)
+box_drawer (w_box_t *__box)
 {
   if (!WIDGET_VISIBLE (__box))
-    return -1;
+    {
+      return -1;
+    }
 
   eval_sizes (__box);
 
@@ -113,183 +128,181 @@ box_drawer                        (w_box_t *__box)
 }
 
 /**
- * Draws a box item
+ * Draw a box item
  *
  * @param __box_item - box to be drawn
  * @return zero on success, non-zero on failure
  */
 static int
-box_item_drawer                   (w_box_item_t *__box_item)
+box_item_drawer (w_box_item_t *__box_item)
 {
   if (!__box_item)
-    return -1;
-
-  // Inherit layout from parent
-  scr_window_t layout=WIDGET_LAYOUT (__box_item);
-
-  // Widget is invisible or there is no layout
-  if (!WIDGET_VISIBLE (__box_item) || !layout)
-    return -1;
-
-#if 0
-  scr_wnd_attr_backup (layout);
-
-  //
-  // !!FIX ME!!
-  //  Debug code
-  //
-  static int a=0;
-  if (a>=100) a=0;
-
-  if (a%5==0) scr_wnd_font (layout, FONT (CID_BLACK, CID_CYAN)); else
-  if (a%5==1) scr_wnd_font (layout, FONT (CID_BLACK, CID_WHITE)); else
-  if (a%5==2) scr_wnd_font (layout, FONT (CID_YELLOW, CID_RED)); else
-  if (a%5==3) scr_wnd_font (layout, FONT (CID_CYAN, CID_BLUE)); else
-  if (a%5==4) scr_wnd_font (layout, FONT (CID_WHITE, CID_BLACK));
-
-  a++;
-  int i, j;
-
-  for (j=0; j<__box_item->position.height; j++)
     {
-      scr_wnd_move_caret (layout, 0, j);
-      for (i=0; i<__box_item->position.width; i++)
-        scr_wnd_putch (layout, '.');
+      return -1;
     }
 
-  scr_wnd_attr_restore (layout);
-#endif
+  /* Inherit layout from parent */
+  scr_window_t layout = WIDGET_LAYOUT (__box_item);
 
-  // Call drawer inherited from container
+  /* Widget is invisible or there is no layout */
+  if (!WIDGET_VISIBLE (__box_item) || !layout)
+    {
+      return -1;
+    }
+
+  /* Call drawer inherited from container */
   WIDGET_CONTAINER_DRAWER (__box_item);
 
   return 0;
 }
 
 /**
- * Calculates sizes for items
+ * Calculate sizes for items
  *
  * @param __box - box for which items sizes will be calculated
  */
 static void
-eval_sizes                        (w_box_t *__box)
+eval_sizes (w_box_t *__box)
 {
-  // It there is no box or sizes of items have been
-  // already evaluated
+  /* It there is no box or sizes of items have been */
+  /* already evaluated */
   if (!__box || __box->evaluted)
-    return;
+    {
+      return;
+    }
 
   unsigned int i;
-  int offset=0,      // Offset of current item from beginning of box
-      size=0,        // Size of one automatically managing item
-      cur_size,      // Size of current item
-      dyn_size,      // Total size of automatically managing items
-      unset_count,   // Count of item for which size is not specified by user
-      set_count=0,   // Count of such (see line upper) item for which size
-                     // was set during calculating process
-      set_size=0,    // Total size of such items (see upper)
+  int offset = 0,    /* Offset of current item from beginning of box */
+      size = 0,      /* Size of one automatically managing item */
+      cur_size,      /* Size of current item */
+      dyn_size,      /* Total size of automatically managing items */
+      unset_count,   /* Count of item for which size is not specified by user */
+      set_count = 0, /* Count of such (see line upper) item for which size */
+                     /* was set during calculating process */
+      set_size = 0,  /* Total size of such items (see upper) */
       dummy;
 
   widget_position_t pos;
   widget_t *cur;
   scr_window_t oldwin;
 
-  BOOL horisontal=__box->style&WBS_HORISONTAL;
+  BOOL horisontal = __box->style&WBS_HORISONTAL;
 
-  // Total size for automatically-managed items
+  /* Total size for automatically-managed items */
   if (!horisontal)
-    dyn_size=__box->position.width; else
-    dyn_size=__box->position.height;
-
-  // Count of items for which size
-  // will be generated automatically
-  unset_count=0;
-  for (i=0; i<WIDGET_CONTAINER_LENGTH (__box); i++)
-    if ((dummy=BOX_ITEM (__box, i)->size)<0)
-      ++unset_count; else
-      dyn_size-=dummy;
-
-  // Size of one item which size is not specified by user
-  if (unset_count)
-    size=dyn_size/unset_count;
-
-  for (i=0; i<WIDGET_CONTAINER_LENGTH (__box); i++)
     {
-      cur=WIDGET_CONTAINER_DATA (__box)[i];
+      dyn_size = __box->position.width;
+    }
+  else
+    {
+      dyn_size = __box->position.height;
+    }
 
-      cur_size=BOX_ITEM (__box, i)->size;
-      if (cur_size<0)
+  /* Count of items for which size will be generated automatically */
+  unset_count = 0;
+  for (i = 0; i < WIDGET_CONTAINER_LENGTH (__box); i++)
+    {
+      if ((dummy = BOX_ITEM (__box, i)->size) < 0)
         {
-          cur_size=size;
+          ++unset_count;
+        }
+      else
+        {
+          dyn_size -= dummy;
+        }
+    }
+
+  /* Size of one item which size is not specified by user */
+  if (unset_count)
+    {
+      size = dyn_size / unset_count;
+    }
+
+  for (i = 0; i < WIDGET_CONTAINER_LENGTH (__box); i++)
+    {
+      cur = WIDGET_CONTAINER_DATA (__box)[i];
+
+      cur_size = BOX_ITEM (__box, i)->size;
+      if (cur_size < 0)
+        {
+          cur_size = size;
           set_count++;
         }
 
-      // Recalculate size for last item which size is not
-      // specified by user
-      if (set_count==unset_count && unset_count)
+      /* Recalculate size for last item which size is not */
+      /* specified by user */
+      if (set_count == unset_count && unset_count)
         {
-          cur_size=dyn_size-set_size;
-          unset_count=0;
+          cur_size = dyn_size - set_size;
+          unset_count = 0;
         }
 
-      // Set size and offset for current item
-      pos.z=cur->position.z;
+      /* Set size and offset for current item */
+      pos.z = cur->position.z;
       if (!horisontal)
         {
-          pos.x      = offset;
-          pos.y      = __box->position.y;
-          pos.width  = cur_size;
+          pos.x = offset;
+          pos.y = __box->position.y;
+          pos.width = cur_size;
           pos.height = __box->position.height;
-        } else {
-          pos.x      = __box->position.x;
-          pos.y      = offset;
-          pos.width  = __box->position.width;
+        }
+      else
+        {
+          pos.x = __box->position.x;
+          pos.y = offset;
+          pos.width = __box->position.width;
           pos.height = cur_size;
         }
-      cur->position=pos;
+      cur->position = pos;
 
-      // Now we have to replace layout for widget
-      oldwin=WIDGET_LAYOUT (cur);
-      WIDGET_LAYOUT (cur)=widget_create_layout (WIDGET (cur));
+      /* Now we have to replace layout for widget */
+      oldwin = WIDGET_LAYOUT (cur);
+      WIDGET_LAYOUT (cur) = widget_create_layout (WIDGET (cur));
 
-      // Set size for child
+      /* Set size for child */
       if (WIDGET_CONTAINER_LENGTH (cur))
         {
           widget_t *w;
-          w=WIDGET_CONTAINER_DATA (cur)[0];
+          w = WIDGET_CONTAINER_DATA (cur)[0];
           widget_resize (w, 0, 0, pos.width, pos.height);
         }
 
-      // Destroy old window
+      /* Destroy old window */
       if (oldwin)
-       scr_destroy_window (oldwin);
+        {
+          scr_destroy_window (oldwin);
+        }
 
-      if (BOX_ITEM (__box, i)->size<0)
-        set_size+=cur_size;
+      if (BOX_ITEM (__box, i)->size < 0)
+        {
+          set_size += cur_size;
+        }
 
-      offset+=cur_size;
+      offset += cur_size;
     }
 
-  __box->evaluted=TRUE;
+  __box->evaluted = TRUE;
 }
 
 /**
  * Callback for onresize action
  *
- * @param __box - box which caughted this event
+ * @param __box - box which catched this event
  * @return zero if callback hasn't handled callback
  */
 static int
-box_onresize                      (w_box_t *__box)
+box_onresize (w_box_t *__box)
 {
   if (!__box)
-    return 0;
+    {
+      return 0;
+    }
 
   if (!__box->parent)
     {
       __box->position.x = 0;
       __box->position.y = 0;
-      __box->position.width  = SCREEN_WIDTH;
+      __box->position.width = SCREEN_WIDTH;
       __box->position.height = SCREEN_HEIGHT;
     }
 
@@ -297,19 +310,21 @@ box_onresize                      (w_box_t *__box)
 
   __box->evaluted = FALSE;
 
-  // There is no window's resizing stuff, so
-  // we have to create new window and use it
+  /* There is no window's resizing stuff, so */
+  /* we have to create new window and use it */
   scr_window_t oldwnd = WIDGET_LAYOUT (__box),
-               newwnd = widget_create_layout (WIDGET (__box));
+          newwnd = widget_create_layout (WIDGET (__box));
 
-  WIDGET_LAYOUT (__box)=newwnd;
+  WIDGET_LAYOUT (__box) = newwnd;
   panel_replace (__box->panel, newwnd);
   panels_doupdate ();
 
-  BOOL locked=WIDGET_TEST_FLAG (__box, WF_REDRAW_LOCKED);
+  BOOL locked = WIDGET_TEST_FLAG (__box, WF_REDRAW_LOCKED);
 
   if (!locked)
-    widget_lock_redraw (WIDGET (__box));
+    {
+      widget_lock_redraw (WIDGET (__box));
+    }
 
   eval_sizes (__box);
 
@@ -320,13 +335,15 @@ box_onresize                      (w_box_t *__box)
     }
 
   if (oldwnd)
-    scr_destroy_window (oldwnd);
+    {
+      scr_destroy_window (oldwnd);
+    }
 
   return TRUE;
 }
 
 /**
- * Handles a keydown callback
+ * Handle a keydown callback
  *
  * @param __window - window received a callback
  * @param __ch - received character
@@ -334,28 +351,30 @@ box_onresize                      (w_box_t *__box)
  *   non-zero otherwise
  */
 static int
-box_keydown                       (w_box_t *__box, wint_t __ch)
+box_keydown (w_box_t *__box, wint_t __ch)
 {
   widget_t *focused;
 
-  // Call user's callback
+  /* Call user's callback */
   _WIDGET_CALL_USER_CALLBACK (__box, keydown, __box, __ch);
 
-  // If user's callback hadn't processed this callback,
-  // make this stuff
+  /* If user's callback hadn't processed this callback, */
+  /* make this stuff */
 
-  if ((focused=__box->focused_widget))
+  if ((focused = __box->focused_widget))
     {
-      // If there is focused widget, try to redirect callback to it
-      int res=0;
+      /* If there is focused widget, try to redirect callback to it */
+      int res = 0;
       if (WIDGET_CALLBACK (focused, keydown) &&
-          (res=WIDGET_CALLBACK (focused, keydown) (focused, __ch)))
-        return res;
+          (res = WIDGET_CALLBACK (focused, keydown) (focused, __ch)))
+        {
+          return res;
+        }
     }
 
   switch (__ch)
     {
-    // Navigation
+    /* Navigation */
     case KEY_DOWN:
     case KEY_RIGHT:
     case KEY_TAB:
@@ -370,7 +389,7 @@ box_keydown                       (w_box_t *__box, wint_t __ch)
     default:
       {
         WIDGET_CONTAINER_ACTION_ITERONLY (__box, SHORTCUT_CHECKER,
-          towlower (__ch));
+                                          towlower (__ch));
         break;
       }
     }
@@ -379,39 +398,40 @@ box_keydown                       (w_box_t *__box, wint_t __ch)
 }
 
 /**
- * Initializes item of box
+ * Initialize item of box
  *
  * @param __box - parent box
  * @param __item - pointer to item to initialize
  * @param __size - size of item
  */
 static void
-init_item                         (w_box_t *__box,
-                                   w_box_item_t *__item,
-                                   int __size)
+init_item (w_box_t *__box, w_box_item_t *__item, int __size)
 {
   if (!__item)
-    return;
+    {
+      return;
+    }
 
   memset (__item, 0, sizeof (*__item));
 
-  __item->size=__size;
+  __item->size = __size;
 
-  __item->parent=WIDGET (__box);
-  __item->type=WT_BOX_ITEM;
+  __item->parent = WIDGET (__box);
+  __item->type = WT_BOX_ITEM;
   __item->position.z = 1;
 
-  __item->methods.destroy = (widget_action)box_item_destructor;
-  __item->methods.draw    = (widget_action)box_item_drawer;
+  __item->methods.destroy = (widget_action) box_item_destructor;
+  __item->methods.draw = (widget_action) box_item_drawer;
 
   WIDGET_SET_FLAG (__item, WF_CONTAINER);
 }
 
-////////
-// User's backend
+/********
+ * User's backend
+ */
 
 /**
- * Creates new box
+ * Create new box
  *
  * @param __parent - parent of edit. Should be CONTAINER
  * @param __x, __y - coordinates of box
@@ -421,31 +441,31 @@ init_item                         (w_box_t *__box,
  * @return pointer to a box object
  */
 w_box_t*
-widget_create_box                 (w_container_t *__parent,
-                                   int __x, int __y,
-                                   int __w, int __h,
-                                   unsigned int __style,
-                                   unsigned int __count)
+widget_create_box (w_container_t *__parent,
+                   int __x, int __y,
+                   int __w, int __h,
+                   unsigned int __style,
+                   unsigned int __count)
 {
   int i;
   w_box_t *res;
 
-  // General widget initialization
+  /* General widget initialization */
   WIDGET_INIT (res, w_box_t, WT_BOX, __parent, 0,
-    box_destructor, box_drawer,
-    __x, __y, 1, __w, __h);
+               box_destructor, box_drawer,
+               __x, __y, 1, __w, __h);
 
-  res->style=__style;
-  res->panel=panel_new (res->layout);
+  res->style = __style;
+  res->panel = panel_new (res->layout);
 
-  WIDGET_CALLBACK (res, onresize)  = (widget_action)box_onresize;
-  WIDGET_CALLBACK (res, keydown)   = (widget_keydown_proc)box_keydown;
+  WIDGET_CALLBACK (res, onresize) = (widget_action) box_onresize;
+  WIDGET_CALLBACK (res, keydown) = (widget_keydown_proc) box_keydown;
 
-  // Initialize items
+  /* Initialize items */
   w_box_item_t *item;
-  for (i=0; i<__count; i++)
+  for (i = 0; i < __count; i++)
     {
-      item=malloc (sizeof (w_box_item_t));
+      item = malloc (sizeof (w_box_item_t));
       init_item (res, item, -1);
       w_container_append_child (WIDGET_CONTAINER (res), WIDGET (item));
     }
@@ -465,35 +485,39 @@ widget_create_box                 (w_container_t *__parent,
  * @param __size - new size of item (-1 for unspecified)
  */
 void
-w_box_set_item_szie               (w_box_t *__box, unsigned int __index,
-                                   int __size)
+w_box_set_item_szie (w_box_t *__box, unsigned int __index,
+                     int __size)
 {
-  if (!__box || __index>=WIDGET_CONTAINER_LENGTH (__box))
-    return;
+  if (!__box || __index >= WIDGET_CONTAINER_LENGTH (__box))
+    {
+      return;
+    }
 
-  BOX_ITEM (__box, __index)->size=__size;
+  BOX_ITEM (__box, __index)->size = __size;
 
-  // Need to re-evaluate sizes and redraw widget
+  /* Need to re-evaluate sizes and redraw widget */
   RECALC_BOX (__box);
 }
 
 /**
- * Returns widget by index
+ * Return widget by index
  *
  * @param __box - box for which item belongs
  * @return widget of item with specified index
  */
 w_box_item_t*
-w_box_item                        (w_box_t *__box, unsigned int __index)
+w_box_item (w_box_t *__box, unsigned int __index)
 {
-  if (!__box || __index>=WIDGET_CONTAINER_LENGTH (__box))
-    return 0;
+  if (!__box || __index >= WIDGET_CONTAINER_LENGTH (__box))
+    {
+      return 0;
+    }
 
   return BOX_ITEM (__box, __index);
 }
 
 /**
- * Inserts new item to box
+ * Insert new item to box
  *
  * @param __box - box in which item will be added
  * @param __index - position of new item
@@ -501,32 +525,32 @@ w_box_item                        (w_box_t *__box, unsigned int __index)
  * @return pointer to widget of new item
  */
 w_box_item_t*
-w_box_insert_item                  (w_box_t     *__box,
-                                    unsigned int __index,
-                                    int          __size)
+w_box_insert_item (w_box_t *__box, unsigned int __index, int __size)
 {
-  if (__index>WIDGET_CONTAINER_LENGTH (__box))
-    return 0;
+  if (__index > WIDGET_CONTAINER_LENGTH (__box))
+    {
+      return 0;
+    }
 
-  w_box_item_t *item=malloc (sizeof (w_box_item_t));
+  w_box_item_t *item = malloc (sizeof (w_box_item_t));
   init_item (__box, item, __size);
   w_container_insert_child (WIDGET_CONTAINER (__box), WIDGET (item), __index);
 
-  // Need to re-evaluate sizes and redraw widget
+  /* Need to re-evaluate sizes and redraw widget */
   RECALC_BOX (__box);
 
   return item;
 }
 
 /**
- * Appends new item to box
+ * Append new item to box
  *
  * @param __box - box in which item will be added
  * @param __size - size of new item
  * @return pointer to widget of new item
  */
 w_box_item_t*
-w_box_append_item                  (w_box_t *__box, int __size)
+w_box_append_item (w_box_t *__box, int __size)
 {
   return w_box_insert_item (__box, WIDGET_CONTAINER_LENGTH (__box), __size);
 }
@@ -538,32 +562,36 @@ w_box_append_item                  (w_box_t *__box, int __size)
  * @param __item - item to be deleted
  */
 void
-w_box_delete_item                  (w_box_t     *__box, w_box_item_t *__item)
+w_box_delete_item (w_box_t *__box, w_box_item_t *__item)
 {
   if (!__box || !__item)
-    return;
+    {
+      return;
+    }
 
   w_container_delete (WIDGET_CONTAINER (__box), WIDGET (__item));
 
-  // Need to re-evaluate sizes and redraw widget
+  /* Need to re-evaluate sizes and redraw widget */
   RECALC_BOX (__box);
 }
 
 /**
- * Deletes item, specified by index
+ * Delete item, specified by index
  *
  * @param __box - box in which item will be added
  * @param __index - position of new item
  */
 void
-w_box_delete_by_index              (w_box_t     *__box, unsigned int __index)
+w_box_delete_by_index (w_box_t *__box, unsigned int __index)
 {
-  if (!__box || __index>WIDGET_CONTAINER_LENGTH (__box))
-    return;
+  if (!__box || __index > WIDGET_CONTAINER_LENGTH (__box))
+    {
+      return;
+    }
 
-  w_box_item_t *item=BOX_ITEM (__box, __index);
+  w_box_item_t *item = BOX_ITEM (__box, __index);
   w_container_delete (WIDGET_CONTAINER (__box), WIDGET (item));
 
-  // Need to re-evaluate sizes and redraw widget
+  /* Need to re-evaluate sizes and redraw widget */
   RECALC_BOX (__box);
 }

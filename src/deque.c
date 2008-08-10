@@ -18,34 +18,34 @@
 static void
 swap (iterator_t *__a, iterator_t *__b)
 {
-    void *data;
+  void *data;
 
-    data = __a->data;
-    __a->data = __b->data;
-    __b->data = data;
+  data = __a->data;
+  __a->data = __b->data;
+  __b->data = data;
 }
 
 /**
- * Initializes deque
+ * Initialize deque
  *
  * @return initialized empty deque
  */
 deque_t *
 deque_create (void)
 {
-    deque_t *deq = (deque_t *) malloc (sizeof (deque_t));
+  deque_t *deq = (deque_t *) malloc (sizeof (deque_t));
 
-    deq->head = deq->tail = NULL;
+  deq->head = deq->tail = NULL;
 
 #ifdef PROFILE_DEQUE_LENGTH
-    deq->length = 0;
+  deq->length = 0;
 #endif
 
-    return deq;
+  return deq;
 }
 
 /**
- * Removes element from deque
+ * Remove element from deque
  *
  * @param __this is deque
  * @param __item is remove element
@@ -55,33 +55,51 @@ deque_create (void)
 int
 deque_remove (deque_t *__this, iterator_t *__item, destroyer __destroyer)
 {
-    if (!__this) return -1;
-    if (!__item) return -1;
+  if (!__this)
+    {
+      return -1;
+    }
 
-    if (__item->next)
-        __item->next->prev = __item->prev;
+  if (!__item)
+    {
+      return -1;
+    }
 
-    if (__item->prev)
-        __item->prev->next = __item->next;
+  if (__item->next)
+    {
+      __item->next->prev = __item->prev;
+    }
 
-    if (__item == __this->head)
-        __this->head = __item->next;
+  if (__item->prev)
+    {
+      __item->prev->next = __item->next;
+    }
 
-    if (__this->tail == __item)
-        __this->tail = __item->prev;
+  if (__item == __this->head)
+    {
+      __this->head = __item->next;
+    }
 
-    if (__destroyer)
-        __destroyer (__item->data);
+  if (__this->tail == __item)
+    {
+      __this->tail = __item->prev;
+    }
+
+  if (__destroyer)
+    {
+      __destroyer (__item->data);
+    }
 
 #ifdef PROFILE_DEQUE_LENGTH
-    --__this->length;
+  --__this->length;
 #endif
-    free (__item);
-    return 0;
+
+  free (__item);
+  return 0;
 }
 
 /**
- * Removes all elements of deque
+ * Remove all elements of deque
  *
  * @param __this is deque
  * @param __destroyer is destructor for element data
@@ -90,20 +108,22 @@ deque_remove (deque_t *__this, iterator_t *__item, destroyer __destroyer)
 int
 deque_clear (deque_t *__this, destroyer __destroyer)
 {
-    iterator_t *current, *t;
+  iterator_t *current, *t;
 
-    if (!__this)
-        return -1;
-
-    current = __this->head;
-    while (current)
+  if (!__this)
     {
-        t = current;
-        current = current->next;
-        deque_remove (__this, t, __destroyer);
+      return -1;
     }
 
-    return 0;
+  current = __this->head;
+  while (current)
+    {
+      t = current;
+      current = current->next;
+      deque_remove (__this, t, __destroyer);
+    }
+
+  return 0;
 }
 
 /**
@@ -116,15 +136,19 @@ deque_clear (deque_t *__this, destroyer __destroyer)
 int
 deque_destroy (deque_t *__this, destroyer __destroyer)
 {
-    if (!__this) return -1;
-    deque_clear (__this, __destroyer);
-    free (__this);
+  if (!__this)
+    {
+      return -1;
+    }
 
-    return 0;
+  deque_clear (__this, __destroyer);
+  free (__this);
+
+  return 0;
 }
 
 /**
- * Inserts element to tail of deque
+ * Insert element to tail of deque
  *
  * @param __this is deque
  * @param __data is data to insert
@@ -133,35 +157,37 @@ deque_destroy (deque_t *__this, destroyer __destroyer)
 int
 deque_push_back (deque_t *__this, void *__data)
 {
-    iterator_t *new_iter;
+  iterator_t *new_iter;
 
-    if (!__this)
-        return -1;
-
-    new_iter = (iterator_t *) malloc (sizeof (iterator_t));
-    new_iter->data = __data;
-    new_iter->prev = __this->tail;
-    new_iter->next = NULL;
-
-    if (__this->tail)
+  if (!__this)
     {
-        __this->tail->next = new_iter;
-        __this->tail = new_iter;
+      return -1;
     }
-    else
+
+  new_iter = (iterator_t *) malloc (sizeof (iterator_t));
+  new_iter->data = __data;
+  new_iter->prev = __this->tail;
+  new_iter->next = NULL;
+
+  if (__this->tail)
     {
-        __this->tail = __this->head = new_iter;
+      __this->tail->next = new_iter;
+      __this->tail = new_iter;
+    }
+  else
+    {
+      __this->tail = __this->head = new_iter;
     }
 
 #ifdef PROFILE_DEQUE_LENGTH
-    ++__this->length;
+  ++__this->length;
 #endif
 
-    return 0;
+  return 0;
 }
 
 /**
- * Inserts element to head of deque
+ * Insert element to head of deque
  *
  * @param __this is deque
  * @param __data is data to insert
@@ -170,32 +196,38 @@ deque_push_back (deque_t *__this, void *__data)
 int
 deque_push_front (deque_t *__this, void *__data)
 {
-    iterator_t *new_iter;
+  iterator_t *new_iter;
 
-    if (!__this)
-        return -1;
+  if (!__this)
+    {
+      return -1;
+    }
 
-    new_iter = (iterator_t *) malloc (sizeof (iterator_t));
-    new_iter->data = __data;
-    new_iter->prev = NULL;
-    new_iter->next = __this->head;
+  new_iter = (iterator_t *) malloc (sizeof (iterator_t));
+  new_iter->data = __data;
+  new_iter->prev = NULL;
+  new_iter->next = __this->head;
 
-    if (__this->head)
-        __this->head->prev = new_iter;
-    __this->head = new_iter;
+  if (__this->head)
+    {
+      __this->head->prev = new_iter;
+    }
+  __this->head = new_iter;
 
-    if (!__this->tail)
-        __this->tail = __this->head;
+  if (!__this->tail)
+    {
+      __this->tail = __this->head;
+    }
 
 #ifdef PROFILE_DEQUE_LENGTH
-    ++__this->length;
+  ++__this->length;
 #endif
 
-    return 0;
+  return 0;
 }
 
 /**
- * Removes element from tail of deque
+ * Remove element from tail of deque
  *
  * @param __this is deque
  * @return data from remove element, or NULL if deque empty
@@ -203,27 +235,31 @@ deque_push_front (deque_t *__this, void *__data)
 void *
 deque_pop_back (deque_t *__this)
 {
-    void *data;
+  void *data;
 
-    if (!__this)
-        return NULL;
+  if (!__this)
+    {
+      return NULL;
+    }
 
-    data = __this->tail->data;
-    __this->tail = __this->tail->prev;
-    __this->tail->next = NULL;
+  data = __this->tail->data;
+  __this->tail = __this->tail->prev;
+  __this->tail->next = NULL;
 
-    if (!__this->tail)
-        __this->head = NULL;
+  if (!__this->tail)
+    {
+      __this->head = NULL;
+    }
 
 #ifdef PROFILE_DEQUE_LENGTH
-    --__this->length;
+  --__this->length;
 #endif
 
-    return data;
+  return data;
 }
 
 /**
- * Removes element from head of deque
+ * Remove element from head of deque
  *
  * @param __this is deque
  * @return data from remove element, or NULL if deque empty
@@ -231,26 +267,30 @@ deque_pop_back (deque_t *__this)
 void *
 deque_pop_front (deque_t *__this)
 {
-    iterator_t *pop_iter;
+  iterator_t *pop_iter;
 
-    if (!__this)
-        return NULL;
+  if (!__this)
+    {
+      return NULL;
+    }
 
-    pop_iter = __this->head;
-    __this->head = __this->head->next;
+  pop_iter = __this->head;
+  __this->head = __this->head->next;
 
-    if (!__this->head)
-        __this->tail = NULL;
+  if (!__this->head)
+    {
+      __this->tail = NULL;
+    }
 
 #ifdef PROFILE_DEQUE_LENGTH
-    --__this->length;
+  --__this->length;
 #endif
 
-    return pop_iter;
+  return pop_iter;
 }
 
 /**
- * Sorts an deque
+ * Sort an deque
  *
  * @param __this is deque
  * @param __compr is comparison function
@@ -258,17 +298,22 @@ deque_pop_front (deque_t *__this)
 void
 deque_sort (deque_t *__this, comporator __compr)
 {
-    iterator_t *i, *j, *current;
-    if (!__this) return;
-
-    for (i = __this->head; i != NULL; i = i->next)
+  iterator_t *i, *j, *current;
+  if (!__this)
     {
-        current = __this->head;
-        for (j = __this->head; j != __this->tail; j = j->next)
+      return;
+    }
+
+  for (i = __this->head; i != NULL; i = i->next)
+    {
+      current = __this->head;
+      for (j = __this->head; j != __this->tail; j = j->next)
         {
-            if (__compr (current->data, current->next->data) > 0)
-            swap(current, current->next);
-            current = current->next;
+          if (__compr (current->data, current->next->data) > 0)
+            {
+              swap (current, current->next);
+            }
+          current = current->next;
         }
     }
 }
@@ -284,38 +329,49 @@ deque_sort (deque_t *__this, comporator __compr)
 iterator_t *
 deque_sorted_insert (deque_t *__this, void *__data, comporator __compr)
 {
-    iterator_t *current, *t, *prev = NULL;
-    if (!__this) return NULL;
-
-    current = __this->head;
-
-    for (current = __this->head; current != NULL;
-        prev=current, current = current->next)
+  iterator_t *current, *t, *prev = NULL;
+  if (!__this)
     {
-        if ( __compr (current->data, __data) > 0) {
-            break;
+      return NULL;
+    }
+
+  current = __this->head;
+
+  for (current = __this->head; current != NULL;
+          prev = current, current = current->next)
+    {
+      if (__compr (current->data, __data) > 0)
+        {
+          break;
         }
     }
 
-    if (!current) {
-        deque_push_back(__this, __data);
-        return __this->tail;
+  if (!current)
+    {
+      deque_push_back (__this, __data);
+      return __this->tail;
     }
 
-    t = (iterator_t *) malloc (sizeof(iterator_t));
-    if (prev) prev->next=t;
-    else __this->head=t;
+  t = (iterator_t *) malloc (sizeof (iterator_t));
+  if (prev)
+    {
+      prev->next = t;
+    }
+  else
+    {
+      __this->head = t;
+    }
 
-    t->data = __data;
-    t->next = current;
-    t->prev = prev;
-    current->prev = t;
+  t->data = __data;
+  t->next = current;
+  t->prev = prev;
+  current->prev = t;
 
 #ifdef PROFILE_DEQUE_LENGTH
-    ++__this->length;
+  ++__this->length;
 #endif
 
-    return t;
+  return t;
 }
 
 /**
@@ -329,16 +385,20 @@ deque_sorted_insert (deque_t *__this, void *__data, comporator __compr)
 iterator_t *
 deque_find (deque_t *__this, const void *__data, comporator __compr)
 {
-    iterator_t *current;
-    if (!__this || !__data || !__compr) return NULL;
-
-    for (current = __this->head; current != NULL;
-        current = current->next)
+  iterator_t *current;
+  if (!__this || !__data || !__compr)
     {
-        if ( __compr (current->data, __data) == 0) {
-            break;
+      return NULL;
+    }
+
+  for (current = __this->head; current != NULL;
+          current = current->next)
+    {
+      if (__compr (current->data, __data) == 0)
+        {
+          break;
         }
     }
 
-    return current;
+  return current;
 }

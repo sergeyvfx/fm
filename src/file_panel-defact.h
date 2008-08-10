@@ -18,21 +18,23 @@
 
 BEGIN_HEADER
 
-//
-// NOTE:
-//  To reduce lengths of symbols from this module,
-//  prefix `file_panel_defact_` reduced to `fpd_`.
-//
 
-typedef struct {
-  struct {
-    vfs_cmp_proc    comparator;
+/*
+ * NOTE: To reduce lengths of symbols from this module,
+ *       prefix `file_panel_defact_` reduced to `fpd_`.
+ */
+
+typedef struct
+{
+  struct
+  {
+    vfs_cmp_proc comparator;
     vfs_filter_proc filter;
   } dir;
 } fpd_data_t;
 
 int
-fpd_sortorder_menu_callback       (void *__user_data);
+fpd_sortorder_menu_callback (void *__user_data);
 
 END_HEADER
 

@@ -16,19 +16,21 @@
 #include "i18n.h"
 #include "file_panel.h"
 
-///////
-// Variables
+/********
+ * Variables
+ */
 
 static w_menu_t *menu;
 
-////////
-//
+/********
+ *
+ */
 
 /**
  * Callback for hotkey to show the menu
  */
 static void
-menu_hotkey_callback              (void)
+menu_hotkey_callback (void)
 {
   widget_set_focus (WIDGET (menu));
 }
@@ -39,67 +41,70 @@ menu_hotkey_callback              (void)
  * @return zero on success, non-zero otherwise
  */
 static int
-menu_exit_clicked                 (void *__user_data ATTR_UNUSED)
+menu_exit_clicked (void *__user_data ATTR_UNUSED)
 {
   iface_act_exit ();
   return 0;
 }
 
 /**
- * Creates submenu for specified file panel
+ * Create submenu for specified file panel
  *
  * @param __panel - for which panel submenu will be created
  */
 static void
-create_panel_submenu              (file_panel_t *__panel)
+create_panel_submenu (file_panel_t *__panel)
 {
   w_sub_menu_t *sm;
 
-  sm=w_menu_append_submenu (menu, _(L"_Panel"));
+  sm = w_menu_append_submenu (menu, _(L"_Panel"));
 
-  // Panel-specified items
+  /* Panel-specified items */
   FILE_PANEL_DATA_ACTION_CALL (__panel, fill_submenu, sm);
 
-  // Hack to add separator if there are any
-  // items from panel added
+  /* Hack to add separator if there are any */
+  /* items from panel added */
   if (sm->items.length)
-    w_submenu_append_item (sm, 0, 0, SMI_SEPARATOR);
+    {
+      w_submenu_append_item (sm, 0, 0, SMI_SEPARATOR);
+    }
 
-  // Add panel-independent items
+  /* Add panel-independent items */
   w_submenu_append_item (sm, _(L"_Rescan"), 0, 0);
 }
 
 /**
- * Fills default items of menu
+ * Fill default items of menu
  */
 static void
-fill_menu_items                   (void)
+fill_menu_items (void)
 {
   w_sub_menu_t *sm;
 
-  // Creating of submenu 'File'
-  sm=w_menu_append_submenu (menu, _(L"_File"));
+  /* Creating of submenu 'File' */
+  sm = w_menu_append_submenu (menu, _(L"_File"));
   w_submenu_append_item (sm, 0, 0, SMI_SEPARATOR);
   w_submenu_append_item (sm, _(L"_Exit"), menu_exit_clicked, 0);
 
-  // Creating of submenu 'Command'
-  sm=w_menu_append_submenu (menu, _(L"_Command"));
+  /* Creating of submenu 'Command' */
+  sm = w_menu_append_submenu (menu, _(L"_Command"));
 
-  // Creating of submenu 'Command'
-  sm=w_menu_append_submenu (menu, _(L"_Options"));
+  /* Creating of submenu 'Command' */
+  sm = w_menu_append_submenu (menu, _(L"_Options"));
 
-  //
-  // DEBUG CODE
-  //
+  /*
+  * DEBUG CODE
+  */
   create_panel_submenu (current_panel);
 
-  // Creating of submenu 'Help'
-  sm=w_menu_append_submenu (menu, _(L"_Help"));
+  /* Creating of submenu 'Help' */
+  sm = w_menu_append_submenu (menu, _(L"_Help"));
   w_submenu_append_item (sm, _(L"_About..."), 0, 0);
 }
 
-////////
-// User's backend
+/********
+ * User's backend
+ */
 
 /**
  * Creates main menu
@@ -107,16 +112,18 @@ fill_menu_items                   (void)
  * @return zero on success, non-zero on failure
  */
 int
-iface_create_menu                 (void)
+iface_create_menu (void)
 {
-  menu=widget_create_menu (WMS_HIDE_UNFOCUSED);
-  
+  menu = widget_create_menu (WMS_HIDE_UNFOCUSED);
+
   if (!menu)
-    return -1;
+    {
+      return -1;
+    }
 
   fill_menu_items ();
 
-  // Register callback to show the menu
+  /* Register callback to show the menu */
   hotkey_register (L"F9", menu_hotkey_callback);
 
   return 0;

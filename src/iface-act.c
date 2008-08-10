@@ -16,17 +16,18 @@
 
 #include <stdlib.h>
 
-////////
-// User's backend
+/********
+ * User's backend
+ */
 
 /**
  * Prompted exiting from program
  */
 void
-iface_act_exit                    (void)
+iface_act_exit (void)
 {
   if (message_box (L"fm", _(L"Are you sure you want to quit?"),
-    MB_YESNO|MB_DEFBUTTON_1)==MR_YES)
+                   MB_YESNO | MB_DEFBUTTON_1) == MR_YES)
     {
       iface_done ();
       i18n_release ();

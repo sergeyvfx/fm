@@ -20,10 +20,10 @@ BEGIN_HEADER
 #include "file_panel.h"
 
 int
-action_copy                       (file_panel_t *__panel);
+action_copy (file_panel_t *__panel);
 
 file_panel_t*
-action_choose_file_panel          (void);
+action_choose_file_panel (void);
 
 END_HEADER
 

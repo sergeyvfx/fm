@@ -17,14 +17,16 @@
 #include <stdlib.h>
 #include <wchar.h>
 
-typedef struct {
-    wchar_t *origin;
-    wchar_t *localize;
+typedef struct
+{
+  wchar_t *origin;
+  wchar_t *localize;
 } i18n_string;
 
-typedef struct {
-    size_t size;
-    i18n_string *strings;
+typedef struct
+{
+  size_t size;
+  i18n_string *strings;
 } i18n_list;
 
 static i18n_list localization;
@@ -37,11 +39,13 @@ static i18n_list localization;
 static void
 i18n_list_alloc (i18n_list *__list)
 {
-    if (!__list)
-         return ;
+  if (!__list)
+    {
+      return;
+    }
 
-    __list->size = 0;
-    __list->strings = NULL;
+  __list->size = 0;
+  __list->strings = NULL;
 }
 
 /**
@@ -53,23 +57,25 @@ i18n_list_alloc (i18n_list *__list)
 static int
 i18n_list_free (i18n_list *__list)
 {
-    __s64_t i;
+  __s64_t i;
 
-    if (!__list)
-        return -1;
-
-    if (__list->strings)
+  if (!__list)
     {
-        for (i = 0; i < __list->size; ++i)
-        {
-            SAFE_FREE (__list->strings[ i ].origin);
-            SAFE_FREE (__list->strings[ i ].localize);
-        }
-        SAFE_FREE (__list->strings);
+      return -1;
     }
-   __list->size = 0;
 
-   return 0;
+  if (__list->strings)
+    {
+      for (i = 0; i < __list->size; ++i)
+        {
+          SAFE_FREE (__list->strings[i].origin);
+          SAFE_FREE (__list->strings[i].localize);
+        }
+      SAFE_FREE (__list->strings);
+    }
+  __list->size = 0;
+
+  return 0;
 }
 
 /**
@@ -82,31 +88,34 @@ i18n_list_free (i18n_list *__list)
  */
 static i18n_string *
 i18n_list_push_back (i18n_list *__list,
-        const wchar_t *__origin, const wchar_t *__localize)
+                     const wchar_t *__origin, const wchar_t *__localize)
 {
-    __s64_t i, j;
+  __s64_t i, j;
 
-
-    for (i = 0; i < __list->size; ++i)
+  for (i = 0; i < __list->size; ++i)
     {
-        if (wcscmp(__list->strings[ i ].origin, __origin) < 0)
-            break;
+      if (wcscmp (__list->strings[i].origin, __origin) < 0)
+        {
+          break;
+        }
     }
 
-    ++__list->size;
-    __list->strings = (i18n_string *) realloc(__list->strings,
-            sizeof(i18n_string) * __list->size);
+  ++__list->size;
+  __list->strings = (i18n_string *) realloc (__list->strings,
+                                          sizeof (i18n_string) * __list->size);
 
-    if (i != __list->size - 1)
+  if (i != __list->size - 1)
     {
-        for (j = __list->size - 1; j > i; --j)
-            __list->strings[ j ] = __list->strings[ j - 1];
+      for (j = __list->size - 1; j > i; --j)
+        {
+          __list->strings[j] = __list->strings[j - 1];
+        }
     }
 
-    __list->strings[ i ].origin = wcsdup(__origin);
-    __list->strings[ i ].localize = wcsdup(__localize);
+  __list->strings[i].origin = wcsdup (__origin);
+  __list->strings[i].localize = wcsdup (__localize);
 
-    return __list->strings + i;
+  return __list->strings + i;
 }
 
 /**
@@ -117,28 +126,39 @@ i18n_list_push_back (i18n_list *__list,
  * @return index of required text or -1 if text is not found
  */
 static __s32_t
-i18n_list_binary_search(const i18n_list *__list, const wchar_t *__text)
+i18n_list_binary_search (const i18n_list *__list, const wchar_t *__text)
 {
-    __s64_t first = 0, last = (__s64_t)__list->size - 1, middle;
-    __s32_t retval;
+  __s64_t first = 0, last = (__s64_t) __list->size - 1, middle;
+  __s32_t retval;
 
-    if (!__list)
-        return -1;
-
-    while ( first <= last )
+  if (!__list)
     {
-        middle = (first + last) / 2;
-        retval = wcscmp( __list->strings[ middle ].origin, __text);
-
-        if ( !retval )
-            return middle;
-        else if ( retval > 0 )
-            last = middle - 1;
-        else
-            first = middle + 1;
+      return -1;
     }
 
-    return -1;
+  while (first <= last)
+    {
+      middle = (first + last) / 2;
+      retval = wcscmp (__list->strings[middle].origin, __text);
+
+      if (!retval)
+        {
+          return middle;
+        }
+      else
+        {
+          if (retval > 0)
+            {
+              last = middle - 1;
+            }
+          else
+            {
+              first = middle + 1;
+            }
+        }
+    }
+
+  return -1;
 }
 
 /**
@@ -153,16 +173,16 @@ i18n_init (void)
 #define LOCALEDIR "../po/locale/"
 #endif
 
-    // init gettext
-    setlocale(LC_ALL, "");
-    bindtextdomain("fm", LOCALEDIR);
-    textdomain("fm");
+  /* init gettext */
+  setlocale (LC_ALL, "");
+  bindtextdomain ("fm", LOCALEDIR);
+  textdomain ("fm");
 
-    i18n_list_alloc (&localization);
+  i18n_list_alloc (&localization);
 }
 
 /**
- * Returned a localized text
+ * Return a localized text
  * Gettext wrapper
  *
  * @param __text a natural text
@@ -171,31 +191,33 @@ i18n_init (void)
 wchar_t *
 i18n_text (const wchar_t *__text)
 {
-    i18n_string *string;
-    __s64_t gtext_len, mbtext_len;
-    __s32_t retval;
-    wchar_t *wtext;
-    char *mbtext, *gtext;
+  i18n_string *string;
+  __s64_t gtext_len, mbtext_len;
+  __s32_t retval;
+  wchar_t *wtext;
+  char *mbtext, *gtext;
 
-    if ( (retval = i18n_list_binary_search (&localization, __text)) != -1)
-        return localization.strings[ retval ].localize;
+  if ((retval = i18n_list_binary_search (&localization, __text)) != -1)
+    {
+      return localization.strings[retval].localize;
+    }
 
-    mbtext_len = ((wcslen(__text) + 1) * MB_CUR_MAX);
-    mbtext = (char *) malloc (mbtext_len);
-    wcstombs(mbtext, __text, mbtext_len);
+  mbtext_len = ((wcslen (__text) + 1) * MB_CUR_MAX);
+  mbtext = (char *) malloc (mbtext_len);
+  wcstombs (mbtext, __text, mbtext_len);
 
-    gtext = gettext(mbtext);
-    gtext_len = strlen(gtext) + 1;
+  gtext = gettext (mbtext);
+  gtext_len = strlen (gtext) + 1;
 
-    wtext = (wchar_t *) malloc( sizeof(wchar_t) * gtext_len);
-    mbstowcs(wtext, gtext, gtext_len);
+  wtext = (wchar_t *) malloc (sizeof (wchar_t) * gtext_len);
+  mbstowcs (wtext, gtext, gtext_len);
 
-    string = i18n_list_push_back (&localization, __text, wtext);
+  string = i18n_list_push_back (&localization, __text, wtext);
 
-    SAFE_FREE(wtext);
-    SAFE_FREE(mbtext);
+  SAFE_FREE (wtext);
+  SAFE_FREE (mbtext);
 
-    return string->localize;
+  return string->localize;
 }
 
 /**
@@ -204,6 +226,5 @@ i18n_text (const wchar_t *__text)
 void
 i18n_release (void)
 {
-    i18n_list_free (&localization);
+  i18n_list_free (&localization);
 }
-

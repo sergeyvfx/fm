@@ -17,17 +17,17 @@
 
 #include <wchar.h>
 
-wchar_t*       // Fit string to specified length
-wcsfit                            (const wchar_t *__str, size_t __len,
-                                   const wchar_t *__suffix);
+/* Fit string to specified length */
+wchar_t*
+wcsfit (const wchar_t *__str, size_t __len, const wchar_t *__suffix);
 
-wchar_t*       // Copies at most n characters of string
-wcsndup                           (const wchar_t *__s, size_t __n);
+/* Copies at most n characters of string */
+wchar_t*
+wcsndup (const wchar_t *__s, size_t __n);
 
-void           // Replaces substrings of string
-wcsrep                            (wchar_t       *__str,
-                                   size_t         __max_len,
-                                   const wchar_t *__substr,
-                                   const wchar_t *__newsubstr);
+/* Replace substrings of string */
+void
+wcsrep (wchar_t *__str, size_t __max_len,
+        const wchar_t *__substr, const wchar_t *__newsubstr);
 
 #endif

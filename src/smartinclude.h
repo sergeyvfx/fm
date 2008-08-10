@@ -36,8 +36,7 @@ BEGIN_HEADER
 
 #include "macrodef.h"
 
-// Some definitions to tell compiler use
-// specified stuff
+/* Some definitions to tell compiler use specified stuff */
 #define __USE_GNU
 #define __USE_ISOC99
 #define __USE_FILE_OFFSET64 1

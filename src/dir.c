@@ -25,54 +25,56 @@
  * @return count of elements or -1 on error
  */
 int
-wcscandir                         (const wchar_t  *__url,
-                                   vfs_filter_proc __filer,
-                                   dircmp_proc     __compar,
-                                   file_t       ***__res)
+wcscandir (const wchar_t *__url, vfs_filter_proc __filer,
+           dircmp_proc __compar, file_t ***__res)
 {
-  vfs_dirent_t **eps=NULL;
+  vfs_dirent_t **eps = NULL;
   wchar_t *full_name;
   size_t fn_len;
   int count, i;
 
   if (!__url || !__res)
-    return -1;
+    {
+      return -1;
+    }
 
-  // Do not use VFS-related sorting, because
-  // comparator may want STAT information
-  count=vfs_scandir (__url, &eps, __filer, 0);
+  /* Do not use VFS-related sorting, because */
+  /* our comparator may want STAT information */
+  count = vfs_scandir (__url, &eps, __filer, 0);
 
-  // Error scanning directory
-  if (count<0)
-    return count;
+  /* Error scanning directory */
+  if (count < 0)
+    {
+      return count;
+    }
 
-  fn_len=wcslen (__url)+MAX_FILENAME_LEN+1;
-  full_name=malloc ((fn_len+1)*sizeof (wchar_t));
+  fn_len = wcslen (__url) + MAX_FILENAME_LEN + 1;
+  full_name = malloc ((fn_len + 1) * sizeof (wchar_t));
 
-  // Allocate memory for result
-  (*__res)=malloc (sizeof (file_t*)*count);
+  /* Allocate memory for result */
+  (*__res) = malloc (sizeof (file_t*) * count);
 
-  // Get stat information
-  for (i=0; i<count; i++)
+  /* Get stat information */
+  for (i = 0; i < count; i++)
     {
       MALLOC_ZERO ((*__res)[i], sizeof (file_t));
 
       swprintf (full_name, fn_len, L"%ls/%ls", __url, eps[i]->name);
       wcscpy ((*__res)[i]->name, eps[i]->name);
-      (*__res)[i]->type=eps[i]->type;
+      (*__res)[i]->type = eps[i]->type;
 
-      // Get STAT information of file
+      /* Get STAT information of file */
       vfs_stat (full_name, &(*__res)[i]->stat);
       vfs_lstat (full_name, &(*__res)[i]->lstat);
 
       vfs_free_dirent (eps[i]);
     }
 
-  // Free used variables
+  /* Free used variables */
   SAFE_FREE (eps);
 
   qsort ((*__res), count, sizeof (file_t*),
-    (__compar?__compar:wcscandir_alphasort));
+         (__compar ? __compar : wcscandir_alphasort));
 
   free (full_name);
 
@@ -90,59 +92,69 @@ wcscandir                         (const wchar_t  *__url,
  * zero in case of errors
  */
 wchar_t*
-wcdircatsubdir                    (const wchar_t *__name,
-                                   const wchar_t *__subname)
+wcdircatsubdir (const wchar_t *__name, const wchar_t *__subname)
 {
   wchar_t *new_name;
   size_t new_len;
 
   if (!__name || !__subname)
-    return 0;
+    {
+      return 0;
+    }
 
   if (!wcscmp (__subname, L"."))
-    return wcsdup (L"/");
+    {
+      return wcsdup (L"/");
+    }
 
   if (!wcscmp (__subname, L".."))
-    return wcdirname (__name);
+    {
+      return wcdirname (__name);
+    }
 
-  // Allocate memory for new directory name
-  // 2=null-terminator+directory separator
-  new_len=wcslen (__name)+wcslen (__subname)+2;
-  MALLOC_ZERO (new_name, sizeof (wchar_t)*new_len);
+  /* Allocate memory for new directory name */
+  /* 2=null-terminator+directory separator */
+  new_len = wcslen (__name) + wcslen (__subname) + 2;
+  MALLOC_ZERO (new_name, sizeof (wchar_t) * new_len);
 
-  // Build new directory
+  /* Build new directory */
   wcscpy (new_name, __name);
-  if (__name[wcslen (__name)-1]!='/')
-    wcscat (new_name, L"/");
+  if (__name[wcslen (__name) - 1] != '/')
+    {
+      wcscat (new_name, L"/");
+    }
   wcscat (new_name, __subname);
 
   return new_name;
 }
 
 /**
- * Fits name of directory to specified length
+ * Fit name of directory to specified length
  *
  * @param __dir_name - directory name to be fitted
  * @param __len - length to which fit the file name
  * @param __res - pointer to buffer where result will be stored
  */
-void           // Fit dirname to specified length
-fit_dirname                       (const wchar_t *__dir_name,
-                                   long           __len,
-                                   wchar_t       *__res)
+void
+fit_dirname (const wchar_t *__dir_name, long __len, wchar_t *__res)
 {
   int i, len, ptr;
-  len=wcslen (__dir_name);
+  len = wcslen (__dir_name);
 
-  if (len>__len)
+  if (len > __len)
     {
-      swprintf (__res, len,  L"...");
-      ptr=3;
-      for (i=len-__len+3; i<=len; i++)
-        __res[ptr++]=__dir_name[i];
-      __res[ptr]=0;
-    } else
+      swprintf (__res, len, L"...");
+      ptr = 3;
+      for (i = len - __len + 3; i <= len; i++)
+        {
+          __res[ptr++] = __dir_name[i];
+        }
+      __res[ptr] = 0;
+    }
+  else
+    {
       wcscpy (__res, __dir_name);
+    }
 }
 
 /**
@@ -153,29 +165,38 @@ fit_dirname                       (const wchar_t *__dir_name,
  * zero in case of errors
  */
 wchar_t*
-wcdirname                         (const wchar_t *__name)
+wcdirname (const wchar_t *__name)
 {
   wchar_t *res;
   size_t i, len;
+
   if (!__name)
-    return 0;
+    {
+      return 0;
+    }
 
-  len=wcslen (__name);
+  len = wcslen (__name);
 
-  // Search for last delimiter
-  for (i=len-1; i>0; i--)
-    if (__name[i]=='/')
-      break;
+  /* Search for last delimiter */
+  for (i = len - 1; i > 0; i--)
+    {
+      if (__name[i] == '/')
+        {
+          break;
+        }
+    }
 
   if (!i)
-    return wcsdup (L"/");
+    {
+      return wcsdup (L"/");
+    }
 
-  // Allocate memory for new directory name
-  res=malloc (sizeof (wchar_t)*(i+1));
+  /* Allocate memory for new directory name */
+  res = malloc (sizeof (wchar_t)*(i + 1));
 
-  // Copy data to new name
+  /* Copy data to new name */
   wcsncpy (res, __name, i);
-  res[i]=0;
+  res[i] = 0;
   return res;
 }
 
@@ -186,11 +207,14 @@ wcdirname                         (const wchar_t *__name)
  * @return 0 if file is hidden, 1 if file is listingable
  */
 int
-scandir_filter_skip_hidden        (const vfs_dirent_t * __data)
+scandir_filter_skip_hidden (const vfs_dirent_t * __data)
 {
   if (wcscmp (__data->name, L".") && wcscmp (__data->name, L"..") &&
-    __data->name[0]=='.')
-    return 0;
+      __data->name[0] == '.')
+    {
+      return 0;
+    }
+
   return 1;
 }
 
@@ -204,12 +228,14 @@ scandir_filter_skip_hidden        (const vfs_dirent_t * __data)
  * or greater than the second.
  */
 int
-wcscandir_alphasort               (const void *__a, const void *__b)
+wcscandir_alphasort (const void *__a, const void *__b)
 {
-  file_t *a=*(file_t**)__a, *b=*(file_t**)__b;
+  file_t *a = *(file_t**) __a, *b = *(file_t**) __b;
 
   if (!wcscmp (a->name, L".") || !wcscmp (a->name, L".."))
-    return -1;
+    {
+      return -1;
+    }
 
   return wcscmp (a->name, b->name);
 }
@@ -225,25 +251,35 @@ wcscandir_alphasort               (const void *__a, const void *__b)
  * or greater than the second.
  */
 int
-wcscandir_alphasort_sep           (const void *__a, const void *__b)
+wcscandir_alphasort_sep (const void *__a, const void *__b)
 {
-  file_t *a=*(file_t**)__a, *b=*(file_t**)__b;
+  file_t *a = *(file_t**) __a, *b = *(file_t**) __b;
 
-  // Directories `.` and `..` must be at the top op list
+  /* Directories `.` and `..` must be at the top op list */
   if (!wcscmp (a->name, L".") || !wcscmp (a->name, L".."))
-    return -1;
+    {
+      return -1;
+    }
 
   if (!wcscmp (b->name, L".") || !wcscmp (b->name, L".."))
-    return 1;
+    {
+      return 1;
+    }
 
   if (S_ISDIR (a->stat.st_mode) && S_ISDIR (b->stat.st_mode))
-    return wcscmp (a->name, b->name);
+    {
+      return wcscmp (a->name, b->name);
+    }
 
   if (S_ISDIR (a->stat.st_mode))
-    return -1;
+    {
+      return -1;
+    }
 
   if (S_ISDIR (b->stat.st_mode))
-    return 1;
+    {
+      return 1;
+    }
 
   return wcscmp (a->name, b->name);
 }
@@ -255,16 +291,15 @@ wcscandir_alphasort_sep           (const void *__a, const void *__b)
  * @return non-zero if specified URL is a directory and zero otherwise
  */
 BOOL
-isdir                             (const wchar_t *__url)
+isdir (const wchar_t *__url)
 {
   vfs_stat_t stat;
 
   if (vfs_lstat (__url, &stat))
     {
-      //
-      // TODO:
-      // Add error handling here
-      //
+      /*
+       * TODO: Add error handling here
+       */
       return FALSE;
     }
 

@@ -18,17 +18,21 @@
 BEGIN_HEADER
 
 typedef struct _Iter iterator_t;
-struct _Iter {
-    void *data;
-    iterator_t *next;
-    iterator_t *prev;
+
+struct _Iter
+{
+  void *data;
+  iterator_t *next;
+  iterator_t *prev;
 };
 
 typedef struct _Deq deque_t;
-struct _Deq {
-    iterator_t *head, *tail;
+
+struct _Deq
+{
+  iterator_t *head, *tail;
 #ifdef PROFILE_DEQUE_LENGTH
-    unsigned long long length;
+  unsigned long long length;
 #endif
 };
 
@@ -39,7 +43,7 @@ typedef int (*comporator) (const void *, const void *);
 #define deque_head(self) (self)->head
 
 #ifdef PROFILE_DEQUE_LENGTH
-    #define deque_length(self) (self)->length
+#define deque_length(self) (self)->length
 #endif
 
 #define deque_next(self) (self)->next
@@ -63,7 +67,7 @@ typedef int (*comporator) (const void *, const void *);
     }
 
 deque_t *
-deque_create(void);
+deque_create (void);
 
 int
 deque_destroy (deque_t *__this, destroyer __destroyer);

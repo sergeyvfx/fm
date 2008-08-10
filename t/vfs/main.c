@@ -14,8 +14,9 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
-////////
-//
+/********
+ *
+ */
 
 #define OK() \
   printf (" ok.\n");
@@ -32,25 +33,31 @@
     FAILED ("    %ls\n", vfs_get_error (res)) else \
     OK (); \
 
-////////
-//
+/********
+ *
+ */
 
 /**
  * Main testing function
  */
 static void
-test                              (void)
+test (void)
 {
   int res;
   vfs_file_t fd;
-  char buf[100]="Hello, World!";
+  char buf[100] = "Hello, World!";
 
   printf ("* Global testing started\n");
 
   printf ("  vfs_open:");
-  if (!(fd=vfs_open (L"localfs::/tmp/vfs.test", O_CREAT | O_RDWR, &res)))
-    FAILED ("    %ls\n", vfs_get_error (res)) else
-    OK ();
+  if (!(fd = vfs_open (L"localfs::/tmp/vfs.test", O_CREAT | O_RDWR, &res)))
+    {
+      FAILED ("    %ls\n", vfs_get_error (res))
+    }
+  else
+    {
+      OK ();
+    }
 
   TEST (vfs_write, fd, buf, strlen (buf));
   printf ("    Written buffer: %s\n", buf);
@@ -60,30 +67,35 @@ test                              (void)
   printf ("    Read buffer: %s\n", buf);
 
   printf ("  vfs_close:");
-  if ((res=vfs_close (fd)))
-    FAILED ("    %ls\n", vfs_get_error (res)) else
-    OK ();
+  if ((res = vfs_close (fd)))
+    {
+      FAILED ("    %ls\n", vfs_get_error (res))
+    }
+  else
+    {
+      OK ();
+    }
 
   TEST (vfs_unlink, L"localfs::/tmp/vfs.test");
 }
 
 int
-main                              (int __argc, char **__argv)
+main (int __argc, char **__argv)
 {
   int res;
 
   printf (">> Testing set for VFS module of ${project-name} <<\n");
 
-  // Initialize all VFS stuff
-  if ((res=vfs_init ()))
+  /* Initialize all VFS stuff */
+  if ((res = vfs_init ()))
     {
       printf ("* Error initializing VFS: %ls\n", vfs_get_error (res));
       return EXIT_FAILURE;
     }
   printf ("* VFS initialization succeed.\n");
 
-  // Load standart plugin
-  if ((res=vfs_plugin_load (L"./plugins/liblocalfs.so")))
+  /* Load standart plugin */
+  if ((res = vfs_plugin_load (L"./plugins/liblocalfs.so")))
     {
       printf ("* Error loading plugin 'localfs': %ls\n", vfs_get_error (res));
       return EXIT_FAILURE;
@@ -92,7 +104,7 @@ main                              (int __argc, char **__argv)
 
   test ();
 
-  // Uninitializing
+  /* Uninitializing */
   vfs_done ();
   printf ("* VFS uninitialized\n");
 

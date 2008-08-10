@@ -15,19 +15,16 @@
 
 #include "smartinclude.h"
 
-////////
-//
-
 int
-vfs_context_init                  (void);
+vfs_context_init (void);
 
 void
-vfs_context_done                  (void);
+vfs_context_done (void);
 
 void
-vfs_context_save                  (wchar_t *__optname1, ...);
+vfs_context_save (wchar_t *__optname1, ...);
 
 void
-vfs_context_format                (wchar_t *__format);
+vfs_context_format (wchar_t *__format);
 
 #endif

@@ -22,43 +22,48 @@ BEGIN_HEADER
 
 #include <dirent.h>
 
-////////
-// Type definitions
+/********
+ * Type definitions
+ */
 
-typedef int (*dircmp_proc)    (const void*, const void*);
+typedef int (*dircmp_proc) (const void*, const void*);
 
-////////
-//
+/********
+ *
+ */
 
-int            // Wrapper of VFS function vfs_scandir()
-wcscandir                         (const wchar_t  *__name,
-                                   vfs_filter_proc __filer,
-                                   dircmp_proc     __compar,
-                                   file_t       ***__res);
+/* Wrapper of VFS function vfs_scandir() */
+int
+wcscandir (const wchar_t *__name, vfs_filter_proc __filer,
+           dircmp_proc __compar, file_t ***__res);
 
-wchar_t*       // Concatenate subdirectory to directory name
-wcdircatsubdir                    (const wchar_t *__name,
-                                   const wchar_t *__subname);
+/* Concatenate subdirectory to directory name */
+wchar_t*
+wcdircatsubdir (const wchar_t *__name, const wchar_t *__subname);
 
-void           // Fit dirname to specified length
-fit_dirname                       (const wchar_t *__dir_name,
-                                   long           __len,
-                                   wchar_t       *__res);
+/* Fit dirname to specified length */
+void
+fit_dirname (const wchar_t *__dir_name, long __len, wchar_t *__res);
 
-wchar_t*       // Strip non-directory suffix from file name
-wcdirname                         (const wchar_t *__name);
+/* Strip non-directory suffix from file name */
+wchar_t*
+wcdirname (const wchar_t *__name);
 
-int            // Filter for scandir which skips all hidden files
-scandir_filter_skip_hidden        (const vfs_dirent_t * __data);
+/* Filter for scandir which skips all hidden files */
+int
+scandir_filter_skip_hidden (const vfs_dirent_t * __data);
 
-int            // Alphabetically sorter for wcscandir
-wcscandir_alphasort               (const void *__a, const void *__b);
+/* Alphabetically sorter for wcscandir */
+int
+wcscandir_alphasort (const void *__a, const void *__b);
 
-int            // Separately alphabetically sorter for wcscandir
-wcscandir_alphasort_sep           (const void *__a, const void *__b);
+/* Separately alphabetically sorter for wcscandir */
+int
+wcscandir_alphasort_sep (const void *__a, const void *__b);
 
-BOOL          // Is URL points to a directory?
-isdir                             (const wchar_t *__url);
+/* Is URL points to a directory? */
+BOOL
+isdir (const wchar_t *__url);
 
 END_HEADER
 

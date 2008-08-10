@@ -20,55 +20,68 @@ BEGIN_HEADER
 #include <sys/stat.h>
 #include <time.h>
 
-////////
-// Constants
+/********
+ * Constants
+ */
 
 #define MAX_FILENAME_LEN  256
 
-////////
-// Type definitions
+/********
+ * Type definitions
+ */
 
-typedef struct {
-  ////
-  // Inherited from dirent
-  wchar_t         name[MAX_FILENAME_LEN]; // Name of file
-  unsigned char   type;                   // Type of file
-  struct stat     stat;                   // Stat information of file
-  struct stat     lstat;                  // L-Stat information of file
+typedef struct
+{
+  /***
+   * Inherited from dirent
+   */
+
+  /* Name of file */
+  wchar_t name[MAX_FILENAME_LEN];
+
+  /* Type of file */
+  unsigned char type;
+
+  /* Stat information of file */
+  struct stat stat;
+
+  /* L-Stat information of file */
+  struct stat lstat;
 } file_t;
 
-////////
-//
+/********
+ *
+ */
 
-void           // Fit filename to specified length
-fit_filename                      (const wchar_t  *__file_name,
-                                   long            __len,
-                                   wchar_t        *__res);
+/* Fit filename to specified length */
+void
+fit_filename (const wchar_t *__file_name, long __len, wchar_t *__res);
 
-wchar_t*       // Strip directory prefix from file name
-wcfilename                        (const wchar_t *__name);
+/* Strip directory prefix from file name */
+wchar_t*
+wcfilename (const wchar_t *__name);
 
-void           // Convert file mode creation mask to string
-umasktowcs                        (mode_t __mask, wchar_t *__res);
+/* Convert file mode creation mask to string */
+void
+umasktowcs (mode_t __mask, wchar_t *__res);
 
+/* Convert file size to human-readable format */
 #ifdef __USE_FILE_OFFSET64
-__u64_t        // Convert file size to human-readable format
-fsizetohuman                      (__u64_t __size, char *__suffix);
+__u64_t
+fsizetohuman (__u64_t __size, char *__suffix);
 #else
-__u32_t       // Convert file size to human-readable format
-fsizetohuman                      (__u32_t __size, char *__suffix);
+__u32_t
+fsizetohuman (__u32_t __size, char *__suffix);
 #endif
 
 void
-format_file_time                  (wchar_t *__buf,
-                                   size_t   __buf_size,
-                                   time_t   __time);
+format_file_time (wchar_t *__buf, size_t __buf_size, time_t __time);
 
 wchar_t*
-filename_trim                     (const wchar_t *__fn);
+filename_trim (const wchar_t *__fn);
 
 int
-filename_compare                  (const wchar_t *__a, const wchar_t *__b);
+filename_compare (const wchar_t *__a, const wchar_t *__b);
 
 END_HEADER
 

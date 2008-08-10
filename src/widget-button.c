@@ -12,11 +12,12 @@
 
 #include "widget.h"
 
-//////
-//
+/********
+ *
+ */
 
 /**
- * Destroys a button widget
+ * Destroy a button widget
  *
  * @param __button - button to be destroyed
  * @return zero on success, non-zero on failure
@@ -25,21 +26,27 @@ static int
 button_destructor                 (w_button_t *__button)
 {
   if (!__button)
-    return -1;
+    {
+      return -1;
+    }
 
   if (__button->caption)
-    free (__button->caption);
+    {
+      free (__button->caption);
+    }
 
-  // Destroy screen layout
+  /* Destroy screen layout */
   if (WIDGET_LAYOUT (__button))
+    {
       scr_destroy_window (WIDGET_LAYOUT (__button));
+    }
 
   free (__button);
   return 0;
 }
 
 /**
- * Draws a button
+ * Draw a button
  *
  * @param __button - button to be drawn
  * @return zero on success, non-zero on failure
@@ -49,15 +56,17 @@ button_drawer                     (w_button_t *__button)
 {
   scr_window_t layout=WIDGET_LAYOUT (__button);
 
-  // Widget is invisible or there is no layout
+  /* Widget is invisible or there is no layout */
   if (!WIDGET_VISIBLE (__button) || !layout)
-    return -1;
+    {
+      return -1;
+    }
 
   scr_wnd_attr_backup (layout);
 
   scr_wnd_move_caret (layout, __button->position.x, __button->position.y);
 
-  // Draw caption of button
+  /* Draw caption of button */
   if (__button->caption)
     {
       scr_wnd_font (layout, __button->focused?
@@ -79,7 +88,7 @@ button_drawer                     (w_button_t *__button)
 }
 
 /**
- * Handles a keydown callback
+ * Handle a keydown callback
  *
  * @param __button - button received a callback
  * @param __ch - received character
@@ -99,11 +108,17 @@ button_keydown                    (w_button_t *__button, wint_t __ch)
       if (WIDGET_BUTTON_MODALRESULT (__button))
         {
           widget_t *cur=__button->parent;
+
           while (cur && WIDGET_TYPE (cur)!=WT_WINDOW)
-            cur=cur->parent;
+            {
+              cur=cur->parent;
+            }
+
           if (cur)
-            w_window_end_modal (WIDGET_WINDOW (cur),
-              WIDGET_BUTTON_MODALRESULT (__button));
+            {
+              w_window_end_modal (WIDGET_WINDOW (cur),
+                WIDGET_BUTTON_MODALRESULT (__button));
+            }
           return TRUE;
         }
       return FALSE;
@@ -113,7 +128,7 @@ button_keydown                    (w_button_t *__button, wint_t __ch)
 }
 
  /**
-  * Handles a shortcut callback
+  * Handle a shortcut callback
   *
   * @param __button - button for which this callback was sent
   * @return zero if callback hasn't handled received character,
@@ -122,19 +137,20 @@ button_keydown                    (w_button_t *__button, wint_t __ch)
 static int
 button_shortcut                   (w_button_t *__button)
 {
-  // Try to call user's handler of shortcut..
+  /* Try to call user's handler of shortcut.. */
   _WIDGET_CALL_USER_CALLBACK (__button, shortcut, __button);
 
-  // .. if we are still here emulate clicking in the button
+  /* .. if we are still here emulate clicking in the button */
   widget_set_focus (WIDGET (__button));
   return button_keydown (__button, KEY_RETURN);
 }
 
-//////
-// User's backend
+/********
+ * User's backend
+ */
 
 /**
- * Creates new button on parent and specified with caption, position and style
+ * Create new button on parent and specified with caption, position and style
  *
  * @param __parent - parent of button. Should be CONTAINER
  * @param __caption - caption on button
@@ -151,9 +167,11 @@ widget_create_button              (w_container_t *__parent,
 {
   w_button_t *res;
 
-  // There is no parent or caption is null, so we can't create button
+  /* There is no parent or caption is null, so we can't create button */
   if (!__parent || !__caption)
-    return 0;
+    {
+      return 0;
+    }
 
   unsigned int w;
 
@@ -164,7 +182,7 @@ widget_create_button              (w_container_t *__parent,
                button_destructor, button_drawer,
                __x, __y, 1, w, 1);
 
-  // Set callbacks
+  /* Set callbacks */
   WIDGET_CALLBACK (res, keydown)  = (widget_keydown_proc)button_keydown;
   WIDGET_CALLBACK (res, shortcut) = (widget_action)button_shortcut;
 
@@ -186,7 +204,7 @@ widget_create_button              (w_container_t *__parent,
 }
 
 /**
- * Sets fonts used in button
+ * Set fonts used in button
  *
  * @param __button - for which button fonts are to be set
  * @param __font - font of default text in normal state
@@ -203,7 +221,9 @@ w_button_set_fonts                (w_button_t *__button,
                                    scr_font_t *__hot_focused_font)
 {
   if (!__button)
-    return;
+    {
+      return;
+    }
 
   WIDGET_SAFE_SET_FONT (__button, font,             __font);
   WIDGET_SAFE_SET_FONT (__button, focused_font,     __focused_font);

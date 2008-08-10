@@ -17,10 +17,11 @@
 
 BEGIN_HEADER
 
-enum {
-    HOOK_FAILURE = -1,
-    HOOK_SUCCESS,
-    HOOK_BREAK
+enum
+{
+  HOOK_FAILURE = -1,
+  HOOK_SUCCESS,
+  HOOK_BREAK
 };
 
 typedef int (*hook_callback_proc) (void *__callData);

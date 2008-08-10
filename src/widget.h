@@ -18,10 +18,11 @@
 
 #include "screen.h"
 
-////////
-// Constants
+/********
+ * Constants
+ */
 
-// Widget's types
+/* Widget's types */
 #define WT_NONE       0x00
 
 #define WT_CONTAINER  0x10
@@ -37,30 +38,30 @@
 #define WT_TEXT       (WT_SINGLE+5)
 #define WT_PROGRESS   (WT_SINGLE+6)
 
-// Window show modes
+/* Window show modes */
 #define WSM_DEFAULT 0x00
 #define WSM_MODAL   0x01
 
-// Window styles
+/* Window styles */
 #define WMS_CENTERED 0x01
 
-// Button styles
+/* Button styles */
 #define WBS_NONE    0x0000
 #define WBS_DEFAULT 0x0001
 
-// Menu styles
+/* Menu styles */
 #define WMS_NONE           0x0000
 #define WMS_HIDE_UNFOCUSED 0x0001
 
-// Sub-menu's item styles
+/* Sub-menu's item styles */
 #define SMI_NONE           0x0000
 #define SMI_SEPARATOR      0x0001
 
-// Box styles
+/* Box styles */
 #define WBS_VERTICAL       0x0000
 #define WBS_HORISONTAL     0x0001
 
-// Modal results
+/* Modal results */
 #define MR_NONE   0x0000
 #define MR_OK     0x0001
 #define MR_YES    0x0002
@@ -73,41 +74,45 @@
 
 #define MR_CUSTOM 0x0100
 
-////
-// Widgets' flags
+/****
+ * Widgets' flags
+ */
 
-// If widget has this flag, then it can contain only one child,
-// which will be resized to the whole paren't size
+/* If widget has this flag, then it can contain only one child, */
+/* which will be resized to the whole paren't size */
 #define WF_CONTAINER     0x0001
 
-// Widget doesn't have its own layout and uses parent's
-// to draw itself
+/* Widget doesn't have its own layout and uses parent's */
+/* to draw itself */
 #define WF_NOLAYOUT      0x0002
 
-// Redrawing of widget is locked
+/* Redrawing of widget is locked */
 #define WF_REDRAW_LOCKED 0x0004
 
-// Widget is always ontop
-// This means that messages like onresize will be send
-// to such widgets after sending those messages to widgets without
-// this flag
+/* Widget is always ontop */
+/* This means that messages like onresize will be send */
+/* to such widgets after sending those messages to widgets without */
+/* this flag */
 #define WF_ONTOP         0x0008
 
-// Widget can't be focused
+/* Widget can't be focused */
 #define WF_UNFOCUSABE    0x0008
 
-////////
-// Macroses
+/********
+ * Macroses
+ */
 
-////
-// Typecasts
+/****
+ * Typecasts
+ */
 #define WIDGET(_w)            ((widget_t*)_w)
 #define WIDGET_CONTAINER(_w)  ((w_container_t*)_w)
 #define WIDGET_WINDOW(_w)     ((w_window_t*)_w)
 #define WIDGET_BUTTON(_w)     ((w_button_t*)_w)
 
-////
-// Common widget's macrodefs
+/****
+ * Common widget's macrodefs
+ */
 #define WIDGET_TYPE(_w)      ((WIDGET (_w))->type)
 #define WIDGET_LAYOUT(_w)    ((WIDGET (_w))->layout)
 #define WIDGET_POSITION(_w)  ((WIDGET (_w))->position)
@@ -126,11 +131,11 @@
 #define WIDGET_RESET_FLAG(_w, _f)     ((WIDGET (_w))->flags&=~_f)
 #define WIDGET_TEST_FLAG(_w, _f)      ((WIDGET (_w))->flags&_f)
 
-// Safe calling to callback
+/* Safe calling of callback */
 #define WIDGET_CALL_CALLBACK(_w,_cb,_args...) \
   (WIDGET_CALLBACK (_w, _cb)?WIDGET_CALLBACK (_w, _cb) (_args):0)
 
-// Call user-defined callback in deep-core callbacks
+/* Call user-defined callback in deep-core callbacks */
 #define _WIDGET_CALL_USER_CALLBACK(_w,_cb,_args...) \
   { \
     int res; \
@@ -139,11 +144,12 @@
       return res; \
   }
 
-//////
-// Some automatization
+/****
+ * Some automatization
+ */
 
 /**
- * Initializes new widget object
+ * Initialize new widget object
  * @param _widget - pointer to emery where object will be created
  * @param _datatype - datatype of widget (to determine size of object)
  * @param _parent - parent of widget
@@ -185,14 +191,15 @@
   WIDGET_CALLBACK (_widget, keydown)  = (widget_keydown_proc)widget_keydown; \
   WIDGET_CALLBACK (_widget, onresize) = (widget_action)widget_onresize;
 
-// Post-initializing stuff
+/* Post-initializing stuff */
 #define WIDGET_POST_INIT(_widget) \
   /* Register widget in container */ \
   w_container_append_child (WIDGET_CONTAINER (_widget->parent), \
     WIDGET (_widget));
 
-////
-// Container-based macrodefs
+/****
+ * Container-based macrodefs
+ */
 #define WIDGET_IS_CONTAINER(_w) \
   (WIDGET_TYPE (_w)>=WT_CONTAINER && WIDGET_TYPE (_w)<WT_SINGLE)
 
@@ -231,53 +238,62 @@
   if (WIDGET_IS_CONTAINER (_w) && WIDGET_CONTAINER(_w)->focused_widget) \
     widget_draw (WIDGET_CONTAINER(_w)->focused_widget);
 
-////
-// Button's macrodefs
+/****
+ * Button's macrodefs
+ */
 #define WIDGET_BUTTON_MODALRESULT(_w)   ((WIDGET_BUTTON (_w))->modal_result)
 
-////
-// Deep-core macroses
+/****
+ * Deep-core macroses
+ */
 #define WIDGET_SAFE_SET_FONT(_w,_font,_val) if (_val) _w->_font=_val;
 
-////////
-// Type definitions
+/****
+ * Type definitions
+ */
 
-typedef int (*widget_action)       (void *__widget);
+typedef int (*widget_action) (void *__widget);
 typedef int (*widget_keydown_proc) (void *__widget, wint_t __ch);
 
-// Position of widget
-typedef struct {
+/* Position of widget */
+typedef struct
+{
   int x, y;
   int width, height;
-  int z; // If widget is visible z>0. If z=0 then widget is invisible
+
+  /* If widget is visible z>0. If z=0 then widget is invisible */
+  int z;
 } widget_position_t;
 
-// Methods container for simple widgets
-typedef struct {
+/* Methods container for simple widgets */
+typedef struct
+{
   widget_action destroy;
   widget_action draw;
 } widget_methods_t;
 
-// Callbacks for simple widgets
-typedef struct {
+/* Callbacks for simple widgets */
+typedef struct
+{
   widget_keydown_proc keydown;
-  widget_action       shortcut;
-  widget_action       focused;
-  widget_action       blured;
-  widget_action       onresize;
+  widget_action shortcut;
+  widget_action focused;
+  widget_action blured;
+  widget_action onresize;
 } widget_callbacks_t;
 
-// Callbacks' structure for user's bindings
-typedef struct {
+/* Callbacks' structure for user's bindings */
+typedef struct
+{
   widget_keydown_proc keydown;
-  widget_action       clicked;
-  widget_action       shortcut;
-  widget_action       focused;
-  widget_action       blured;
-  widget_action       onresize;
+  widget_action clicked;
+  widget_action shortcut;
+  widget_action focused;
+  widget_action blured;
+  widget_action onresize;
 } widget_user_callbacks_t;
 
-// Basic widget's members
+/* Basic widget's members */
 #define WIDGET_MEMBERS \
   unsigned short          type;            /* Type of widget  */ \
   unsigned long           flags;           /* Different flags of widget */ \
@@ -301,463 +317,532 @@ typedef struct {
   } container; \
   widget_t        *focused_widget; /* Ptr to focused widget */
 
-// Simplest widget
-typedef struct _widget_t {
+/* Simplest widget */
+typedef struct _widget_t
+{
   WIDGET_MEMBERS
 } widget_t;
 
-// Widget with container
-typedef struct {
+/* Widget with container */
+typedef struct
+{
   WIDGET_CONTAINER_MEMBERS
 } w_container_t;
 
-// Window
-typedef struct {
-  // Inherit from widget container
+/* Window */
+typedef struct
+{
+  /* Inherit from widget container */
   WIDGET_CONTAINER_MEMBERS
 
-  panel_t            panel;  // Panel of layout to manipulate with visibility
+  /* Panel of layout to manipulate with visibility */
+  panel_t panel;
 
-  scr_font_t        *font;   // Font for text on window
+  /* Font for text on window */
+  scr_font_t *font;
 
-  struct {
-    wchar_t         *text;  // Text of caption
-    scr_font_t      *font;  // Font of caption
+  struct
+  {
+    /* Text of caption */
+    wchar_t *text;
+
+    /* Font of caption */
+    scr_font_t *font;
   } caption;
 
-  unsigned int   style;
+  unsigned int style;
 
-  // Some deep-core info
+  /* Some deep-core info */
   unsigned short show_mode;
-  int            modal_result;
+  int modal_result;
 } w_window_t;
 
-// Button
-typedef struct {
-  // Inherit from widget
+/* Button */
+typedef struct
+{
+  /* Inherit from widget */
   WIDGET_MEMBERS
 
-  wchar_t            *caption;          // Caption in button
+  /* Caption in button */
+  wchar_t *caption;
 
-  scr_font_t         *font;             // Font for normal style
-  scr_font_t         *focused_font;     // Font for hotkey in normal state
+  /* Font for normal style */
+  scr_font_t *font;
 
-  scr_font_t         *hot_font;         // Font for shortcut style
-  scr_font_t         *hot_focused_font; // Font for hotkey in normal state
+  /* Font for hotkey in normal state */
+  scr_font_t *focused_font;
 
-  unsigned int      style;
-  unsigned short    modal_result;       // Modal result code for window
+  /* Font for shortcut style */
+  scr_font_t *hot_font;
+
+  /* Font for hotkey in normal state */
+  scr_font_t *hot_focused_font;
+
+  unsigned int style;
+
+  /* Modal result code for window */
+  unsigned short modal_result;
 } w_button_t;
 
-// Text
-typedef struct {
-  // Inherit from widget
+/* Text */
+typedef struct
+{
+  /* Inherit from widget */
   WIDGET_MEMBERS
 
-  wchar_t            *text;             // Text
+  /* Text */
+  wchar_t *text;
 
-  scr_font_t         *font;             // Font of text
+  /* Font of text */
+  scr_font_t *font;
 } w_text_t;
 
-// Progress bar
-typedef struct {
-  // Inherit from widget
+/* Progress bar */
+typedef struct
+{
+  /* Inherit from widget */
   WIDGET_MEMBERS
 
-  unsigned long       max_pos; // Maximal position
-  unsigned long       cur_pos; // Current position
+  /* Maximal position */
+  unsigned long max_pos;
 
-  scr_font_t         *font;
-  scr_font_t         *background_font;
-  scr_font_t         *progress_font;
+  /* Current position */
+  unsigned long cur_pos;
+
+  scr_font_t *font;
+  scr_font_t *background_font;
+  scr_font_t *progress_font;
 } w_progress_t;
 
-// Edit box
-typedef struct {
-  // Inherit from widget
+/* Edit box */
+typedef struct
+{
+  /* Inherit from widget */
   WIDGET_MEMBERS
 
-  struct {
-    wchar_t         *data;              // Caption in edit box
-    size_t          allocated;          // Allocated buffer size
+  struct
+  {
+    /* Caption in edit box */
+    wchar_t *data;
+
+    /* Allocated buffer size */
+    size_t allocated;
   } text;
 
-  size_t            scrolled;           // How much characters where scrolled
-                                        // due to widget's width is limited
-  size_t            caret_pos;          // Position of caret
+  /* How much characters where scrolled */
+  /* due to widget's width is limited */
+  size_t scrolled;
 
-  scr_font_t         *font;             // Font for normal style
+  /* Position of caret */
+  size_t caret_pos;
+
+  /* Font for normal style */
+  scr_font_t *font;
 } w_edit_t;
 
-// Checkbox
-typedef struct {
+/* Checkbox */
+typedef struct
+{
   WIDGET_MEMBERS
 
-  scr_font_t    *font;
-  scr_font_t    *font_focus;
+  scr_font_t *font;
+  scr_font_t *font_focus;
 
-  scr_font_t    *hotkey_font;
-  scr_font_t    *hotkey_focus;
+  scr_font_t *hotkey_font;
+  scr_font_t *hotkey_focus;
 
-  wchar_t       *caption;
-  BOOL          ischeck;
+  wchar_t *caption;
+  BOOL ischeck;
 } w_checkbox_t;
 
-////
-// Menus
+/****
+ * Menus
+ */
 
 struct w_menu_t_entry;
 typedef int (*menu_item_callback) (void *__user_data);
 
-typedef struct {
-  wchar_t            *caption; // Caption of item
-  wchar_t            shortcut;
-  unsigned int       flags;
-  void               *user_data;
+typedef struct
+{
+  /* Caption of item */
+  wchar_t *caption;
+
+  wchar_t shortcut;
+  unsigned int flags;
+  void *user_data;
   menu_item_callback callback;
 } w_sub_menu_item_t;
 
-typedef struct {
-  wchar_t                *caption;  // Caption of sub-menu
-  wchar_t                shortcut;
+typedef struct
+{
+  /* Caption of sub-menu */
+  wchar_t *caption;
 
-  struct {
+  wchar_t shortcut;
+
+  struct
+  {
     w_sub_menu_item_t *data;
     unsigned short length;
   } items;
 
-  struct w_menu_t_entry  *menu;     // Menu which owns this submenu
-  short                  index;     // Index of submenu in parent's container
-  widget_position_t      position;  // Position of sub-menu
-  short                  cur_item_index; // Index of currently selected item
+  /* Menu which owns this submenu */
+  struct w_menu_t_entry *menu;
+
+  /* Index of submenu in parent's container */
+  short index;
+
+  /* Position of sub-menu */
+  widget_position_t position;
+
+  /* Index of currently selected item */
+  short cur_item_index;
 } w_sub_menu_t;
 
-typedef struct w_menu_t_entry {
-  // Inherit from widget
+typedef struct w_menu_t_entry
+{
+  /* Inherit from widget */
   WIDGET_MEMBERS
 
-  panel_t            panel; // Panel of layout to manipulate with visibility
+  /* Panel of layout to manipulate with visibility */
+  panel_t panel;
 
-  scr_font_t         *font;               // Font to draw menu line
-  scr_font_t         *hot_font;           // Font to draw shortcut
-  scr_font_t         *focused_font;       // Font to draw submenu caption in case
-                                          // it's focused
-  scr_font_t         *hot_focused_font;   // Font to draw focused shortcut
+  /* Font to draw menu line */
+  scr_font_t *font;
 
-  unsigned int       style;               // Style of menu
+  /* Font to draw shortcut */
+  scr_font_t *hot_font;
 
-  struct {
+  /* Font to draw submenu caption in case it's focused */
+  scr_font_t *focused_font;
+
+  /* Font to draw focused shortcut */
+  scr_font_t *hot_focused_font;
+
+  /* Style of menu */
+  unsigned int style;
+
+  struct
+  {
     w_sub_menu_t *data;
     unsigned int length;
   } sub_menus;
 
-  ////
-  // Internal usage
-  w_sub_menu_t       *cur_submenu; // Pointer to currently selected submenu
+  /****
+   * Internal usage
+   */
 
-  scr_window_t       submenu_layout; // Layout to draw a submemu's items
-  panel_t            submenu_panel;  // Panel to manipulate with submenu's layout
-  BOOL               unfolded;       // Shows if any sub-menu is unfolded
-  BOOL               active;         // Is menu activate?
+  /* Pointer to currently selected submenu */
+  w_sub_menu_t *cur_submenu;
+
+  /* Layout to draw a submemu's items */
+  scr_window_t submenu_layout;
+
+  /* Panel to manipulate with submenu's layout */
+  panel_t submenu_panel;
+
+  /* Shows if any sub-menu is unfolded */
+  BOOL unfolded;
+
+  /* Is menu activate? */
+  BOOL active;
 } w_menu_t;
 
-////
-// Boxes
+/****
+ * Boxes
+ */
 
-typedef struct {
-  // Inherit from container
+typedef struct
+{
+  /* Inherit from container */
   WIDGET_CONTAINER_MEMBERS
 
-  int size;  // Size of item
+  /* Size of item */
+  int size;
 } w_box_item_t;
 
-typedef struct {
-  // Inherit from container
+typedef struct
+{
+  /* Inherit from container */
   WIDGET_CONTAINER_MEMBERS
 
-  panel_t            panel; // Panel of layout to manipulate with visibility
+  /* Panel of layout to manipulate with visibility */
+  panel_t panel;
 
-  unsigned int       style; // Style of box
+  /* Style of box */
+  unsigned int style;
 
-  // System info
-  BOOL    evaluted; // If sizes of item were evaluated?
+  /* System info */
+
+  /* If sizes of item were evaluated? */
+  BOOL evaluted;
 } w_box_t;
 
-////////////////
-//
-
-//////
-// Deep-core stuff
-
-// Code to operate with non-modal windows
-/*void           // Set widget where to send messages from user
-widget_set_current_widget         (widget_t *__widget);*/
+/********
+ * Deep-core stuff
+ */
 
 void
-widget_main_loop                  (void);
-
-//////
-// Common stuff
+widget_main_loop (void);
 
 int
-widgets_init                      (void);
+widgets_init (void);
 
 void
-widgets_done                      (void);
+widgets_done (void);
 
-void           // Totally destroying of widget
-widget_destroy                    (widget_t *__widget);
+/* Totally destroying of widget */
+void
+widget_destroy (widget_t *__widget);
 
 void
-widget_add_root                   (widget_t *__widget);
+widget_add_root (widget_t *__widget);
 
 void
-widget_delete_root                (widget_t *__widget);
+widget_delete_root (widget_t *__widget);
 
 void
-widget_sink_root                  (widget_t *__widget);
+widget_sink_root (widget_t *__widget);
 
-int            // Draw widget on screen
-widget_draw                       (widget_t *__widget);
+/* Draw widget on screen */
+int
+widget_draw (widget_t *__widget);
 
-int            // Redraw widget on screen
-widget_redraw                     (widget_t *__widget);
+/* Redraw widget on screen */
+int
+widget_redraw (widget_t *__widget);
 
-void           // Totally redraw all widgets
-widget_full_redraw                (void);
+/* Totally redraw all widgets */
+void
+widget_full_redraw (void);
 
-void           // Call this method when root screen has been resized
-widget_on_scr_resize              (void);
+/* Call this method when root screen has been resized */
+void
+widget_on_scr_resize (void);
 
-// Some helpers
+/* Some helpers */
 
-wchar_t       // Extracts shortcut key from text
-widget_shortcut_key               (const wchar_t *__text);
+/* Extracts shortcut key from text */
+wchar_t
+widget_shortcut_key (const wchar_t *__text);
 
-int           // Length of text with shortcuts
-widget_shortcut_length            (const wchar_t *__text);
+/* Length of text with shortcuts */
+int
+widget_shortcut_length (const wchar_t *__text);
 
-void           // Print text with highlighted shortcut key
-widget_shortcut_print             (scr_window_t __layout,
-                                   const wchar_t *__text,
-                                   scr_font_t __font, scr_font_t __hot_font);
+/* Print text with highlighted shortcut key */
+void
+widget_shortcut_print (scr_window_t __layout,
+                       const wchar_t *__text,
+                       scr_font_t __font, scr_font_t __hot_font);
 
 void
-widget_set_focus                  (widget_t *__widget);
+widget_set_focus (widget_t *__widget);
 
 widget_t *
-widget_next_focused               (const widget_t *__widget);
+widget_next_focused (const widget_t *__widget);
 
 widget_t *
-widget_prev_focused               (const widget_t *__widget);
+widget_prev_focused (const widget_t *__widget);
 
 void
-widget_resize                     (widget_t *__widget,
-                                   int __x, int __y,
-                                   int __w, int __h);
+widget_resize (widget_t *__widget, int __x, int __y, int __w, int __h);
 
 scr_window_t
-widget_create_layout              (widget_t *__widget);
+widget_create_layout (widget_t *__widget);
 
 void
-widget_lock_redraw                (widget_t *__widget);
+widget_lock_redraw (widget_t *__widget);
 
 void
-widget_unlock_redraw              (widget_t *__widget);
+widget_unlock_redraw (widget_t *__widget);
 
-////
-// Deep-core common stuff
+/****
+ * Deep-core common stuff
+ */
 int
-widget_focused                    (widget_t *__widget);
-
-int
-widget_blured                     (widget_t *__widget);
+widget_focused (widget_t *__widget);
 
 int
-widget_shortcut                   (widget_t *__widget);
+widget_blured (widget_t *__widget);
 
 int
-widget_onresize                   (widget_t *__widget);
+widget_shortcut (widget_t *__widget);
 
 int
-widget_keydown                    (widget_t *__widget, int __ch);
+widget_onresize (widget_t *__widget);
 
-/////
-// Per-widget stuff
+int
+widget_keydown (widget_t *__widget, int __ch);
 
-////
-// Container
+/********
+ * Per-widget stuff
+ */
 
-void
-w_container_append_child          (w_container_t *__container,
-                                   widget_t      *__widget);
-
-void
-w_container_insert_child          (w_container_t *__container,
-                                   widget_t      *__widget,
-                                   unsigned int   __pos);
+/****
+ * Container
+ */
 
 void
-w_container_delete                (w_container_t *__widget, widget_t *__child);
+w_container_append_child (w_container_t *__container, widget_t *__widget);
 
 void
-w_container_drop                  (w_container_t *__widget, widget_t *__child);
+w_container_insert_child (w_container_t *__container, widget_t *__widget,
+                          unsigned int __pos);
+
+void
+w_container_delete (w_container_t *__widget, widget_t *__child);
+
+void
+w_container_drop (w_container_t *__widget, widget_t *__child);
 
 widget_t*
-w_container_widget_by_tab_order   (const w_container_t *__container,
-                                   int __tab_order);
+w_container_widget_by_tab_order (const w_container_t *__container,
+                                 int __tab_order);
 
-////
-// Window
+/****
+ * Window
+ */
 
-// Deep-core stuff
+/* Deep-core stuff */
 void
-w_window_end_modal                (w_window_t *__window, int __modal_result);
+w_window_end_modal (w_window_t *__window, int __modal_result);
 
-w_window_t*    // Creates new window
-widget_create_window              (const wchar_t *__caption,
-                                   int __x, int __y,
-                                   int __w, int __h,
-                                   unsigned int __style);
+/* Creates new window */
+w_window_t*
+widget_create_window (const wchar_t *__caption, int __x, int __y,
+                      int __w, int __h, unsigned int __style);
 
-void           //  Show window
-w_window_show                     (w_window_t *__window);
+/* Show window */
+void
+w_window_show (w_window_t *__window);
 
-int            //  Show modal window
-w_window_show_modal               (w_window_t *__window);
+/* Show modal window */
+int
+w_window_show_modal (w_window_t *__window);
 
-void           // Hide window
-w_window_hide                     (w_window_t *__window);
+/* Hide window */
+void
+w_window_hide (w_window_t *__window);
 
 void
-w_window_set_fonts                (w_window_t *__window, scr_font_t *__font,
-                                   scr_font_t *__caption_font);
+w_window_set_fonts (w_window_t *__window, scr_font_t *__font,
+                    scr_font_t *__caption_font);
 
-////
-// Checkbox
+/******
+ * Checkbox
+ */
 
 w_checkbox_t *
-widget_create_checkbox            (w_container_t *__parent,
-                                   const wchar_t *__caption,
-                                   int __x, int __y, BOOL __check);
+widget_create_checkbox (w_container_t *__parent, const wchar_t *__caption,
+                        int __x, int __y, BOOL __check);
 
 BOOL
-w_checkbox_get                    (const w_checkbox_t *__checkbox);
+w_checkbox_get (const w_checkbox_t *__checkbox);
 
-////
-// Button
+/****
+ * Button
+ */
 
 w_button_t*
-widget_create_button              (w_container_t *__parent,
-                                   const wchar_t *__caption,
-                                   int __x, int __y,
-                                   unsigned int __style);
+widget_create_button (w_container_t *__parent, const wchar_t *__caption,
+                      int __x, int __y, unsigned int __style);
 
 void
-w_button_set_fonts                (w_button_t *__button,
-                                   scr_font_t *__font,
-                                   scr_font_t *__focused_font,
-                                   scr_font_t *__hot_font,
-                                   scr_font_t *__hot_focused_font);
+w_button_set_fonts (w_button_t *__button,
+                    scr_font_t *__font,
+                    scr_font_t *__focused_font,
+                    scr_font_t *__hot_font,
+                    scr_font_t *__hot_focused_font);
 
-////
-// Menus
+/****
+ * Menus
+ */
 w_menu_t*
-widget_create_menu                (unsigned int __style);
+widget_create_menu (unsigned int __style);
 
 w_sub_menu_t*
-w_menu_append_submenu             (w_menu_t *__menu, const wchar_t *__caption);
+w_menu_append_submenu (w_menu_t *__menu, const wchar_t *__caption);
 
 void
-w_menu_hide                       (w_menu_t *__menu);
+w_menu_hide (w_menu_t *__menu);
 
 w_sub_menu_item_t*
-w_submenu_append_item             (w_sub_menu_t       *__sub_menu,
-                                   const wchar_t      *__caption,
-                                   menu_item_callback  __callback,
-                                   unsigned int        __flags);
+w_submenu_append_item (w_sub_menu_t *__sub_menu, const wchar_t *__caption,
+                       menu_item_callback __callback, unsigned int __flags);
 
-////
-// Edit boxes
+/****
+ * Edit boxes
+ */
 w_edit_t*
-widget_create_edit                (w_container_t *__parent,
-                                   int __x, int __y, int __width);
+widget_create_edit (w_container_t *__parent, int __x, int __y, int __width);
 
 void
-w_edit_set_text                   (w_edit_t* __exit, wchar_t *__text);
+w_edit_set_text (w_edit_t* __exit, wchar_t *__text);
 
 wchar_t*
-w_edit_get_text                   (w_edit_t* __edit);
+w_edit_get_text (w_edit_t* __edit);
 
 void
-w_edit_set_fonts                  (w_edit_t *__edit, scr_font_t *__font);
+w_edit_set_fonts (w_edit_t *__edit, scr_font_t *__font);
 
-////
-// Boxes
-
+/****
+ * Boxes
+ */
 w_box_t*
-widget_create_box                 (w_container_t *__parent,
-                                   int __x, int __y,
-                                   int __w, int __h,
-                                   unsigned int __style,
-                                   unsigned int __count);
+widget_create_box (w_container_t *__parent, int __x, int __y, int __w, int __h,
+                   unsigned int __style, unsigned int __count);
 
 void
-w_box_set_item_szie               (w_box_t *__box, unsigned int __index,
-                                   int __size);
+w_box_set_item_szie (w_box_t *__box, unsigned int __index, int __size);
 
 w_box_item_t*
-w_box_item                        (w_box_t *__box, unsigned int __index);
+w_box_item (w_box_t *__box, unsigned int __index);
 
 w_box_item_t*
-w_box_insert_item                  (w_box_t     *__box,
-                                    unsigned int __index,
-                                    int          __size);
+w_box_insert_item (w_box_t *__box, unsigned int __index, int __size);
 
 w_box_item_t*
-w_box_append_item                  (w_box_t *__box, int __size);
+w_box_append_item (w_box_t *__box, int __size);
 
 void
-w_box_delete_item                  (w_box_t     *__box, w_box_item_t *__item);
+w_box_delete_item (w_box_t *__box, w_box_item_t *__item);
 
 void
-w_box_delete_by_index              (w_box_t     *__box, unsigned int __index);
+w_box_delete_by_index (w_box_t *__box, unsigned int __index);
 
-////
-// Text
-
+/****
+ * Text
+ */
 w_text_t*
-widget_create_text                (w_container_t *__parent,
-                                   const wchar_t *__text,
-                                   int __x, int __y);
+widget_create_text (w_container_t *__parent, const wchar_t *__text,
+                    int __x, int __y);
 
 void
-w_text_set_font                   (w_text_t *__text, scr_font_t *__font);
+w_text_set_font (w_text_t *__text, scr_font_t *__font);
 
 void
-w_text_set                        (w_text_t *__w_text, const wchar_t *__text);
+w_text_set (w_text_t *__w_text, const wchar_t *__text);
 
 
-////
-// Progress bar
+/****
+ * Progress bar
+ */
 
 w_progress_t*
-widget_create_progress            (w_container_t *__parent,
-                                   unsigned long __max_pos,
-                                   int __x, int __y, int __w);
+widget_create_progress (w_container_t *__parent, unsigned long __max_pos,
+                        int __x, int __y, int __w);
 
 void
-w_progress_set_font               (w_progress_t *__progress,
-                                   scr_font_t *__font,
-                                   scr_font_t *__background_font,
-                                   scr_font_t *__progress_font);
+w_progress_set_font (w_progress_t *__progress,
+                     scr_font_t *__font,
+                     scr_font_t *__background_font,
+                     scr_font_t *__progress_font);
 
 void
-w_progress_set_pos                (w_progress_t *__progress,
-                                   unsigned long __pos);
+w_progress_set_pos (w_progress_t *__progress, unsigned long __pos);
 
 void
-w_progress_set_max                (w_progress_t *__progress,
-                                   unsigned long __max);
+w_progress_set_max (w_progress_t *__progress, unsigned long __max);
 
 #endif

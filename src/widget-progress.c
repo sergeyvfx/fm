@@ -12,68 +12,76 @@
 
 #include "widget.h"
 
-//////
-//
-
 /**
- * Destroys a progress bar widget
+ * Destroy a progress bar widget
  *
  * @param __progress - progress bar to be destroyed
  * @return zero on success, non-zero on failure
  */
 static int
-progress_destructor               (w_progress_t *__progress)
+progress_destructor (w_progress_t *__progress)
 {
   if (!__progress)
-    return -1;
+    {
+      return -1;
+    }
 
   free (__progress);
   return 0;
 }
 
 /**
- * Draws a progress bar
+ * Draw a progress bar
  *
  * @param __progress - progress bar to be drawn
  * @return zero on success, non-zero on failure
  */
 static int
-progress_drawer                   (w_progress_t *__progress)
+progress_drawer (w_progress_t *__progress)
 {
-  scr_window_t layout=WIDGET_LAYOUT (__progress);
+  scr_window_t layout = WIDGET_LAYOUT (__progress);
   int width, i, count, perc;
 
-  // Widget is invisible or there is no layout
+  /* Widget is invisible or there is no layout */
   if (!WIDGET_VISIBLE (__progress) || !layout)
-    return -1;
+    {
+      return -1;
+    }
 
-  width=__progress->position.width-5;
+  width = __progress->position.width - 5;
 
   scr_wnd_attr_backup (layout);
 
   scr_wnd_move_caret (layout, __progress->position.x, __progress->position.y);
 
-  // Draw bar
+  /* Draw bar */
   scr_wnd_font (layout, *__progress->progress_font);
 
   if (__progress->max_pos)
-    perc=(double)__progress->cur_pos/__progress->max_pos*100; else
-    perc=100;
-  count=(double)perc/100*width;
+    {
+      perc = (double) __progress->cur_pos / __progress->max_pos * 100;
+    }
+  else
+    {
+      perc = 100;
+    }
+  count = (double) perc / 100 * width;
 
   scr_wnd_font (layout, *__progress->progress_font);
-  for (i=0; i<count; i++)
-    scr_wnd_putch (layout, ' ');
+  for (i = 0; i < count; i++)
+    {
+      scr_wnd_putch (layout, ' ');
+    }
 
-  // Draw the rest bar
+  /* Draw the rest bar */
   scr_wnd_font (layout, *__progress->background_font);
-  while (i<width)
+  while (i < width)
     {
       scr_wnd_putch (layout, ACS_CKBOARD);
       i++;
     }
 
-  // Draw percents
+  /* Draw percents */
   scr_wnd_printf (layout, " %3d%%", perc);
 
   scr_wnd_attr_restore (layout);
@@ -81,11 +89,12 @@ progress_drawer                   (w_progress_t *__progress)
   return 0;
 }
 
-//////
-// User's backend
+/********
+ * User's backend
+ */
 
 /**
- * Creates new progress bar
+ * Create new progress bar
  *
  * @param __parent - parent of progress bar. Should be CONTAINER
  * @param __max_pos - maximal progress position
@@ -94,26 +103,28 @@ progress_drawer                   (w_progress_t *__progress)
  * @return a pointer to progress bar object
  */
 w_progress_t*
-widget_create_progress            (w_container_t *__parent,
-                                   unsigned long __max_pos,
-                                   int __x, int __y, int __w)
+widget_create_progress (w_container_t *__parent,
+                        unsigned long __max_pos,
+                        int __x, int __y, int __w)
 {
   w_progress_t *res;
 
-  // There is no parent, so we can't create progress bar
+  /* There is no parent, so we can't create progress bar */
   if (!__parent)
-    return 0;
+    {
+      return 0;
+    }
 
   WIDGET_INIT (res, w_progress_t, WT_PROGRESS, __parent,
                WF_NOLAYOUT | WF_UNFOCUSABE,
                progress_destructor, progress_drawer, __x, __y, 1, __w, 1);
 
-  res->max_pos=__max_pos;
+  res->max_pos = __max_pos;
 
-  res->font            = &FONT (CID_BLUE,  CID_WHITE);
+  res->font = &FONT (CID_BLUE, CID_WHITE);
 
   res->background_font = &FONT (CID_BLACK, CID_WHITE);
-  res->progress_font   = &FONT (CID_WHITE, CID_BLACK);
+  res->progress_font = &FONT (CID_WHITE, CID_BLACK);
 
   WIDGET_POST_INIT (res);
 
@@ -121,7 +132,7 @@ widget_create_progress            (w_container_t *__parent,
 }
 
 /**
- * Sets font used in progress bar
+ * Set font used in progress bar
  *
  * @param __progress - for which progress fonts are to be set
  * @param __font - font to draw the text
@@ -129,51 +140,54 @@ widget_create_progress            (w_container_t *__parent,
  * @param __progress_font - font of progress bar
  */
 void
-w_progress_set_font               (w_progress_t *__progress,
-                                   scr_font_t *__font,
-                                   scr_font_t *__background_font,
-                                   scr_font_t *__progress_font)
+w_progress_set_font (w_progress_t *__progress,
+                     scr_font_t *__font, scr_font_t *__background_font,
+                     scr_font_t *__progress_font)
 {
   if (!__progress)
-    return;
+    {
+      return;
+    }
 
-  WIDGET_SAFE_SET_FONT (__progress, font,            __font);
+  WIDGET_SAFE_SET_FONT (__progress, font, __font);
   WIDGET_SAFE_SET_FONT (__progress, background_font, __background_font);
-  WIDGET_SAFE_SET_FONT (__progress, progress_font,   __progress_font);
+  WIDGET_SAFE_SET_FONT (__progress, progress_font, __progress_font);
 
   widget_redraw (WIDGET (__progress));
 }
 
 /**
- * Sets position of progress bar
+ * Set position of progress bar
  *
  * @param __progress - for which widget position will be set
  * @param __pos - new position of progress bar
  */
 void
-w_progress_set_pos                (w_progress_t *__progress,
-                                   unsigned long __pos)
+w_progress_set_pos (w_progress_t *__progress, unsigned long __pos)
 {
   if (!__progress)
-    return;
+    {
+      return;
+    }
 
-  __progress->cur_pos=__pos;
+  __progress->cur_pos = __pos;
   widget_redraw (WIDGET (__progress));
 }
 
 /**
- * Sets maximal position of progress bar
+ * Set maximal position of progress bar
  *
  * @param __progress - for which widget position will be set
  * @param __max - new max position of progress bar
  */
 void
-w_progress_set_max                (w_progress_t *__progress,
-                                   unsigned long __max)
+w_progress_set_max (w_progress_t *__progress, unsigned long __max)
 {
   if (!__progress)
-    return;
+    {
+      return;
+    }
 
-  __progress->max_pos=__max;
+  __progress->max_pos = __max;
   widget_redraw (WIDGET (__progress));
 }

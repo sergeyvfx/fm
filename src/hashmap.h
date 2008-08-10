@@ -10,7 +10,6 @@
  * See the file COPYING.
  */
 
-
 #ifndef _hashmap_h_
 #define _hashmap_h_
 
@@ -18,54 +17,69 @@
 
 BEGIN_HEADER
 
-////////
-// Type defenitions
+/********
+ * Type defenitions
+ */
 
-// Forward defenitions
+/* Forward defenitions */
 struct _hashmap_t;
 typedef struct _hashmap_t hashmap_t;
 typedef __u32_t hash_t;
 
-typedef hash_t  (*hashmap_hash_func)   (const hashmap_t *__hashmap,
-                                        const void* __key);
-typedef void    (*hashmap_key_deleter) (void *__key);
-typedef short   (*hashmap_keycmp)      (const void *__key1,
-                                        const void *__key2);
-typedef void*   (*hashmap_keydup)      (const void *__src);
-typedef void    (*hashmap_deleter)     (void *__data);
+typedef hash_t (*hashmap_hash_func) (const hashmap_t *__hashmap,
+                                     const void* __key);
+typedef void (*hashmap_key_deleter) (void *__key);
+typedef short (*hashmap_keycmp) (const void *__key1,
+                                 const void *__key2);
+typedef void* (*hashmap_keydup) (const void *__src);
+typedef void (*hashmap_deleter) (void *__data);
 
 typedef struct
 {
-  void *key;      // Key of element in array
-  void *value;    // Stored value
-  void *next;     // Pointer to next element in list
-                  // of elements, which has equal hashes
+  /* Key of element in array */
+  void *key;
+
+  /* Stored value */
+  void *value;
+
+  /* Pointer to next element in list */
+  /* of elements, which has equal hashes */
+  void *next;
 } hashmap_entry_t;
 
 struct _hashmap_t
 {
-  hashmap_hash_func   hash_func;      // Function to calculate key's hash value
-  hashmap_deleter     deleter;        // Default deleter for elements
-  hashmap_key_deleter key_deleter;    // Deleter of key
-  hashmap_keycmp      key_comparator; // Comparator of keys. Needed for
-                                    // resolving collisions
-  hashmap_keydup      key_duplicator; // Duplicator of keys
+  /* Function to calculate key's hash value */
+  hashmap_hash_func hash_func;
+
+  /* Default deleter for elements */
+  hashmap_deleter deleter;
+
+  /* Deleter of key */
+  hashmap_key_deleter key_deleter;
+
+  /* Comparator of keys. Needed for resolving collisions */
+  hashmap_keycmp key_comparator;
+
+  /* Duplicator of keys */
+  hashmap_keydup key_duplicator;
 
 #ifdef PROFILE_HASHMAP_LENGTH
   int count;
 #endif
 
-  __u32_t         data_length; // Count of elements array.
-                               // If this value if too small, there will
-                               // be lots of colflictions of hashes
-                               // If this value is too large, there maybe
-                               // amount of unused memory.
-                               // Look for happy medium, Luke :)
+  /* Count of elements array. */
+  /* If this value if too small, there will be lots of colflictions of */
+  /* hashes. If this value is too large, there maybe amount of unused memory.*/
+  /* Look for happy medium, Luke :) */
+  __u32_t data_length;
+
   hashmap_entry_t **data;
 };
 
-////////
-// Helphul macroses
+/********
+ * Helphul macroses
+ */
 
 #define hashmap_foreach(_hm, _key, _value) \
   { \
@@ -86,71 +100,64 @@ struct _hashmap_t
       } \
   }
 
-/////////
-// Magick consts
+/********
+ * Magick consts
+ */
 
 #define HM_MAGICK_LEN 1049
 
-////////
-// 
+/********
+ *
+ */
 
 hashmap_t*
-hashmap_create                      (hashmap_hash_func    __hash_func,
-                                     hashmap_deleter      __deleter,
-                                     hashmap_key_deleter  __key_deleter,
-                                     hashmap_keycmp       __key_comparator,
-                                     hashmap_keydup       __key_duplicator,
-                                     __u32_t              __data_length);
+hashmap_create (hashmap_hash_func __hash_func,
+                hashmap_deleter __deleter,
+                hashmap_key_deleter __key_deleter,
+                hashmap_keycmp __key_comparator,
+                hashmap_keydup __key_duplicator,
+                __u32_t __data_length);
 
 void
-hashmap_destroy                     (hashmap_t *__hashmap);
+hashmap_destroy (hashmap_t *__hashmap);
 
 void
-hashmap_destroy_full                (hashmap_t         *__hashmap,
-                                     hashmap_deleter    __deleter);
+hashmap_destroy_full (hashmap_t *__hashmap, hashmap_deleter __deleter);
 
 void
-hashmap_set                         (hashmap_t         *__hashmap,
-                                     const void        *__key,
-                                     const void        *__value);
+hashmap_set (hashmap_t *__hashmap, const void *__key, const void *__value);
 
 void
-hashmap_set_full                    (hashmap_t         *__hashmap,
-                                     const void        *__key,
-                                     const void        *__value,
-                                     hashmap_deleter   __deleter);
+hashmap_set_full (hashmap_t *__hashmap, const void *__key,
+                  const void *__value, hashmap_deleter __deleter);
 
 void*
-hashmap_get                         (const hashmap_t *__hashmap,
-                                     const void *__key);
+hashmap_get (const hashmap_t *__hashmap, const void *__key);
 
 BOOL
-hashmap_isset                       (const hashmap_t *__hashmap,
-                                     const void *__key);
+hashmap_isset (const hashmap_t *__hashmap, const void *__key);
 
 void
-hashmap_unset                       (hashmap_t *__hashmap, const void *__key);
+hashmap_unset (hashmap_t *__hashmap, const void *__key);
 
 void
-hashmap_unset_full                  (hashmap_t       *__hashmap,
-                                     const void      *__key,
-                                     hashmap_deleter  __deleter);
+hashmap_unset_full (hashmap_t *__hashmap, const void *__key,
+                    hashmap_deleter __deleter);
 
 void
-hashmap_unset_all                   (hashmap_t *__hashmap);
+hashmap_unset_all (hashmap_t *__hashmap);
 
 void
-hashmap_unset_all_full              (hashmap_t       *__hashmap,
-                                     hashmap_deleter  __deleter);
+hashmap_unset_all_full (hashmap_t *__hashmap, hashmap_deleter __deleter);
 
-////////
-// Vrappers for wchar-ed keys
+/********
+ * Vrappers for wchar-ed keys
+ */
 
-// wck means WideChar'ed Keys
+/* wck means WideChar'ed Keys */
 
 hashmap_t *
-hashmap_create_wck                (hashmap_deleter __deleter,
-                                   __u32_t         __data_length);
+hashmap_create_wck (hashmap_deleter __deleter, __u32_t __data_length);
 
 END_HEADER
 

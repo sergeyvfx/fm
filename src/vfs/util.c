@@ -24,12 +24,14 @@
  * or greater than the second.
  */
 int
-vfs_alphasort                     (const void *__a, const void *__b)
+vfs_alphasort (const void *__a, const void *__b)
 {
-  vfs_dirent_t *a=*(vfs_dirent_t**)__a, *b=*(vfs_dirent_t**)__b;
+  vfs_dirent_t *a = *(vfs_dirent_t**) __a, *b = *(vfs_dirent_t**) __b;
 
   if (!wcscmp (a->name, L".") || !wcscmp (a->name, L".."))
-    return -1;
+    {
+      return -1;
+    }
 
   return wcscmp (a->name, b->name);
 }

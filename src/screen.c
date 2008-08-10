@@ -13,8 +13,9 @@
 #include "screen.h"
 #include "hotkeys.h"
 
-////
-//
+/********
+ *
+ */
 
 #ifdef SCREEN_NCURSESW
 static WINDOW *root_wnd = NULL;
@@ -22,10 +23,10 @@ BOOL curs_wis = TRUE;
 #  define MY_KEYS (KEY_MAX+1)
 #endif
 
-int ESCDELAY = 0;  // Disable pause when escape is pressed
-static int mode=0; // Mode of screen
+int ESCDELAY = 0;  /* Disable pause when escape is pressed */
+static int mode=0; /* Mode of screen */
 
-// Default fonts
+/* Default fonts */
 scr_font_t screen_fonts[SCREEN_MAX_FONTS];
 
 #ifdef SCREEN_NCURSESW
@@ -47,8 +48,9 @@ __font.bold          = __bold;
 
 #endif
 
-//////
-//
+/********
+ *
+ */
 
 /**
  *  Initializes default fonts
@@ -94,7 +96,7 @@ define_default_fonts              (void)
 }
 
 /**
- * Initializes smart handling of escaped characters (i.e. Esc-^[)
+ * Initialize smart handling of escaped characters (i.e. Esc-^[)
  */
 static void
 init_escape_keys                  (void)
@@ -126,11 +128,12 @@ init_escape_keys                  (void)
 #endif
 }
 
-//////
-// User's backend
+/********
+ * User's backend
+ */
 
 /**
- * Initializes screen stuff
+ * Initialize screen stuff
  *
  * @param __mode - mode of screen to be initialized
  * @return a zero in successful
@@ -143,26 +146,23 @@ screen_init                       (int __mode)
 #ifdef SCREEN_NCURSESW
   root_wnd=initscr ();
 
-  cbreak ();  // take input chars one at a time, no wait for \n
-  noecho ();  // don't echo input
+  cbreak ();  /* take input chars one at a time, no wait for \n */
+  noecho ();  /* don't echo input */
   raw();
   nodelay (stdscr, TRUE);
 
   if (__mode&SM_COLOR)
     {
-      // Initialize screen in color mode
+      /* Initialize screen in color mode */
       start_color ();
     }
 
-  //
-  // TODO:
-  //  But does we really need this?
-  //
-  //  (this stuff was added to give an opportunity to
-  //   handle escaped escape)
-  //
+  /*
+   * TODO: But does we really need this?
+   *       (this stuff was added to give an opportunity to
+   *       handle escaped escape)
+   */
   init_escape_keys ();
-
 #endif
 
   if (__mode&SM_COLOR)
@@ -174,7 +174,7 @@ screen_init                       (int __mode)
 }
 
 /**
- * Uninitializes screen stuff
+ * Uninitialize screen stuff
  */
 void
 screen_done                       (void)
@@ -187,7 +187,7 @@ screen_done                       (void)
 }
 
 /**
- * Returns a root window
+ * Return a root window
  *
  * @return a root window
  */
@@ -207,7 +207,9 @@ screen_refresh                    (BOOL __full_refresh)
 {
 #ifdef SCREEN_NCURSESW
   if (__full_refresh)
-    touchwin (stdscr);
+    {
+      touchwin (stdscr);
+    }
   refresh ();
 #endif
 }
@@ -219,33 +221,36 @@ void
 screen_on_resize                  (void)
 {
 #ifdef SCREEN_NCURSESW
-  // We need reinitialize the screen
+  /* We need reinitialize the screen */
   endwin ();
   refresh ();
 
-  // Restore visibility of cursor
+  /* Restore visibility of cursor */
   if (!curs_wis)
-    scr_hide_cursor (); else
-    scr_show_cursor ();
-
+    {
+      scr_hide_cursor ();
+    }
+  else
+    {
+      scr_show_cursor ();
+    }
 #endif
 }
 
 /**
- * Returns character from window
+ * Return character from window
  *
  * @param __window - from which window expects a character
  * (this parameter maybe deprecated)
- * @return caughted character
+ * @return catched character
  */
 wchar_t
 scr_wnd_getch                     (scr_window_t __window)
 {
-  //
-  // TODO:
-  //  Need this function to look after all caughted characters
-  //  and do hotkeys stuff here
-  //
+  /*
+   * TODO: Need this function to look after all catched characters
+   *       and do hotkeys stuff here
+   */
 
   wint_t ch;
 
@@ -258,15 +263,19 @@ scr_wnd_getch                     (scr_window_t __window)
 
   for (;;)
     {
-      // Read next character from window
+      /* Read next character from window */
 
 #ifdef SCREEN_NCURSESW
       while (wget_wch (stdscr, &ch)==ERR)
-        nanosleep (&timestruc, 0);
+        {
+          nanosleep (&timestruc, 0);
+        }
 #endif
 
       if (!hotkey_push_character (ch))
-        break;
+        {
+          break;
+        }
     }
 
   return ch;
@@ -275,7 +284,7 @@ scr_wnd_getch                     (scr_window_t __window)
 #ifdef SCREEN_NCURSESW
 
 /**
- * Checks is specified character is a code of
+ * Check is specified character is a code of
  * ncurses's function key.
  *
  * This function is necessary because most of functional keys' codes
@@ -288,16 +297,22 @@ scr_wnd_getch                     (scr_window_t __window)
 int
 is_ncurses_funckey                (wchar_t __ch)
 {
-  //
-  // TODO:
-  //  But maybe it'll be better if we replace this function with macros like
-  //  #define is_ncurses_funckey (__ch>=KEY_MIN && __ch<=KEY_MAX) ?
-  //
+  /*
+   * TODO: But maybe it'll be better if we replace this function with macros
+   *       like #define is_ncurses_funckey (__ch>=KEY_MIN && __ch<=KEY_MAX) ?
+   */
 
   return __ch>=KEY_MIN && __ch<=KEY_MAX;
 }
 #endif
 
+/**
+ * Create a window which is a subwindow of specified parent
+ *
+ * @param __parent - parent of window
+ * @param __x, __y - -coordinates of sub window
+ * @param __w, __h - dimensions of a subwindow
+ */
 scr_window_t
 scr_create_sub_window             (scr_window_t __parent,
                                    int __x, int __y,
@@ -306,7 +321,9 @@ scr_create_sub_window             (scr_window_t __parent,
   scr_window_t res;
 
   if (!__parent)
-    return 0;
+    {
+      return 0;
+    }
 
 #ifdef SCREEN_NCURSESW
   while (__parent->_parent)

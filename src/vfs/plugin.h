@@ -17,17 +17,15 @@
 
 BEGIN_HEADER
 
-////////
-//
-
 #define VFS_PLUGIN_INIT_ENTRY __vfs_lugin_init_entry__
 #define VFS_PLUGIN_INIT_PROC "__vfs_lugin_init_entry__"
 #define VFS_PLUGIN_DELIMETER L"::"
 
 #define VFS_LOCALFS_PLUGIN   L"localfs"
 
-////////
-// Type defenitions
+/********
+ * Type defenitions
+ */
 
 struct _vfs_plugin_t;
 typedef struct _vfs_plugin_t vfs_plugin_t;
@@ -37,7 +35,7 @@ typedef void *vfs_plugin_fd_t;
 
 #define VFS_LS(_a) L##_a
 
-// Wrapper for calls of VFS implementation of POSIX functions
+/* Wrapper for calls of VFS implementation of POSIX functions */
 #define VFS_CALL_POSIX_FULL(_plugin,_proc,_err,_args...) \
   (((_plugin)->info._proc)?((_plugin)->info._proc (_args)):(_err))
 
@@ -50,85 +48,95 @@ typedef void *vfs_plugin_fd_t;
 #define VFS_CALL_POSIX_PTR(_plugin,_proc,_args...) \
  VFS_CALL_POSIX_FULL (_plugin,_proc,0,##_args)
 
-typedef int (*vfs_plugin_init_proc)     (vfs_plugin_t*);
-typedef int (*vfs_plugin_onload_proc)   (void);
+typedef int (*vfs_plugin_init_proc) (vfs_plugin_t*);
+typedef int (*vfs_plugin_onload_proc) (void);
 typedef int (*vfs_plugin_onunload_proc) (void);
 
-typedef struct {
-  wchar_t *name; // Name of plugin
+typedef struct
+{
+  /* Name of plugin */
+  wchar_t *name;
 
-  ////
-  // Plugin managment
-  vfs_plugin_onload_proc   onload;  // Well be called after plugin is
-                                    // initialized
+  /****
+   * Plugin managment
+   */
 
-  vfs_plugin_onunload_proc onunload; // Well be called before plugin
-                                     // will be unloaded
+  /* Well be called after plugin is initialized */
+  vfs_plugin_onload_proc onload;
 
-  ////
-  // VFS-ed POSIX functions
-  vfs_open_proc      open;
-  vfs_close_proc     close;
+  /* Well be called before plugin will be unloaded */
+  vfs_plugin_onunload_proc onunload;
 
-  vfs_read_proc      read;
-  vfs_write_proc     write;
+  /****
+   * VFS-ed POSIX functions
+   */
+  vfs_open_proc open;
+  vfs_close_proc close;
 
-  vfs_unlink_proc    unlink;
+  vfs_read_proc read;
+  vfs_write_proc write;
 
-  vfs_mkdir_proc     mkdir;
-  vfs_rmdir_proc     rmdir;
+  vfs_unlink_proc unlink;
 
-  vfs_chmod_proc     chmod;
-  vfs_chown_proc     chown;
+  vfs_mkdir_proc mkdir;
+  vfs_rmdir_proc rmdir;
 
-  vfs_rename_proc    rename;
+  vfs_chmod_proc chmod;
+  vfs_chown_proc chown;
 
-  vfs_stat_proc      stat;
-  vfs_stat_proc      lstat;
+  vfs_rename_proc rename;
 
-  vfs_scandir_proc   scandir;
+  vfs_stat_proc stat;
+  vfs_stat_proc lstat;
 
-  vfs_lseek_proc     lseek;
+  vfs_scandir_proc scandir;
 
-  vfs_utime_proc     utime;
-  vfs_utimes_proc    utimes;
+  vfs_lseek_proc lseek;
 
-  vfs_symlink_proc  symlink;
-  vfs_symlink_proc  link;
+  vfs_utime_proc utime;
+  vfs_utimes_proc utimes;
+
+  vfs_symlink_proc symlink;
+  vfs_symlink_proc link;
   vfs_readlink_proc readlink;
 } vfs_plugin_info_t;
 
-struct _vfs_plugin_t {
-  void    *dl;  // Handle to dynamic library
-  wchar_t *fn;  // Filename of library
+struct _vfs_plugin_t
+{
+  /* Handle to dynamic library */
+  void *dl;
 
-  struct {
-    vfs_plugin_init_proc     init;
+  /* Filename of library */
+  wchar_t *fn;
+
+  struct
+  {
+    vfs_plugin_init_proc init;
   } procs;
 
   vfs_plugin_info_t info;
 };
 
-////////
-//
+/*******
+ * Function prototypes
+ */
 
 int
-vfs_plugins_init                  (void);
+vfs_plugins_init (void);
 
 void
-vfs_plugins_done                  (void);
+vfs_plugins_done (void);
 
 int
-vfs_plugin_load                   (const wchar_t *__file_name);
+vfs_plugin_load (const wchar_t *__file_name);
 
 int
-vfs_plugin_unload                 (const wchar_t *__plugin_name);
+vfs_plugin_unload (const wchar_t *__plugin_name);
 
 vfs_plugin_t*
-vfs_plugin_by_name                (const wchar_t *__plugin_name);
+vfs_plugin_by_name (const wchar_t *__plugin_name);
 
-////////
-// For in-plugin usage
+/* For in-plugin usage */
 #define VFS_PLUGIN_INIT(_info) \
   int VFS_PLUGIN_INIT_ENTRY (vfs_plugin_t *__plugin) \
     { \

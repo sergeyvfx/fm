@@ -19,17 +19,19 @@ BEGIN_HEADER
 
 #include <wchar.h>
 
-typedef void (*hotkey_callback)  (void);
+typedef void (*hotkey_callback) (void);
 
-short          // Register a hot-key
-hotkey_register                   (const wchar_t   *__sequence,
-                                   hotkey_callback  __callback);
+/* Register a hot-key */
+short
+hotkey_register (const wchar_t *__sequence, hotkey_callback __callback);
 
-void           // Release registered hot-key
-hotkey_release                    (const wchar_t *__sequence);
+/* Release registered hot-key */
+void
+hotkey_release (const wchar_t *__sequence);
 
-short          // Put new character to sequence
-hotkey_push_character             (wchar_t __ch);
+/* Put new character to sequence */
+short
+hotkey_push_character (wchar_t __ch);
 
 END_HEADER
 

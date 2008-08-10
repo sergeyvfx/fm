@@ -16,14 +16,14 @@
 #include <stdlib.h>
 
 int
-main                               (int __argc, char **__argv)
+main (int __argc, char **__argv)
 {
   i18n_init ();
 
   if (iface_init ())
     {
-      // To uninitialize all stuff, which
-      // has been initialized
+      /* To uninitialize all stuff, which */
+      /* has been initialized */
       iface_done ();
 
       i18n_release ();

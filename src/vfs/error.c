@@ -17,16 +17,17 @@
 #include <wchar.h>
 #include <stdlib.h>
 
-////////
-//
+/*******
+ *
+ */
 
-typedef struct {
-  int      errcode;
+typedef struct
+{
+  int errcode;
   wchar_t *desc;
 } error_t;
 
-static error_t errors[]=
-{
+static error_t errors[] = {
   {VFS_OK,    L"Operation succeed"},
   {VFS_ERROR, L"Operation failed"},
   {VFS_ERR_INVLAID_ARGUMENT, L"Invalid argument passed to the function"},
@@ -41,77 +42,88 @@ static error_t errors[]=
 
 #define MAX_ERROR_LENGTH 1024
 
-// Maybe big troubles with this
+/*  Maybe big troubles with this */
 static wchar_t current_error[MAX_ERROR_LENGTH];
 
-////////
-// Internal stuff
+/********
+ * Internal stuff
+ */
 
 /**
- * Initializes error stuff
+ * Initialize error stuff
  */
 static void
-init                              (void)
+init (void)
 {
-  int cmp(const void *__a, const void *__b)
-    {
-      error_t *a=(error_t*)__a, *b=(error_t*)__b;
-      return a->errcode-b->errcode;
-    };
 
-  int count=sizeof (errors)/sizeof (error_t);
+  int cmp (const void *__a, const void *__b)
+  {
+    error_t *a = (error_t*) __a, *b = (error_t*) __b;
+    return a->errcode - b->errcode;
+  };
+
+  int count = sizeof (errors) / sizeof (error_t);
   qsort (errors, count, sizeof (error_t), cmp);
 }
 
-////////
-// User's backend
+/********
+ * User's backend
+ */
 
 /**
- * Returns an error's description by it's code
+ * Return an error's description by it's code
  *
  * @param __errcode - code of error for which description will be returned
  * @return description of an error
  */
 wchar_t*
-vfs_get_error                     (int __errcode)
+vfs_get_error (int __errcode)
 {
-  static BOOL initialized=FALSE;
-  static int n=sizeof (errors)/sizeof (error_t);
-  BOOL found=FALSE;
+  static BOOL initialized = FALSE;
+  static int n = sizeof (errors) / sizeof (error_t);
+  BOOL found = FALSE;
 
   if (!initialized)
     {
       init ();
-      initialized=TRUE;
+      initialized = TRUE;
     }
 
-  // Try to get error's description from VFS's errors list
-  int l=0, r=n-1, m;
-  while (l<=r)
+  /* Try to get error's description from VFS's errors list */
+  int l = 0, r = n - 1, m;
+  while (l <= r)
     {
-      m=(l+r)/2;
-      if (errors[m].errcode==__errcode)
+      m = (l + r) / 2;
+      if (errors[m].errcode == __errcode)
         {
           wcscpy (current_error, _(errors[m].desc));
-          found=TRUE;
+          found = TRUE;
           break;
-        } else
-      if (__errcode<errors[m].errcode)
-        r=m-1; else
-        l=m+1;
+        }
+      else
+        {
+          if (__errcode < errors[m].errcode)
+            {
+              r = m - 1;
+            }
+          else
+            {
+              l = m + 1;
+            }
+        }
     }
 
-  // Try get system description
-  if (!found && __errcode>VFS_ERR_COMMON)
+  /* Try get system description */
+  if (!found && __errcode > VFS_ERR_COMMON)
     {
-      char *s=strerror (-__errcode);
+      char *s = strerror (-__errcode);
       if (s)
         {
-          size_t len=strlen (s);
-          wchar_t *wcs=malloc ((len+2)*sizeof (wchar_t));
-          mbstowcs (wcs, s, len+1);
+          size_t len = strlen (s);
+          wchar_t *wcs = malloc ((len + 2) * sizeof (wchar_t));
+          mbstowcs (wcs, s, len + 1);
           wcscpy (current_error, _(wcs));
-          found=TRUE;
+          found = TRUE;
           free (wcs);
         }
     }
