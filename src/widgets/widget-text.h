@@ -11,6 +11,10 @@
 #ifndef _widget_text_h_
 #define _widget_text_h_
 
+#ifndef _widget_h_
+#  error Do not include this file directly. Include widget.h instead.
+#endif
+
 /********
  * Type defenitions
  */
