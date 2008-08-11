@@ -21,6 +21,9 @@
 
 #define CONTAINER_REALLOC_DELTA 8
 
+#define FOCUSABLE(_w) \
+  (!WIDGET_TEST_FLAG (_w, WF_UNFOCUSABE))
+
 /* List of root widgets */
 static deque_t *root_widgets = NULL;
 
@@ -144,7 +147,7 @@ get_focused_entry (const widget_t *__widget, short __dir)
   int index;
   w_container_t *cnt;
   unsigned int length;
-  widget_t *widget;
+  widget_t *widget, *base_widget;
 
   __dir = __dir < 0 ? -1 : 1;
 
@@ -159,16 +162,42 @@ get_focused_entry (const widget_t *__widget, short __dir)
   index = __widget->tab_order + __dir;
 
   /* Try to get next widget in current container */
-  if (index >= 0 && index < length)
+  while (index >= 0 && index < length)
     {
-      return w_container_widget_by_tab_order (cnt, index);
+      /* Overview widgets in defined direction */
+      /* until we meet focusable widget */
+
+      widget=w_container_widget_by_tab_order (cnt, index);
+
+      if (FOCUSABLE (widget))
+        {
+          /* Searched widget has been found */
+          return widget;
+        }
+
+      index+=__dir;
     }
 
   /* Try to get searched widget from */
-  /* Neighbor branch of widget tree */
-  if ((widget = get_neighbour (__widget, __dir)))
+  /* neighbour branch of widget tree */
+  base_widget=(widget_t*)__widget;
+  for (;;)
     {
-      return widget;
+      if ((widget = get_neighbour (base_widget, __dir)))
+        {
+          if (FOCUSABLE (widget))
+            {
+              /* Searched widget has been found */
+              return widget;
+            }
+
+          base_widget=widget;
+        }
+      else
+        {
+          /* There is no neighbour, which satisfies us */
+          break;
+        }
     }
 
   /* Cycling */
@@ -177,7 +206,14 @@ get_focused_entry (const widget_t *__widget, short __dir)
       cnt = WIDGET_CONTAINER (cnt->parent);
     }
 
-  return get_neighbour_iter (WIDGET (cnt), __dir);
+  /* Find first focusable neighour */
+  widget=get_neighbour_iter (WIDGET (cnt), __dir);
+  while (widget && !FOCUSABLE (widget))
+    {
+      widget = get_neighbour (widget, __dir);
+    }
+
+  return widget;
 }
 
 /**
@@ -756,6 +792,27 @@ widget_t *
 widget_prev_focused (const widget_t *__widget)
 {
   return get_focused_entry (__widget, -1);
+}
+
+/**
+ * Return first focusable widget in container
+ *
+ * @param __parent - in which container find focusable widget
+ * @return seqrched widget or NULL if there is no focusable widgets
+ */
+widget_t*
+widget_first_focusable (const w_container_t* __parent)
+{
+  widget_t *widget;
+
+  widget=get_neighbour_iter (WIDGET (__parent), 1);
+
+  while (widget && !FOCUSABLE (widget))
+    {
+      widget = get_neighbour (widget, 1);
+    }
+
+  return widget;
 }
 
 /****

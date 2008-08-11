@@ -263,7 +263,13 @@ window_show_entry (w_window_t *__window, int __show_mode)
   if (WIDGET_CONTAINER_LENGTH (__window) &&
       !WIDGET_CONTAINER_FOCUSED (__window))
     {
-      widget_set_focus (WIDGET_CONTAINER_DATA (__window)[0]);
+      widget_t *w;
+      w=widget_first_focusable (WIDGET_CONTAINER (__window));
+
+      if (w)
+        {
+          widget_set_focus (w);
+        }
     }
 
   /* Draw window */

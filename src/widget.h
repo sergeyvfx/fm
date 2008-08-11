@@ -96,7 +96,7 @@
 #define WF_ONTOP         0x0008
 
 /* Widget can't be focused */
-#define WF_UNFOCUSABE    0x0008
+#define WF_UNFOCUSABE    0x0010
 
 /********
  * Macroses
@@ -658,6 +658,10 @@ widget_lock_redraw (widget_t *__widget);
 
 void
 widget_unlock_redraw (widget_t *__widget);
+
+/* Return first focusable widget in container */
+widget_t*
+widget_first_focusable (const w_container_t* __parent);
 
 /****
  * Deep-core common stuff
