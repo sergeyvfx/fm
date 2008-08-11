@@ -1,6 +1,8 @@
 /**
  * ${project-name} - a GNU/Linux console-based file manager
  *
+ * Widgets library
+ *
  * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
  * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
@@ -11,12 +13,11 @@
 #ifndef _widget_h_
 #define _widget_h_
 
-#include "smartinclude.h"
+#include <smartinclude.h>
+#include <screen.h>
 
 #include <wctype.h>
 #include <wchar.h>
-
-#include "screen.h"
 
 /********
  * Constants
@@ -37,42 +38,6 @@
 #define WT_CHECKBOX   (WT_SINGLE+4)
 #define WT_TEXT       (WT_SINGLE+5)
 #define WT_PROGRESS   (WT_SINGLE+6)
-
-/* Window show modes */
-#define WSM_DEFAULT 0x00
-#define WSM_MODAL   0x01
-
-/* Window styles */
-#define WMS_CENTERED 0x01
-
-/* Button styles */
-#define WBS_NONE    0x0000
-#define WBS_DEFAULT 0x0001
-
-/* Menu styles */
-#define WMS_NONE           0x0000
-#define WMS_HIDE_UNFOCUSED 0x0001
-
-/* Sub-menu's item styles */
-#define SMI_NONE           0x0000
-#define SMI_SEPARATOR      0x0001
-
-/* Box styles */
-#define WBS_VERTICAL       0x0000
-#define WBS_HORISONTAL     0x0001
-
-/* Modal results */
-#define MR_NONE   0x0000
-#define MR_OK     0x0001
-#define MR_YES    0x0002
-#define MR_CANCEL 0x0003
-#define MR_NO     0x0004
-#define MR_ABORT  0x0005
-#define MR_RETRY  0x0006
-#define MR_IGNORE 0x0007
-#define MR_SKIP   0x0008
-
-#define MR_CUSTOM 0x0100
 
 /****
  * Widgets' flags
@@ -162,7 +127,7 @@
                     _flags, \
                     _destructor, _drawer, \
                     _x, _y, _z, _w, _h) \
-  /* Allocate and free memory for new edit box */ \
+  /* Allocate and free memory for new widget */ \
   MALLOC_ZERO (_widget, sizeof (_datatype)); \
 \
   (_widget)->type  = _type; \
@@ -331,254 +296,18 @@ typedef struct
   WIDGET_CONTAINER_MEMBERS
 } w_container_t;
 
-/* Window */
-typedef struct
-{
-  /* Inherit from widget container */
-  WIDGET_CONTAINER_MEMBERS
-
-  /* Panel of layout to manipulate with visibility */
-  panel_t panel;
-
-  /* Font for text on window */
-  scr_font_t *font;
-
-  struct
-  {
-    /* Text of caption */
-    wchar_t *text;
-
-    /* Font of caption */
-    scr_font_t *font;
-  } caption;
-
-  unsigned int style;
-
-  /* Some deep-core info */
-  unsigned short show_mode;
-  int modal_result;
-} w_window_t;
-
-/* Button */
-typedef struct
-{
-  /* Inherit from widget */
-  WIDGET_MEMBERS
-
-  /* Caption in button */
-  wchar_t *caption;
-
-  /* Font for normal style */
-  scr_font_t *font;
-
-  /* Font for hotkey in normal state */
-  scr_font_t *focused_font;
-
-  /* Font for shortcut style */
-  scr_font_t *hot_font;
-
-  /* Font for hotkey in normal state */
-  scr_font_t *hot_focused_font;
-
-  unsigned int style;
-
-  /* Modal result code for window */
-  unsigned short modal_result;
-} w_button_t;
-
-/* Text */
-typedef struct
-{
-  /* Inherit from widget */
-  WIDGET_MEMBERS
-
-  /* Text */
-  wchar_t *text;
-
-  /* Font of text */
-  scr_font_t *font;
-} w_text_t;
-
-/* Progress bar */
-typedef struct
-{
-  /* Inherit from widget */
-  WIDGET_MEMBERS
-
-  /* Maximal position */
-  unsigned long max_pos;
-
-  /* Current position */
-  unsigned long cur_pos;
-
-  scr_font_t *font;
-  scr_font_t *background_font;
-  scr_font_t *progress_font;
-} w_progress_t;
-
-/* Edit box */
-typedef struct
-{
-  /* Inherit from widget */
-  WIDGET_MEMBERS
-
-  struct
-  {
-    /* Caption in edit box */
-    wchar_t *data;
-
-    /* Allocated buffer size */
-    size_t allocated;
-  } text;
-
-  /* How much characters where scrolled */
-  /* due to widget's width is limited */
-  size_t scrolled;
-
-  /* Position of caret */
-  size_t caret_pos;
-
-  /* Font for normal style */
-  scr_font_t *font;
-} w_edit_t;
-
-/* Checkbox */
-typedef struct
-{
-  WIDGET_MEMBERS
-
-  scr_font_t *font;
-  scr_font_t *font_focus;
-
-  scr_font_t *hotkey_font;
-  scr_font_t *hotkey_focus;
-
-  wchar_t *caption;
-  BOOL ischeck;
-} w_checkbox_t;
-
-/****
- * Menus
+/********
+ * Include widgets
  */
 
-struct w_menu_t_entry;
-typedef int (*menu_item_callback) (void *__user_data);
-
-typedef struct
-{
-  /* Caption of item */
-  wchar_t *caption;
-
-  wchar_t shortcut;
-  unsigned int flags;
-  void *user_data;
-  menu_item_callback callback;
-} w_sub_menu_item_t;
-
-typedef struct
-{
-  /* Caption of sub-menu */
-  wchar_t *caption;
-
-  wchar_t shortcut;
-
-  struct
-  {
-    w_sub_menu_item_t *data;
-    unsigned short length;
-  } items;
-
-  /* Menu which owns this submenu */
-  struct w_menu_t_entry *menu;
-
-  /* Index of submenu in parent's container */
-  short index;
-
-  /* Position of sub-menu */
-  widget_position_t position;
-
-  /* Index of currently selected item */
-  short cur_item_index;
-} w_sub_menu_t;
-
-typedef struct w_menu_t_entry
-{
-  /* Inherit from widget */
-  WIDGET_MEMBERS
-
-  /* Panel of layout to manipulate with visibility */
-  panel_t panel;
-
-  /* Font to draw menu line */
-  scr_font_t *font;
-
-  /* Font to draw shortcut */
-  scr_font_t *hot_font;
-
-  /* Font to draw submenu caption in case it's focused */
-  scr_font_t *focused_font;
-
-  /* Font to draw focused shortcut */
-  scr_font_t *hot_focused_font;
-
-  /* Style of menu */
-  unsigned int style;
-
-  struct
-  {
-    w_sub_menu_t *data;
-    unsigned int length;
-  } sub_menus;
-
-  /****
-   * Internal usage
-   */
-
-  /* Pointer to currently selected submenu */
-  w_sub_menu_t *cur_submenu;
-
-  /* Layout to draw a submemu's items */
-  scr_window_t submenu_layout;
-
-  /* Panel to manipulate with submenu's layout */
-  panel_t submenu_panel;
-
-  /* Shows if any sub-menu is unfolded */
-  BOOL unfolded;
-
-  /* Is menu activate? */
-  BOOL active;
-} w_menu_t;
-
-/****
- * Boxes
- */
-
-typedef struct
-{
-  /* Inherit from container */
-  WIDGET_CONTAINER_MEMBERS
-
-  /* Size of item */
-  int size;
-} w_box_item_t;
-
-typedef struct
-{
-  /* Inherit from container */
-  WIDGET_CONTAINER_MEMBERS
-
-  /* Panel of layout to manipulate with visibility */
-  panel_t panel;
-
-  /* Style of box */
-  unsigned int style;
-
-  /* System info */
-
-  /* If sizes of item were evaluated? */
-  BOOL evaluted;
-} w_box_t;
+#include "widget-box.h"
+#include "widget-edit.h"
+#include "widget-progress.h"
+#include "widget-button.h"
+#include "widget-text.h"
+#include "widget-checkbox.h"
+#include "widget-menu.h"
+#include "widget-window.h"
 
 /********
  * Deep-core stuff
@@ -687,10 +416,6 @@ widget_onresize (widget_t *__widget);
 int
 widget_keydown (widget_t *__widget, int __ch);
 
-/********
- * Per-widget stuff
- */
-
 /****
  * Container
  */
@@ -711,150 +436,5 @@ w_container_drop (w_container_t *__widget, widget_t *__child);
 widget_t*
 w_container_widget_by_tab_order (const w_container_t *__container,
                                  int __tab_order);
-
-/****
- * Window
- */
-
-/* Deep-core stuff */
-void
-w_window_end_modal (w_window_t *__window, int __modal_result);
-
-/* Creates new window */
-w_window_t*
-widget_create_window (const wchar_t *__caption, int __x, int __y,
-                      int __w, int __h, unsigned int __style);
-
-/* Show window */
-void
-w_window_show (w_window_t *__window);
-
-/* Show modal window */
-int
-w_window_show_modal (w_window_t *__window);
-
-/* Hide window */
-void
-w_window_hide (w_window_t *__window);
-
-void
-w_window_set_fonts (w_window_t *__window, scr_font_t *__font,
-                    scr_font_t *__caption_font);
-
-/******
- * Checkbox
- */
-
-w_checkbox_t *
-widget_create_checkbox (w_container_t *__parent, const wchar_t *__caption,
-                        int __x, int __y, BOOL __check);
-
-BOOL
-w_checkbox_get (const w_checkbox_t *__checkbox);
-
-/****
- * Button
- */
-
-w_button_t*
-widget_create_button (w_container_t *__parent, const wchar_t *__caption,
-                      int __x, int __y, unsigned int __style);
-
-void
-w_button_set_fonts (w_button_t *__button,
-                    scr_font_t *__font,
-                    scr_font_t *__focused_font,
-                    scr_font_t *__hot_font,
-                    scr_font_t *__hot_focused_font);
-
-/****
- * Menus
- */
-w_menu_t*
-widget_create_menu (unsigned int __style);
-
-w_sub_menu_t*
-w_menu_append_submenu (w_menu_t *__menu, const wchar_t *__caption);
-
-void
-w_menu_hide (w_menu_t *__menu);
-
-w_sub_menu_item_t*
-w_submenu_append_item (w_sub_menu_t *__sub_menu, const wchar_t *__caption,
-                       menu_item_callback __callback, unsigned int __flags);
-
-/****
- * Edit boxes
- */
-w_edit_t*
-widget_create_edit (w_container_t *__parent, int __x, int __y, int __width);
-
-void
-w_edit_set_text (w_edit_t* __exit, wchar_t *__text);
-
-wchar_t*
-w_edit_get_text (w_edit_t* __edit);
-
-void
-w_edit_set_fonts (w_edit_t *__edit, scr_font_t *__font);
-
-/****
- * Boxes
- */
-w_box_t*
-widget_create_box (w_container_t *__parent, int __x, int __y, int __w, int __h,
-                   unsigned int __style, unsigned int __count);
-
-void
-w_box_set_item_szie (w_box_t *__box, unsigned int __index, int __size);
-
-w_box_item_t*
-w_box_item (w_box_t *__box, unsigned int __index);
-
-w_box_item_t*
-w_box_insert_item (w_box_t *__box, unsigned int __index, int __size);
-
-w_box_item_t*
-w_box_append_item (w_box_t *__box, int __size);
-
-void
-w_box_delete_item (w_box_t *__box, w_box_item_t *__item);
-
-void
-w_box_delete_by_index (w_box_t *__box, unsigned int __index);
-
-/****
- * Text
- */
-w_text_t*
-widget_create_text (w_container_t *__parent, const wchar_t *__text,
-                    int __x, int __y);
-
-void
-w_text_set_font (w_text_t *__text, scr_font_t *__font);
-
-void
-w_text_set (w_text_t *__w_text, const wchar_t *__text);
-
-
-/****
- * Progress bar
- */
-
-w_progress_t*
-widget_create_progress (w_container_t *__parent, unsigned long __max_pos,
-                        int __x, int __y, int __w);
-
-void
-w_progress_set_font (w_progress_t *__progress,
-                     scr_font_t *__font,
-                     scr_font_t *__background_font,
-                     scr_font_t *__progress_font);
-
-void
-w_progress_set_pos (w_progress_t *__progress, unsigned long __pos);
-
-void
-w_progress_set_max (w_progress_t *__progress, unsigned long __max);
 
 #endif

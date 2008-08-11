@@ -1,0 +1,26 @@
+.SILENT:
+
+top_builddir = ../..
+
+include ${top_builddir}/mk/rules.mk
+include ${top_builddir}/mk/init.mk
+
+SUBDIRS = 
+
+OBJECTIVE_LIBS_NOINST = libwidgets.a
+LDFLAGS += -Wl,-export-dynamic
+
+SOURCES = \
+	widget.c \
+	widget-text.c \
+	widget-box.c \
+	widget-checkbox.c \
+	widget-menu.c \
+	widget-window.c \
+	widget-button.c \
+	widget-edit.c \
+	widget-progress.c
+
+OBJECTS = ${SOURCES:.c=.o}
+
+include ${top_builddir}/mk/objective.mk

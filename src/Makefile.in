@@ -5,11 +5,12 @@ top_builddir = ..
 include ${top_builddir}/mk/rules.mk
 include ${top_builddir}/mk/init.mk
 
-SUBDIRS = vfs
+SUBDIRS = widgets vfs
 
 OBJECTIVE_BINS = fm
 
-LIBADD = -ldl -lncursesw -lpanel -lm -Lvfs -lvfs
+CFLAGS += -I./widgets
+LIBADD = -ldl -lncursesw -lpanel -lm -Lwidgets -lwidgets -Lvfs -lvfs
 
 HEADERS =
 SOURCES = \
@@ -18,15 +19,6 @@ SOURCES = \
 	iface.c \
 	iface-act.c \
 	iface-menu.c \
-	widget.c \
-	widget-box.c \
-	widget-button.c \
-	widget-menu.c \
-	widget-window.c \
-	widget-edit.c \
-	widget-checkbox.c \
-	widget-text.c \
-	widget-progress.c \
 	messages.c \
 	hotkeys.c \
 	i18n.c \

@@ -131,6 +131,7 @@ AC_OUTPUT([
 Makefile
 mk/rules.mk
 src/Makefile
+src/widgets/Makefile
 src/vfs/Makefile
 src/vfs/plugins/localfs/Makefile
 t/vfs/Makefile

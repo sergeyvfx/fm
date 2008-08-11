@@ -10,7 +10,6 @@
 
 #include "iface.h"
 #include "screen.h"
-#include "widget.h"
 #include "hotkeys.h"
 #include "file_panel.h"
 #include "messages.h"
@@ -19,6 +18,7 @@
 #include <signal.h>
 
 #include <vfs/vfs.h>
+#include <widget.h>
 
 /********
  * Some helpful macroses

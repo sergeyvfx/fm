@@ -18,9 +18,10 @@
 BEGIN_HEADER
 
 #include "screen.h"
-#include "widget.h"
 #include "file.h"
 #include "deque.h"
+
+#include <widget.h>
 
 #include <wchar.h>
 
