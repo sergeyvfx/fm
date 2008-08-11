@@ -1,5 +1,6 @@
 *~
 *.o
+*.a
 .depend*
 nbproject/
 *.mo
