@@ -127,17 +127,25 @@ parse_sequence (const wchar_t *__sequence, wchar_t *__res)
       /* Alt */
       if (i < n - 1 && __sequence[i] == 'M' && __sequence[i + 1] == '-')
         {
-          alt = TRUE;
-          i += 2;
+          if (__sequence[i + 2])
+            {
+              i += 2;
+              alt = TRUE;
+            }
+          else
+            {
+              /* Invalid META prefix */
+              return -1;
+            }
         }
 
       /* Control */
-      if (__sequence[i] == '^')
+      if (i < n - 1 && __sequence[i] == 'C' && __sequence[i + 1] == '-')
         {
-          if (__sequence[i + 1])
+          if (__sequence[i + 2])
             {
+              i += 2;
               ctrl = TRUE;
-              i++;
             }
           else
             {
