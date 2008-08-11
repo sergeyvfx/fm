@@ -240,12 +240,11 @@ screen_on_resize                  (void)
 /**
  * Return character from window
  *
- * @param __window - from which window expects a character
- * (this parameter maybe deprecated)
+ * @param __locking - should reading of character be locking?
  * @return catched character
  */
 wchar_t
-scr_wnd_getch                     (scr_window_t __window)
+scr_wnd_getch                     (BOOL __locking)
 {
   /*
    * TODO: Need this function to look after all catched characters
@@ -268,6 +267,11 @@ scr_wnd_getch                     (scr_window_t __window)
 #ifdef SCREEN_NCURSESW
       while (wget_wch (stdscr, &ch)==ERR)
         {
+          if (!__locking)
+            {
+              return 0;
+            }
+
           nanosleep (&timestruc, 0);
         }
 #endif

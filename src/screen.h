@@ -219,9 +219,9 @@ screen_refresh (BOOL __full_refresh);
 void
 screen_on_resize (void);
 
-/* Refresh screen */
+/* Read input character */
 wchar_t
-scr_wnd_getch (scr_window_t __window);
+scr_wnd_getch                     (BOOL __locking);
 
 scr_window_t
 scr_create_sub_window (scr_window_t __parent,

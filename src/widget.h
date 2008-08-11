@@ -587,6 +587,12 @@ typedef struct
 void
 widget_main_loop (void);
 
+void
+widget_process_char (wint_t __ch);
+
+void
+widget_process_queue (void);
+
 int
 widgets_init (void);
 

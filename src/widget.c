@@ -381,17 +381,42 @@ void
 widget_main_loop (void)
 {
   wint_t ch;
-  widget_t *w;
 
   for (;;)
     {
-      ch = scr_wnd_getch (0);
+      ch = scr_wnd_getch (TRUE);
+      widget_process_char (ch);
+    }
+}
 
-      if (deque_head (root_widgets))
-        {
-          w = deque_data (deque_head (root_widgets));
-          WIDGET_CALL_CALLBACK (w, keydown, w, ch);
-        }
+/**
+ * Process specified char is token
+ *
+ * @param __ch - char to process with
+ */
+void
+widget_process_char (wint_t __ch)
+{
+  widget_t *w;
+
+  if (deque_head (root_widgets))
+    {
+      w = deque_data (deque_head (root_widgets));
+      WIDGET_CALL_CALLBACK (w, keydown, w, __ch);
+    }
+}
+
+/**
+ * Process queue of inputed characters
+ */
+void
+widget_process_queue (void)
+{
+  wint_t ch;
+
+  while ((ch = scr_wnd_getch (FALSE)))
+    {
+      widget_process_char (ch);
     }
 }
 
