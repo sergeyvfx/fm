@@ -11,9 +11,10 @@
  */
 
 #include "messages.h"
-#include "widget.h"
 #include "screen.h"
 #include "i18n.h"
+
+#include <widget.h>
 
 /********
  *

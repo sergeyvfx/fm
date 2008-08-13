@@ -11,10 +11,11 @@
  */
 
 #include "file_panel-defact.h"
-#include "widget.h"
 #include "i18n.h"
 #include "messages.h"
 #include "file_panel.h"
+
+#include <widget.h>
 
 /********
  *

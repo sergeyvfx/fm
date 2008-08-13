@@ -11,10 +11,11 @@
  */
 
 #include "iface.h"
-#include "widget.h"
 #include "hotkeys.h"
 #include "i18n.h"
 #include "file_panel.h"
+
+#include <widget.h>
 
 /********
  * Variables
