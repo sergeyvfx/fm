@@ -817,7 +817,7 @@ cwd_sink (file_panel_t *__panel, const wchar_t *__sub_dir)
 
       if (fn)
         {
-          FILE_PANEL_DATA_ACTION_CALL (__panel, centre_to_item, fn);
+          FILE_PANEL_ACTION_CALL (__panel, centre_to_item, fn);
           free (fn);
         }
 
@@ -1031,7 +1031,7 @@ open_action (file_panel_t *__panel)
  * @return zero on success and non-zero if operation failed
  */
 int
-file_panel_defact_init (void)
+fpd_init (void)
 {
   /* Get data from configuration */
   if (read_config ())
@@ -1046,7 +1046,7 @@ file_panel_defact_init (void)
  * Unintialize file panels' default actions stuff
  */
 void
-file_panel_defact_done (void)
+fpd_done (void)
 {
 }
 
@@ -1057,14 +1057,14 @@ file_panel_defact_done (void)
  * @return zero on success, non-zero if failed
  */
 int
-file_panel_defact_create (file_panel_t *__panel)
+fpd_create (file_panel_t *__panel)
 {
   if (!__panel)
     {
       return -1;
     }
 
-  __panel->user_data = malloc (sizeof (fpd_data_t));
+  MALLOC_ZERO (__panel->user_data, sizeof (fpd_data_t));
   set_default_userdata (__panel);
 
   return 0;
@@ -1077,7 +1077,7 @@ file_panel_defact_create (file_panel_t *__panel)
  * @return zero on success, non-zero if failed
  */
 int
-file_panel_defact_destroy (file_panel_t *__panel)
+fpd_destroy (file_panel_t *__panel)
 {
   if (!__panel || !__panel->user_data)
     {
@@ -1096,7 +1096,7 @@ file_panel_defact_destroy (file_panel_t *__panel)
  * @return zero if callback hasn't handled received character
  */
 int
-file_panel_defact_onrefresh (file_panel_t *__panel)
+fpd_onrefresh (file_panel_t *__panel)
 {
   if (!__panel)
     {
@@ -1114,7 +1114,7 @@ file_panel_defact_onrefresh (file_panel_t *__panel)
  * @return zero if callback hasn't handled received character
  */
 int
-file_panel_defact_onresize (file_panel_t *__panel)
+fpd_onresize (file_panel_t *__panel)
 {
   if (!__panel)
     {
@@ -1138,7 +1138,7 @@ file_panel_defact_onresize (file_panel_t *__panel)
  * @return zero on success, non-zero if failed
  */
 int
-file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
+fpd_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
 {
   if (!__panel || FILE_PANEL_TEST_FLAG (__panel, FPF_UNFOCUSABLE))
     {
@@ -1191,7 +1191,7 @@ file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
  * @return zero on success, non-zero if failed
  */
 int
-file_panel_defact_collect_items (file_panel_t *__panel)
+fpd_collect_items (file_panel_t *__panel)
 {
   file_t **list = NULL;
   int i, count, ptr = 0;
@@ -1260,7 +1260,7 @@ file_panel_defact_collect_items (file_panel_t *__panel)
  * @return zero on success, non-zero if failed
  */
 int
-file_panel_defact_free_items (file_panel_t *__panel)
+fpd_free_items (file_panel_t *__panel)
 {
   unsigned long i;
 
@@ -1299,7 +1299,7 @@ file_panel_defact_free_items (file_panel_t *__panel)
  * @return zero on success, non-zero if failed
  */
 int
-file_panel_defact_draw_item_list (file_panel_t *__panel)
+fpd_draw_item_list (file_panel_t *__panel)
 {
   /* But does we really need this call here? */
 
@@ -1337,7 +1337,7 @@ file_panel_defact_draw_item_list (file_panel_t *__panel)
  * @return zero on success, non-zero if failed
  */
 int
-file_panel_defact_draw_widget (file_panel_widget_t *__panel_widget)
+fpd_draw_widget (file_panel_widget_t *__panel_widget)
 {
   scr_window_t layout;
   file_panel_t *panel;
@@ -1401,7 +1401,7 @@ file_panel_defact_draw_widget (file_panel_widget_t *__panel_widget)
  * @param __widget - widget to destroy
  */
 int
-file_panel_defact_widget_destructor (file_panel_widget_t *__widget)
+fpd_widget_destructor (file_panel_widget_t *__widget)
 {
   if (!__widget)
     {
@@ -1436,7 +1436,7 @@ file_panel_defact_widget_destructor (file_panel_widget_t *__widget)
  *   WALK_PREV_PAGE
  */
 void
-file_panel_defact_walk (file_panel_t *__panel, short __direction)
+fpd_walk (file_panel_t *__panel, short __direction)
 {
   switch (__direction)
     {
@@ -1590,7 +1590,7 @@ file_panel_defact_walk (file_panel_t *__panel, short __direction)
  * @return zero on success, non-zero on failure
  */
 int
-file_panel_defact_centre_to_item (file_panel_t *__panel, wchar_t *__name)
+fpd_centre_to_item (file_panel_t *__panel, wchar_t *__name)
 {
   if (!__panel || !__name)
     {
@@ -1612,7 +1612,7 @@ file_panel_defact_centre_to_item (file_panel_t *__panel, wchar_t *__name)
  * @return zero on success, non-zero on failure
  */
 int
-file_panel_defact_scroll_to_item (file_panel_t *__panel, wchar_t *__name)
+fpd_scroll_to_item (file_panel_t *__panel, wchar_t *__name)
 {
   if (!__panel || !__name)
     {
@@ -1634,7 +1634,7 @@ file_panel_defact_scroll_to_item (file_panel_t *__panel, wchar_t *__name)
  * @return zero on success, non-zero on failure
  */
 int
-file_panel_defact_fill_submenu (file_panel_t *__panel, w_sub_menu_t *__submenu)
+fpd_fill_submenu (file_panel_t *__panel, w_sub_menu_t *__submenu)
 {
   w_sub_menu_item_t *item;
 
@@ -1646,6 +1646,153 @@ file_panel_defact_fill_submenu (file_panel_t *__panel, w_sub_menu_t *__submenu)
   _CREATE_MENU_ITEM (L"_Listing mode...", 0);
   w_submenu_append_item (__submenu, 0, 0, SMI_SEPARATOR);
   _CREATE_MENU_ITEM (L"_Sort order...", fpd_sortorder_menu_callback);
+
+  return 0;
+}
+
+/**
+ * Save selection context for restore
+ *
+ * @param __panel - panel to operate with
+ * @return zero on success, non-zero otherwise
+ */
+int
+fpd_save_selection (file_panel_t *__panel)
+{
+ fpd_data_t *data;
+ wchar_t *current_name;
+ unsigned long current;
+
+  if (!__panel)
+    {
+      return -1;
+    }
+
+  /* Forget previous context */
+  FILE_PANEL_ACTION_CALL (__panel, free_saved_selection);
+
+  data = __panel->user_data;
+
+  /* Save list of selected items */
+  if (__panel->items.selected_count)
+    {
+      unsigned long i, j = 0, n;
+      file_panel_item_t *item;
+
+      n = __panel->items.length;
+
+      data->selection_context.count = __panel->items.selected_count;
+      data->selection_context.names = malloc (n * sizeof (wchar_t*));
+
+      /* Save list of names of selected items */
+      for (i = 0; i < n; ++i)
+        {
+          item = &__panel->items.data[i];
+          if (item->selected)
+            {
+              data->selection_context.names[j++] = wcsdup (item->file->name);
+            }
+        }
+    }
+
+  /* Save currently selected item */
+  if (__panel->items.length)
+    {
+      current = __panel->items.current;
+      current_name = __panel->items.data[current].file->name;
+      data->selection_context.current_name = wcsdup (current_name);
+    }
+
+  return 0;
+}
+
+/**
+ * Free stored selection context
+ *
+ * @param __panel - panel to operate with
+ * @return zero on success, non-zero otherwise
+ */
+int
+fpd_free_saved_selection (file_panel_t *__panel)
+{
+  unsigned long i, n;
+  fpd_data_t *data;
+
+  if (!__panel)
+    {
+      return -1;
+    }
+
+  data = __panel->user_data;
+
+  n = data->selection_context.count;
+
+  for (i = 0; i < n; ++i)
+    {
+      SAFE_FREE (data->selection_context.names[i]);
+    }
+
+  SAFE_FREE (data->selection_context.names);
+  SAFE_FREE (data->selection_context.current_name);
+  data->selection_context.count = 0;
+
+  return 0;
+}
+
+/**
+ * Restore selected items from saved context
+ *
+ * @param __panel - panel to operate with
+ * @return zero on success, non-zero otherwise
+ */
+int
+fpd_restore_selection (file_panel_t *__panel)
+{
+  fpd_data_t *data;
+  unsigned long i, n, index, count, prev_current;
+  file_panel_item_t *item;
+  BOOL found;
+  wchar_t **names;
+
+  if (!__panel)
+    {
+      return -1;
+    }
+
+  data = __panel->user_data;
+
+  /* Restore list of selected items */
+  count = n = data->selection_context.count;
+  names = data->selection_context.names;
+
+  for (i = 0; i < n; ++i)
+    {
+      index = file_panel_item_index_by_name (__panel, names[i], &found);
+      if (found)
+        {
+          item = &__panel->items.data[index];
+          item->selected = TRUE;
+        }
+      else
+        {
+          --count;
+        }
+    }
+
+  __panel->items.selected_count = count;
+
+  /* Restored currently selected item */
+  prev_current = __panel->items.current;
+
+  __panel->items.current =
+          file_panel_item_index_by_name (__panel,
+                                         data->selection_context.current_name,
+                                         &found);
+
+  if (!found)
+    {
+      __panel->items.current = prev_current;
+    }
 
   return 0;
 }

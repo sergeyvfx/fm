@@ -60,7 +60,7 @@ create_panel_submenu (file_panel_t *__panel)
   sm = w_menu_append_submenu (menu, _(L"_Panel"));
 
   /* Panel-specified items */
-  FILE_PANEL_DATA_ACTION_CALL (__panel, fill_submenu, sm);
+  FILE_PANEL_ACTION_CALL (__panel, fill_submenu, sm);
 
   /* Hack to add separator if there are any */
   /* items from panel added */

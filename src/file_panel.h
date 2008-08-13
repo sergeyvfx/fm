@@ -51,11 +51,8 @@ BEGIN_HEADER
 #define SET_PANEL_DATA_ACTION(__panel, __action, __val) \
   __panel->actions.__action=(file_panel_data_action)__val
 
-#define FILE_PANEL_ACTION_CALL(__panel, __action) \
-  (__panel->actions.__action?__panel->actions.__action (__panel):-1)
-
-#define FILE_PANEL_DATA_ACTION_CALL(__panel, __action, __data) \
-  (__panel->actions.__action?__panel->actions.__action (__panel, __data):-1)
+#define FILE_PANEL_ACTION_CALL(__panel, __action, __args...) \
+  (__panel->actions.__action?__panel->actions.__action (__panel, ##__args):-1)
 
 /********
  * Type definitions
@@ -244,6 +241,15 @@ typedef struct
     /* Set cursor to item and centres view */
     file_panel_data_action centre_to_item;
 
+    /* Save selection for restoring */
+    file_panel_action save_selection;
+
+    /* Restore selected items */
+    file_panel_action restore_selection;
+
+    /* Free saved selection context */
+    file_panel_action free_saved_selection;
+
     /***
      * Handlers
      */
@@ -337,65 +343,6 @@ file_panel_get_list (void);
 
 wchar_t*
 file_panel_get_full_cwd (file_panel_t *__panel);
-
-/********
- * Default actions
- */
-
-/* Initialize file panels' default actions stuff */
-int
-file_panel_defact_init (void);
-
-/* Unintialize file panels' default actions stuff */
-void
-file_panel_defact_done (void);
-
-int
-file_panel_defact_create (file_panel_t *__panel);
-
-int
-file_panel_defact_destroy (file_panel_t *__panel);
-
-int
-file_panel_defact_collect_items (file_panel_t *__panel);
-
-int
-file_panel_defact_free_items (file_panel_t *__panel);
-
-/* Draw a file panel's widget */
-int
-file_panel_defact_draw_widget (file_panel_widget_t *__panel_widget);
-
-int
-file_panel_defact_widget_destructor (file_panel_widget_t *__widget);
-
-/* Default action to draw a list of panel's items */
-int
-file_panel_defact_draw_item_list (file_panel_t *__panel);
-
-/* Walk on file panel's widget */
-void
-file_panel_defact_walk (file_panel_t *__panel, short __direction);
-
-/* Handles an on_refresh action of panel */
-int
-file_panel_defact_onrefresh (file_panel_t *__panel);
-
-int
-file_panel_defact_onresize (file_panel_t *__panel);
-
-int
-file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch);
-
-int
-file_panel_defact_centre_to_item (file_panel_t *__panel, wchar_t *__name);
-
-int
-file_panel_defact_scroll_to_item (file_panel_t *__panel, wchar_t *__name);
-
-int
-file_panel_defact_fill_submenu (file_panel_t *__panel,
-                                w_sub_menu_t *__submenu);
 
 unsigned long
 file_panel_get_selected_items (file_panel_t *__panel,

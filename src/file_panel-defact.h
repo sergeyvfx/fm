@@ -18,6 +18,7 @@
 
 BEGIN_HEADER
 
+#include "file_panel.h"
 
 /*
  * NOTE: To reduce lengths of symbols from this module,
@@ -31,7 +32,81 @@ typedef struct
     vfs_cmp_proc comparator;
     vfs_filter_proc filter;
   } dir;
+
+  struct
+  {
+    unsigned long count;
+    wchar_t **names;
+    wchar_t *current_name;
+  } selection_context;
 } fpd_data_t;
+
+/* Initialize file panels' default actions stuff */
+int
+fpd_init (void);
+
+/* Unintialize file panels' default actions stuff */
+void
+fpd_done (void);
+
+int
+fpd_create (file_panel_t *__panel);
+
+int
+fpd_destroy (file_panel_t *__panel);
+
+int
+fpd_collect_items (file_panel_t *__panel);
+
+int
+fpd_free_items (file_panel_t *__panel);
+
+/* Draw a file panel's widget */
+int
+fpd_draw_widget (file_panel_widget_t *__panel_widget);
+
+int
+fpd_widget_destructor (file_panel_widget_t *__widget);
+
+/* Default action to draw a list of panel's items */
+int
+fpd_draw_item_list (file_panel_t *__panel);
+
+/* Walk on file panel's widget */
+void
+fpd_walk (file_panel_t *__panel, short __direction);
+
+/* Handles an on_refresh action of panel */
+int
+fpd_onrefresh (file_panel_t *__panel);
+
+int
+fpd_onresize (file_panel_t *__panel);
+
+int
+fpd_keydown_handler (file_panel_t *__panel, wchar_t *__ch);
+
+int
+fpd_centre_to_item (file_panel_t *__panel, wchar_t *__name);
+
+int
+fpd_scroll_to_item (file_panel_t *__panel, wchar_t *__name);
+
+int
+fpd_fill_submenu (file_panel_t *__panel, w_sub_menu_t *__submenu);
+
+int
+fpd_save_selection (file_panel_t *__panel);
+
+int
+fpd_restore_selection (file_panel_t *__panel);
+
+int
+fpd_free_saved_selection (file_panel_t *__panel);
+
+/********
+ *
+ */
 
 int
 fpd_sortorder_menu_callback (void *__user_data);

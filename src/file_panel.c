@@ -11,6 +11,7 @@
  */
 
 #include "file_panel.h"
+#include "file_panel-defact.h"
 #include "hook.h"
 
 #include <vfs/vfs.h>
@@ -388,35 +389,35 @@ refill_items (file_panel_t *__panel)
 static void
 set_default_actions (file_panel_t *__panel)
 {
-  SET_PANEL_ACTION (__panel, create, file_panel_defact_create);
-  SET_PANEL_ACTION (__panel, destroy, file_panel_defact_destroy);
+  SET_PANEL_ACTION (__panel, create, fpd_create);
+  SET_PANEL_ACTION (__panel, destroy, fpd_destroy);
 
-  SET_PANEL_ACTION (__panel, collect_items, file_panel_defact_collect_items);
-  SET_PANEL_ACTION (__panel, free_items, file_panel_defact_free_items);
+  SET_PANEL_ACTION (__panel, collect_items, fpd_collect_items);
+  SET_PANEL_ACTION (__panel, free_items, fpd_free_items);
   SET_PANEL_ACTION (__panel, item_user_data_deleter, 0);
-  SET_PANEL_ACTION (__panel, draw_items, file_panel_defact_draw_item_list);
-  SET_PANEL_ACTION (__panel, onrefresh, file_panel_defact_onrefresh);
-  SET_PANEL_ACTION (__panel, onresize, file_panel_defact_onresize);
+  SET_PANEL_ACTION (__panel, draw_items, fpd_draw_item_list);
+  SET_PANEL_ACTION (__panel, onrefresh, fpd_onrefresh);
+  SET_PANEL_ACTION (__panel, onresize, fpd_onresize);
 
-  SET_PANEL_DATA_ACTION (__panel, keydown_handler,
-                         file_panel_defact_keydown_handler);
+  SET_PANEL_DATA_ACTION (__panel, keydown_handler, fpd_keydown_handler);
 
   /* Used in such stuff, as cwd_sink() when directory is changed to */
   /* parent and cursor should be placed onto item, from which we come. */
 
   /* In such situation it would be better if this item */
   /* will be at the center of visible part of list. */
-  SET_PANEL_DATA_ACTION (__panel, centre_to_item,
-                         file_panel_defact_centre_to_item);
+  SET_PANEL_DATA_ACTION (__panel, centre_to_item, fpd_centre_to_item);
 
   /* Will be helpful for actions like incremental search, */
   /* because in difference with "centre_to_item" it will */
   /* make less scrolling. */
-  SET_PANEL_DATA_ACTION (__panel, scroll_to_item,
-                         file_panel_defact_scroll_to_item);
+  SET_PANEL_DATA_ACTION (__panel, scroll_to_item, fpd_scroll_to_item);
 
-  SET_PANEL_DATA_ACTION (__panel, fill_submenu,
-                         file_panel_defact_fill_submenu);
+  SET_PANEL_DATA_ACTION (__panel, fill_submenu, fpd_fill_submenu);
+
+  SET_PANEL_ACTION (__panel, save_selection, fpd_save_selection);
+  SET_PANEL_ACTION (__panel, restore_selection, fpd_restore_selection);
+  SET_PANEL_ACTION (__panel, free_saved_selection, fpd_free_saved_selection);
 }
 
 /**
@@ -458,8 +459,8 @@ file_panel_create (void)
    * General widget initialization
    */
   WIDGET_INIT (res->widget, file_panel_widget_t, WT_SINGLE, parent, 0,
-               file_panel_defact_widget_destructor,
-               file_panel_defact_draw_widget,
+               fpd_widget_destructor,
+               fpd_draw_widget,
                0, 0, 1, 0, 0);
 
   /* Set up panels fonts */
@@ -583,28 +584,28 @@ file_panel_comm_keydown_handler (file_panel_t *__panel, const wchar_t *__ch)
     {
       /* Navigation */
     case KEY_DOWN:
-      file_panel_defact_walk (__panel, WALK_NEXT);
+      fpd_walk (__panel, WALK_NEXT);
       break;
     case KEY_UP:
-      file_panel_defact_walk (__panel, WALK_PREV);
+      fpd_walk (__panel, WALK_PREV);
       break;
     case KEY_NPAGE:
-      file_panel_defact_walk (__panel, WALK_NEXT_PAGE);
+      fpd_walk (__panel, WALK_NEXT_PAGE);
       break;
     case KEY_PPAGE:
-      file_panel_defact_walk (__panel, WALK_PREV_PAGE);
+      fpd_walk (__panel, WALK_PREV_PAGE);
       break;
     case KEY_HOME:
-      file_panel_defact_walk (__panel, WALK_HOME);
+      fpd_walk (__panel, WALK_HOME);
       break;
     case KEY_END:
-      file_panel_defact_walk (__panel, WALK_END);
+      fpd_walk (__panel, WALK_END);
       break;
     case KEY_LEFT:
-      file_panel_defact_walk (__panel, WALK_PREV_COLUMN);
+      fpd_walk (__panel, WALK_PREV_COLUMN);
       break;
     case KEY_RIGHT:
-      file_panel_defact_walk (__panel, WALK_NEXT_COLUMN);
+      fpd_walk (__panel, WALK_NEXT_COLUMN);
       break;
     default:
       return 0;
@@ -719,7 +720,7 @@ file_panels_init (widget_t *__parent)
       read_config () ||
 
       /* Initialize file panels' default actions stuff */
-      file_panel_defact_init ()
+      fpd_init ()
       )
     {
       return -1;
@@ -756,7 +757,7 @@ file_panels_done (void)
                           WIDGET (panels_grid));
     }
 
-  file_panel_defact_done ();
+  fpd_done ();
 }
 
 /**
@@ -902,7 +903,7 @@ file_panel_redraw (file_panel_t *__panel)
 }
 
 /**
- * Refresh file panel
+ * Refresh file panel (update list and redraw)
  *
  * @param __panel - panel to refresh
  * @return zero on success, non-zero if failed
@@ -918,14 +919,12 @@ file_panel_refresh (file_panel_t *__panel)
 
   if ((res = refill_items (__panel)))
     {
+      FILE_PANEL_ACTION_CALL (__panel, free_saved_selection);
       return res;
     }
 
   /* Call onrefresh action */
-  if (__panel->actions.onrefresh)
-    {
-      __panel->actions.onrefresh (__panel);
-    }
+  FILE_PANEL_ACTION_CALL (__panel, onrefresh);
 
   file_panel_draw (__panel);
 
@@ -941,39 +940,21 @@ file_panel_refresh (file_panel_t *__panel)
 int
 file_panel_rescan (file_panel_t *__panel)
 {
-  int res, found;
-  unsigned long prev_current;
-  wchar_t name[MAX_FILENAME_LEN] = {0};
+  int res;
 
-  /*
-   * TODO: Need to implement saving selection of items
-   */
-
-  /* Store name of selected file */
-  prev_current = __panel->items.current;
-  if (__panel->items.data)
-    {
-      wcscpy (name, __panel->items.data[prev_current].file->name);
-    }
+  FILE_PANEL_ACTION_CALL (__panel, save_selection);
 
   if ((res = refill_items (__panel)))
     {
       return res;
     }
 
-  __panel->items.current =
-          file_panel_item_index_by_name (__panel, name, &found);
-
-  if (!found)
-    {
-      __panel->items.current = prev_current;
-    }
+  FILE_PANEL_ACTION_CALL (__panel, restore_selection);
 
   /* Call onrefresh action */
-  if (__panel->actions.onrefresh)
-    {
-      __panel->actions.onrefresh (__panel);
-    }
+  FILE_PANEL_ACTION_CALL (__panel, onrefresh);
+
+  FILE_PANEL_ACTION_CALL (__panel, free_saved_selection);
 
   file_panel_redraw (__panel);
 
@@ -1016,6 +997,11 @@ file_panel_item_index_by_name (file_panel_t *__panel, const wchar_t *__name,
   if (__found)
     {
       (*__found) = FALSE;
+    }
+
+  if (!__name)
+    {
+      return 0;
     }
 
   n = __panel->items.length;
