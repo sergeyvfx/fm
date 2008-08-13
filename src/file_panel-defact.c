@@ -954,7 +954,6 @@ toggle_current_selection (file_panel_t *__panel)
  *
  * @param __panel - determines file panel in which current item selection
  * will be toggled
- *
  * @return zero on success, non-zero otherwise
  */
 static int
@@ -979,6 +978,45 @@ toggle_selection_action (file_panel_t *__panel)
 
   /* Now we should redraf specified file panel */
   file_panel_redraw (__panel);
+
+  return 0;
+}
+
+/**
+ * Handler for action 'open'
+ * (by default pressiing Enter on file panel item)
+ *
+ * @param __panel - determines file panel on which this action called
+ * @return zero on success, non-zero otherwise
+ */
+static int
+open_action (file_panel_t *__panel)
+{
+  if (!__panel)
+    {
+      return -1;
+    }
+
+  /* Check is there any selected items */
+  if (__panel->items.length && __panel->items.current >= 0 &&
+      __panel->items.current <= __panel->items.length)
+    {
+      file_panel_item_t *item;
+
+      item = &__panel->items.data[__panel->items.current];
+
+      if (S_ISDIR (item->file->stat.st_mode))
+        {
+          /* Need to change CWD */
+          cwd_sink (__panel, item->file->name);
+          file_panel_redraw (__panel);
+        }
+      else
+        {
+          /* Need to open file */
+          open_current_file (__panel);
+        }
+    }
 
   return 0;
 }
@@ -1110,9 +1148,9 @@ file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
   switch (*__ch)
     {
 
-      /********
-       * DEBUG code
-       */
+    /********
+     * DEBUG code
+     */
     case 'r':
       file_panel_rescan (__panel);
       break;
@@ -1122,35 +1160,12 @@ file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
     case KEY_F (5):
       action_copy (__panel);
       break;
-      /*
-       *
-       ********/
+    /*
+     *
+     ********/
 
     case KEY_RETURN:
-      /*
-       * TODO: Rewrite this stuff as action
-       */
-
-      /* Check is there any selected items */
-      if (__panel->items.length && __panel->items.current >= 0 &&
-          __panel->items.current <= __panel->items.length)
-        {
-          file_panel_item_t *item;
-
-          item = &__panel->items.data[__panel->items.current];
-
-          if (S_ISDIR (item->file->stat.st_mode))
-            {
-              /* Need to change CWD */
-              cwd_sink (__panel, item->file->name);
-              file_panel_redraw (__panel);
-            }
-          else
-            {
-              /* Need to open file */
-              open_current_file (__panel);
-            }
-        }
+      open_action (__panel);
       break;
 
     case KEY_INSERT:
