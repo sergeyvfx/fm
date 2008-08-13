@@ -154,6 +154,7 @@ extern BOOL curs_wis;
 #define KEY_ESC       27
 #define KEY_SPACE     32
 #define KEY_DELETE    KEY_DC
+#define KEY_INSERT    KEY_IC
 
 #define KEY_ESC_ESC   539 /* Escaped escape */
 

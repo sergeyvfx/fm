@@ -358,7 +358,7 @@ refill_items (file_panel_t *__panel)
     {
       /*
        * TODO: But maybe we should abort refreshing if
-       *  there is an error while freeing list of items?
+       *       there is an error while freeing list of items?
        */
       __panel->actions.free_items (__panel);
     }
@@ -945,6 +945,10 @@ file_panel_rescan (file_panel_t *__panel)
   unsigned long prev_current;
   wchar_t name[MAX_FILENAME_LEN] = {0};
 
+  /*
+   * TODO: Need to implement saving selection of items
+   */
+
   /* Store name of selected file */
   prev_current = __panel->items.current;
   if (__panel->items.data)
@@ -1167,4 +1171,60 @@ file_panel_get_full_cwd (file_panel_t *__panel)
             __panel->cwd.data);
 
   return res;
+}
+
+/**
+ * Get list of selected items.
+ * If there is no selected items item under cursor will be added to the list
+ *
+ * NOTE: Items are NOT duplicated in this function
+ *
+ * @param __panal - from which panel selected items will be gotten
+ * @param __items - pointer to an array where selected items where stored.
+ * Should be freed after usage
+ * @return count of selected items
+ */
+unsigned long
+file_panel_get_selected_items (file_panel_t *__panel,
+                               file_panel_item_t *** __items)
+{
+  if (!__panel || !__panel->items.length || !__items)
+    {
+      return 0;
+    }
+
+  if (__panel->items.selected_count)
+    {
+      unsigned long i, j;
+      file_panel_item_t *cur;
+
+      /* Allocate memory */
+      (*__items) = malloc (__panel->items.selected_count *
+                           sizeof (file_panel_item_t*));
+
+      /* Collect list of selected items */
+      for (i = 0, j = 0; i < __panel->items.length; ++i)
+        {
+          cur = &__panel->items.data[i];
+          if (cur->selected)
+            {
+              /* Add current item to list */
+              (*__items)[j++] = cur;
+            }
+        }
+
+      return __panel->items.selected_count;
+    }
+  else
+    {
+      /* Add the only item under cursor */
+
+      /* Allocate memory */
+      (*__items) = malloc (sizeof (file_panel_item_t*));
+
+      /* Save pointer of item under cursor */
+      (*__items)[0] = &__panel->items.data[__panel->items.current];
+
+      return 1;
+    }
 }

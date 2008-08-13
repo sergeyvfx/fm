@@ -53,6 +53,13 @@
   item->user_data=__panel;
 
 /********
+ *
+ */
+
+/* Move cursor after selection? */
+static BOOL move_after_selection = TRUE;
+
+/********
  * Internal stuff
  */
 
@@ -78,7 +85,21 @@ get_file_panel_item_font (const file_panel_t *__panel, unsigned long __index)
   if (__panel->items.current == __index && __panel->focused &&
       !FILE_PANEL_TEST_FLAG (__panel, FPF_UNFOCUSABLE))
     {
-      return &FONT (CID_BLACK, CID_CYAN);
+      if (item.selected)
+        {
+          /* Selected item under cursor */
+          return &FONT (CID_YELLOW, CID_CYAN);
+        }
+      else
+        {
+          return &FONT (CID_BLACK, CID_CYAN);
+        }
+    }
+
+  /* Selected item not under cursor */
+  if (item.selected)
+    {
+      return &FONT (CID_YELLOW, CID_BLUE);
     }
 
   if (S_ISDIR (item.file->stat.st_mode) && wcscmp (item.file->name, L".."))
@@ -879,6 +900,89 @@ open_current_file (file_panel_t *__panel)
   return open_file (__panel, &__panel->items.data[__panel->items.current]);
 }
 
+/**
+ * Toggle selection flag for specified item on file panel
+ */
+static void
+toggle_item_selection (file_panel_t *__panel, file_panel_item_t *__item)
+{
+  if (!__panel || !__item)
+    {
+      return;
+    }
+
+  /* Toggle selection flag */
+  __item->selected = !__item->selected;
+
+  /* Update count of selected items */
+  if (__item->selected)
+    {
+      __panel->items.selected_count++;
+    }
+  else
+    {
+      __panel->items.selected_count--;
+    }
+}
+
+/**
+ * Toggle selection flag for current item on file panel
+ *
+ * @param __panel - determines file panel in which current item selection
+ * will be toggled
+ */
+static void
+toggle_current_selection (file_panel_t *__panel)
+{
+  file_panel_item_t *item;
+
+  if (!__panel || !__panel->items.length)
+    {
+      return;
+    }
+
+  item = &__panel->items.data[__panel->items.current];
+  toggle_item_selection (__panel, item);
+}
+
+/********
+ * Actions
+ */
+
+/**
+ * Handler for toggle selection action
+ *
+ * @param __panel - determines file panel in which current item selection
+ * will be toggled
+ *
+ * @return zero on success, non-zero otherwise
+ */
+static int
+toggle_selection_action (file_panel_t *__panel)
+{
+  if (!__panel)
+    {
+      return -1;
+    }
+
+  /* Toggle selection flag */
+  toggle_current_selection (__panel);
+
+  if (move_after_selection)
+    {
+      /* Move cursor to next item */
+      if (__panel->items.current < __panel->items.length - 1)
+        {
+          __panel->items.current++;
+        }
+    }
+
+  /* Now we should redraf specified file panel */
+  file_panel_redraw (__panel);
+
+  return 0;
+}
+
 /********
  *
  */
@@ -1015,14 +1119,18 @@ file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
     case 'l':
       file_panel_set_listing_mode (__panel, (__panel->listing_mode + 1) % 3);
       break;
-    case KEY_F (5) :
-              action_copy (__panel);
+    case KEY_F (5):
+      action_copy (__panel);
       break;
       /*
        *
        ********/
 
     case KEY_RETURN:
+      /*
+       * TODO: Rewrite this stuff as action
+       */
+
       /* Check is there any selected items */
       if (__panel->items.length && __panel->items.current >= 0 &&
           __panel->items.current <= __panel->items.length)
@@ -1044,6 +1152,12 @@ file_panel_defact_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
             }
         }
       break;
+
+    case KEY_INSERT:
+      /* Toggle selection on current item of file panel */
+      toggle_selection_action (__panel);
+      break;
+
     default:
       return -1;
     }

@@ -126,6 +126,9 @@ typedef struct
   /* Default file descriptor */
   file_t *file;
 
+  /* Is item selected? */
+  BOOL selected;
+
   /* User-specified data for more flexibility */
   void *user_data;
 } file_panel_item_t;
@@ -191,6 +194,9 @@ typedef struct
 
     /* Index of currently selected item */
     unsigned long current;
+
+      /* Count of selected items */
+      unsigned long selected_count;
   } items; /* Items in this panel */
 
   /* Is panel focused */
@@ -390,6 +396,10 @@ file_panel_defact_scroll_to_item (file_panel_t *__panel, wchar_t *__name);
 int
 file_panel_defact_fill_submenu (file_panel_t *__panel,
                                 w_sub_menu_t *__submenu);
+
+unsigned long
+file_panel_get_selected_items (file_panel_t *__panel,
+                               file_panel_item_t *** __items);
 
 END_HEADER
 
