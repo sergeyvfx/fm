@@ -10,14 +10,14 @@
  * See the file COPYING.
  */
 
+#include "messages.h"
 #include "actions.h"
 #include "messages.h"
 #include "i18n.h"
 #include "dir.h"
-#include "widget.h"
-#include "widget.h"
 #include "file.h"
 
+#include <widget.h>
 #include <vfs/vfs.h>
 
 #include <fcntl.h>
@@ -47,6 +47,11 @@
     vfs_close (fd_dst); \
   }
 
+#define INCOMPLETE_MESSAGE() \
+  message_box (_(L"Question"), \
+               _(L"Incomplete file was retrieved. Keep it?"), \
+               MB_YESNO | MB_CRITICAL)
+
 /**
  * Close file descriptors and return a value from copy_regular_file()
  */
@@ -55,10 +60,14 @@
   /* Check is file retrieved completely */ \
   if (_code && fd_dst) \
     { \
-      if (message_box (L"Question", \
-        _(L"Incomplete file was retrieved. Keep it?"), MB_YESNO)==MR_NO) \
+      if (INCOMPLETE_MESSAGE () == MR_NO) \
         { \
           vfs_unlink (__dst); \
+        } \
+      else \
+        { \
+          /* Set access and modification time of new file */ \
+          vfs_utime (__dst, &times); \
         } \
     } \
   if (_code==MR_CANCEL) \
@@ -172,6 +181,31 @@
    _(L"Cannot unlink target file \"%ls\":\n%ls"), __dst, \
   vfs_get_error (res))
 
+/*
+ * Copy process aborted?
+ */
+#define PROCESS_ABORTED() \
+  (__proc_wnd->skip || __proc_wnd->abort)
+
+/*
+ * Process queue in copy_regular_file().
+ */
+#define COPY_PROCESS_QUEUE() \
+  widget_process_queue (); \
+  if (PROCESS_ABORTED()) \
+    { \
+      break; \
+    }
+
+#define FREE_REMAIN_DIRENT() \
+  { \
+    int j; \
+    for (j = i; j < count; j++) \
+      { \
+        vfs_free_dirent (eps[i]); \
+      } \
+  }
+
 
 /**
  * Modal results for overwrite answers
@@ -190,6 +224,12 @@ typedef struct
   w_text_t *target;
 
   w_progress_t *file_progress;
+
+  /* Skip copying current file */
+  BOOL skip;
+
+  /* Abort copying operation */
+  BOOL abort;
 } process_window_t;
 
 /********
@@ -377,27 +417,136 @@ file_exists_question (const wchar_t *__src,
 }
 
 /**
+ * Handler of clicking button 'skip' on process window
+ *
+ * @param __button - sender button
+ * @return non-zero if action has been handled, non-zero otherwise
+ */
+static int
+skip_button_clicked (w_button_t *__button)
+{
+  process_window_t *wnd;
+  if (!__button | !WIDGET_USER_DATA (__button))
+    {
+      return 0;
+    }
+
+  wnd=WIDGET_USER_DATA (__button);
+
+  wnd->skip = TRUE;
+
+  return 0;
+}
+
+/**
+ * Handler of clicking button 'abort' on process window
+ *
+ * @param __button - sender button
+ * @return non-zero if action has been handled, non-zero otherwise
+ */
+static int
+abort_button_clicked (w_button_t *__button)
+{
+  process_window_t *wnd;
+  if (!__button | !WIDGET_USER_DATA (__button))
+    {
+      return 0;
+    }
+
+  wnd=WIDGET_USER_DATA (__button);
+
+  wnd->abort = TRUE;
+
+  return 0;
+}
+
+/**
+ * Handler of keydown message for buttons on process window
+ *
+ * @param __button - button on which key was pressed
+ * @param __ch - code of pressed key
+ */
+static int
+button_keydown (w_button_t *__button, wint_t __ch)
+{
+  if (!__button | !WIDGET_USER_DATA (__button))
+    {
+      return 0;
+    }
+
+  if (__ch == KEY_ESC)
+    {
+      /* If escaped was pressed, copy operation shoud be aborted */
+      process_window_t *wnd;
+      wnd=WIDGET_USER_DATA (__button);
+      wnd->abort = TRUE;
+    }
+
+  return 0;
+}
+
+/**
  * Create file copy process window
  *
  * @return created window
  */
-static process_window_t
+static process_window_t*
 create_process_window (void)
 {
-  process_window_t res;
+  process_window_t *res;
   w_container_t *cnt;
+  w_button_t *btn;
+  int buttons_left;
 
-  res.window = widget_create_window (_(L"Copy"), 0, 0, 60, 10, WMS_CENTERED);
-  cnt = WIDGET_CONTAINER (res.window);
+  MALLOC_ZERO (res, sizeof (process_window_t))
 
-  res.source = widget_create_text (cnt, L"", 1, 1);
-  res.target = widget_create_text (cnt, L"", 1, 2);
+  res->window = widget_create_window (_(L"Copy"), 0, 0, 60, 10, WMS_CENTERED);
+  cnt = WIDGET_CONTAINER (res->window);
 
-  res.file_progress = widget_create_progress (cnt, 100, 10, 4, 49);
+  res->source = widget_create_text (cnt, L"", 1, 1);
+  res->target = widget_create_text (cnt, L"", 1, 2);
+
+  res->file_progress = widget_create_progress (cnt, 100, 10, 4, 49);
 
   widget_create_text (cnt, _(L"File"), 1, 4);
 
+  /* Create buttons */
+  buttons_left = (cnt->position.width - widget_shortcut_length (_(L"_Skip")) -
+                  widget_shortcut_length (_(L"_Abort")) - 9) / 2;
+
+  btn = widget_create_button (cnt, _(L"_Skip"), buttons_left,
+                              cnt->position.height - 2, 0);
+
+  WIDGET_USER_DATA (btn) = res;
+  WIDGET_USER_CALLBACK (btn, clicked) = (widget_action)skip_button_clicked;
+  WIDGET_USER_CALLBACK (btn, keydown) = (widget_keydown_proc)button_keydown;
+
+  buttons_left += widget_shortcut_length (_(L"_Skip")) + 5;
+  btn = widget_create_button (cnt, _(L"_Abort"), buttons_left,
+                              cnt->position.height - 2, 0);
+
+  WIDGET_USER_DATA (btn) = res;
+  WIDGET_USER_CALLBACK (btn, clicked) = (widget_action)abort_button_clicked;
+  WIDGET_USER_CALLBACK (btn, keydown) = (widget_keydown_proc)button_keydown;
+
   return res;
+}
+
+/**
+ * Destroy file copy process window
+ *
+ * @param __window - window to be destroyed
+ */
+static void
+destroy_process_window (process_window_t *__window)
+{
+  if (!__window)
+    {
+      return;
+    }
+
+  widget_destroy (WIDGET (__window->window));
+  free (__window);
 }
 
 /**
@@ -596,6 +745,10 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
 
   remain = stat.st_size;
 
+  /* Save access and modification time */
+  times.actime = stat.st_atim.tv_sec;
+  times.modtime = stat.st_mtim.tv_sec;
+
   /* Create destination file */
   OPEN_FD (fd_dst, __dst, create_flags, res,
            _(L"Cannot create target file \"%ls\":\n%ls"),
@@ -619,6 +772,14 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
                      _(L"Cannot read source file \"%ls\":\n%ls"),
                      __src, vfs_get_error (res));
 
+     /*
+      * NOTE: Reading of buffer and it's writting may be long.
+      *       So, need to process after both of this operations.
+      */
+
+      /* Process accamulated queue of characters */
+      COPY_PROCESS_QUEUE ();
+
       /* Write buffer to destination file */
       COPY_FILE_REP (written = vfs_write (fd_dst, buffer, read);
                      res = written < 0 ? written : 0;,
@@ -629,16 +790,38 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
       copied += read;
       w_progress_set_pos (__proc_wnd->file_progress, copied);
 
+      /* Process accamulated queue of characters */
+      COPY_PROCESS_QUEUE ();
+
       remain -= read;
     }
 
   /* Set access and modification time of new file */
-  times.actime = stat.st_atim.tv_sec;
-  times.modtime = stat.st_mtim.tv_sec;
   vfs_utime (__dst, &times);
 
   /* Close descriptors  */
   CLOSE_FD ();
+
+  /* Operation has been broken */
+  if (PROCESS_ABORTED ())
+    {
+      if (remain != 0)
+        {
+          /* If file hasn't been fully copied */
+          if (INCOMPLETE_MESSAGE () == MR_NO)
+            {
+              vfs_unlink (__dst);
+            }
+          }
+
+      /* Reset skip flag */
+      __proc_wnd->skip = FALSE;
+
+      if (__proc_wnd->abort)
+        {
+          return MR_ABORT;
+        }
+    }
 
   return 0;
 }
@@ -761,6 +944,9 @@ copy_symlink (const wchar_t *__src,
         {
           return 0;
         }
+
+      /* Process accamulated queue of characters */
+      COPY_PROCESS_QUEUE ();
     }
 
   return 0;
@@ -789,9 +975,6 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
    * TODO: Replace displaying full source filename with relative file name
    */
 
-  /*
-   * TODO: Add skipping displaying localfs plugin name?
-   */
   COPY_SET_FN (__src, source, L"Source");
   COPY_SET_FN (__dst, target, L"Target");
 
@@ -814,22 +997,35 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
 
   if (S_ISREG (stat.st_mode))
     {
-      copy_regular_file (__src, __dst, __owr_all_rule, __proc_wnd);
+      res = copy_regular_file (__src, __dst, __owr_all_rule, __proc_wnd);
     }
   else
     if (S_ISLNK (stat.st_mode))
     {
-      copy_symlink (__src, __dst, __owr_all_rule, __proc_wnd);
+      res = copy_symlink (__src, __dst, __owr_all_rule, __proc_wnd);
     }
   else
     {
+      /*
+       * TODO: Need to implement coping non-regular files
+       */
+
       swprintf (msg, BUF_LEN (msg),
                 _(L"Cannot copy special file \"%ls\":\n%ls"),
                 __src, _(L"This feature is not implemented yet"));
       MESSAGE_ERROR (msg);
+
+      res = 0;
     }
 
-  return 0;
+  /* Process accamulated queue of characters */
+  widget_process_queue ();
+  if (__proc_wnd->abort)
+    {
+      return MR_ABORT;
+    }
+
+  return res;
 }
 
 /**
@@ -898,16 +1094,24 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
           /* Copying has been aborted */
           if (res == MR_ABORT)
             {
-              int j;
-
               /* Free allocated memory */
-              for (j = i; j < count; j++)
-                {
-                  vfs_free_dirent (eps[i]);
-                }
-
+              FREE_REMAIN_DIRENT ();
               break;
             }
+        }
+
+      /* Process accamulated queue of characters */
+      if (PROCESS_ABORTED ())
+        {
+          /* Free allocated memory */
+          FREE_REMAIN_DIRENT ();
+
+          if (__proc_wnd->abort)
+            {
+              res = MR_ABORT;
+            }
+
+          break;
         }
 
       vfs_free_dirent (eps[i]);
@@ -930,7 +1134,7 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
 static int
 make_copy (const wchar_t *__src, const wchar_t *__dst)
 {
-  process_window_t wnd;
+  process_window_t *wnd;
   int res;
   wchar_t *dst = (wchar_t*) __dst;
 
@@ -950,7 +1154,7 @@ make_copy (const wchar_t *__src, const wchar_t *__dst)
     }
 
   wnd = create_process_window ();
-  w_window_show (wnd.window);
+  w_window_show (wnd->window);
 
   wchar_t *rdst = NULL; /* Real destination */
   int owr_all_rule = 0;
@@ -980,7 +1184,7 @@ make_copy (const wchar_t *__src, const wchar_t *__dst)
         }
 
       /* Copy directory */
-      copy_dir (__src, rdst, &owr_all_rule, &wnd);
+      copy_dir (__src, rdst, &owr_all_rule, wnd);
     }
   else
     {
@@ -995,13 +1199,13 @@ make_copy (const wchar_t *__src, const wchar_t *__dst)
         }
 
       /* Copy single file */
-      copy_file (__src, rdst, &owr_all_rule, &wnd);
+      copy_file (__src, rdst, &owr_all_rule, wnd);
     }
 
   SAFE_FREE (rdst);
   free (dst);
 
-  widget_destroy (WIDGET (wnd.window));
+  destroy_process_window (wnd);
 
   return 0;
 }
