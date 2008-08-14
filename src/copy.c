@@ -225,11 +225,20 @@ typedef struct
 
   w_progress_t *file_progress;
 
+  /*
+   * NOTE: This descriptor is very convenient to send additional
+   *       information to deep-core functions and leave their
+   *       parameter lists short.
+   */
+
   /* Skip copying current file */
   BOOL skip;
 
   /* Abort copying operation */
   BOOL abort;
+
+  /* Prefix of absolute directory names of sources */
+  wchar_t *abs_path_prefix;
 } process_window_t;
 
 /********
@@ -944,7 +953,7 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
             case MR_APPEND:
               /*
                * NOTE: Appending of symlinks is equal
-               * to it's replacement.
+               *       to it's replacement.
                */
               SYMLINK_UNLINK ();
               break;
@@ -1029,17 +1038,17 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
            int *__owr_all_rule, process_window_t *__proc_wnd)
 {
   int res;
+  size_t prefix_len;
   vfs_stat_t stat;
   wchar_t msg[1024], fn[1024];
 
   /* Initialize current info on screen */
   w_progress_set_pos (__proc_wnd->file_progress, 0);
 
-  /*
-   * TODO: Replace displaying full source filename with relative file name
-   */
+  /* +1 becase I want to skip directory delimeter too */
+  prefix_len = wcslen (__proc_wnd->abs_path_prefix) + 1;
 
-  COPY_SET_FN (__src, source, L"Source");
+  COPY_SET_FN (__src + prefix_len, source, L"Source");
   COPY_SET_FN (__dst, target, L"Target");
 
   /* Check is file copying to itself */
@@ -1294,6 +1303,7 @@ make_copy (const wchar_t *__base_dir, const file_panel_item_t **__src_list,
     }
 
   wnd = create_process_window ();
+  wnd->abs_path_prefix = (wchar_t*)__base_dir;
   w_window_show (wnd->window);
 
   for (i = 0; i < __count; ++i)
