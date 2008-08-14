@@ -552,40 +552,103 @@ destroy_process_window (process_window_t *__window)
 /**
  * Get caption for field 'To'
  *
- * @param __src - source file name
+ * @param __src_list - list of source items
+ * @param __count - count of items to be copied
  * @param __buf - buffer where result will be stored
  * @param __buf_size - size of buffer
  */
 static void
-get_to_field_caption (const wchar_t *__src, wchar_t *__buf, size_t __buf_size)
+get_to_field_caption (const file_panel_item_t **__src_list,
+                      unsigned long __count,
+                      wchar_t *__buf, size_t __buf_size)
 {
-  wchar_t *fn, fit_fn[20], *format;
+  wchar_t *format;
 
-  if (isdir (__src))
+  if (__count == 1)
     {
-      format = _(L"Copy directory \"%ls\" to:");
+      /* Single file is copying */
+      wchar_t *src;
+      wchar_t fit_fn[20];
+      file_panel_item_t *item;
+
+      item = (file_panel_item_t*)__src_list[0];
+      src = item->file->name;
+
+      if (S_ISDIR (item->file->lstat.st_mode))
+        {
+          format = _(L"Copy directory \"%ls\" to:");
+        }
+      else
+        {
+          format = _(L"Copy file \"%ls\" to:");
+        }
+
+      fit_filename (src, BUF_LEN (fit_fn), fit_fn);
+      swprintf (__buf, __buf_size, format, fit_fn);
     }
   else
     {
-      format = _(L"Copy file \"%ls\" to:");
-    }
+      /* Coping list of file */
 
-  fn = wcfilename (__src);
-  fit_filename (fn, 20, fit_fn);
-  swprintf (__buf, __buf_size, format, fit_fn);
-  free (fn);
+      BOOL only_files = TRUE, only_dirs = TRUE;
+      unsigned long i;
+
+      /* Need to determine only files, only directories or both */
+      /* of files and directories are to be copied */
+      for (i = 0; i < __count; i++)
+        {
+          if (S_ISDIR (__src_list[i]->file->lstat.st_mode))
+            {
+              only_files = FALSE;
+
+              if (!only_dirs)
+                {
+                  break;
+                }
+            }
+          else
+            {
+              only_dirs = FALSE;
+
+              if (!only_files)
+                {
+                  break;
+                }
+            }
+        }
+
+      /* Determine format string */
+      if (only_files)
+        {
+          format = _(L"Copy %lu files to:");
+        }
+      else
+        if (only_dirs)
+          {
+            format = _(L"Copy %lu directories to:");
+          }
+        else
+          {
+            format = _(L"Copy %lu files/directories to:");
+          }
+
+      swprintf (__buf, __buf_size, format, __count);
+    }
 }
 
 /**
  * Show copy dialog to confirm destination file name
  * and other additional information
  *
- * @param __src - source
+ * @param __src_list - list of source items
+ * @param __count - count of items to be copied
  * @param __dst - default destination
  * @return MR_CANCEL if user canceled copying, MR_OK otherwise
  */
 static int
-show_copy_dialog (const wchar_t *__src, wchar_t **__dst)
+show_copy_dialog (const file_panel_item_t **__src_list,
+                  unsigned long __count,
+                  wchar_t **__dst)
 {
   int res, left, dummy;
   w_window_t *wnd;
@@ -598,7 +661,7 @@ show_copy_dialog (const wchar_t *__src, wchar_t **__dst)
   cnt = WIDGET_CONTAINER (wnd);
 
   /* Create caption for 'To' field */
-  get_to_field_caption (__src, msg, BUF_LEN (msg));
+  get_to_field_caption (__src_list, __count, msg, BUF_LEN (msg));
   widget_create_text (cnt, msg, 1, 1);
 
   /* Create 'To' field */
@@ -681,6 +744,7 @@ is_newer (const wchar_t *__src, const wchar_t *__dst)
  * @param __src - URL of source
  * @param __dst - URL of destination
  * @param __owr_all_rule - Rule for overwriting existing files
+ * @param __proc_wnd - window with different current information
  * @return zero on success, non-zero otherwise
  */
 static int
@@ -832,13 +896,12 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
  * @param __src - URL of source
  * @param __dst - URL of destination
  * @param __owr_all_rule - Rule for overwriting existing files
+ * @param __proc_wnd - window with different current information
  * @return zero on success, non-zero otherwise
  */
 static int
-copy_symlink (const wchar_t *__src,
-              const wchar_t *__dst,
-              int *__owr_all_rule,
-              process_window_t *__proc_wnd)
+copy_symlink (const wchar_t *__src, const wchar_t *__dst,
+              int *__owr_all_rule, process_window_t *__proc_wnd)
 {
   vfs_stat_t stat;
   wchar_t content[MAX_SYMLINK_CONTENT];
@@ -958,6 +1021,7 @@ copy_symlink (const wchar_t *__src,
  * @param __src - URL of source
  * @param __dst - URL of destination
  * @param __owr_all_rule - Rule for overwriting existing files
+ * @param __proc_wnd - window with different current information
  * @return zero on success, non-zero otherwise
  */
 static int
@@ -1034,6 +1098,7 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
  * @param __src - URL of source
  * @param __dst - URL of destination
  * @param __owr_all_rule - Rule for overwriting existing files 
+ * @param __proc_wnd - window with different current information
  * @return zero on success, non-zero otherwise
  */
 static int
@@ -1051,6 +1116,19 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
                 _(L"Cannot stat source directory \"%ls\":\n%ls"),
                 __src, vfs_get_error (res));
 
+  /* Get listing of a directory */
+  COPY_DIR_REP (count = vfs_scandir (__src, &eps, 0, vfs_alphasort);
+                res = count < 0 ? count : 0,
+                error,
+                _(L"Cannot listing source directory \"%ls\":\n%ls"),
+                __src, vfs_get_error (res));
+
+  /*
+   * NOTE: Destination directory must be created AFTER listing of source one.
+   *       It depends on posibility that destination directory will
+   *       be created inside source.
+   */
+
   /* Create destination directory */
   COPY_DIR_REP (res = vfs_mkdir (__dst, 0); if (res == -EEXIST) res = 0;, error,
                 _(L"Cannot create target directory \"%ls\":\n%ls"),
@@ -1060,13 +1138,6 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
   COPY_DIR_REP (res = vfs_chmod (__dst, stat.st_mode), error,
                 _(L"Cannot chmod target directory \"%ls\":\n%ls"),
                 __dst, vfs_get_error (res));
-
-  /* Get listing of a directory */
-  COPY_DIR_REP (count = vfs_scandir (__src, &eps, 0, vfs_alphasort);
-                res = count < 0 ? count : 0,
-                error,
-                _(L"Cannot listing source directory \"%ls\":\n%ls"),
-                __src, vfs_get_error (res));
 
   /* Allocate memories for new strings */
   ALLOC_FN (full_name, fn_len, __src);
@@ -1125,54 +1196,35 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
 }
 
 /**
- * Copy file or directory
+ * Iterator for make_copy()
  *
- * @param __src - URL of source
- * @param __dst - URL of destination
+ * @param __src - full source URL
+ * @param __dst - full destination URL
+ * @param __owr_all_rule - Rule for overwriting existing files
+ * @param __proc_wnd - window with different current information
  * @return zero on success, non-zero otherwise
  */
 static int
-make_copy (const wchar_t *__src, const wchar_t *__dst)
+make_copy_iter (const wchar_t *__src, const wchar_t *__dst,
+                int *__owr_all_rule, process_window_t *__proc_wnd)
 {
-  process_window_t *wnd;
-  int res;
-  wchar_t *dst = (wchar_t*) __dst;
-
-  if (!*__src || !dst)
-    {
-      return -1;
-    }
-
-  /* Get customized settings from user */
-  res = show_copy_dialog (__src, &dst);
-
-  /* User canceled copying */
-  if (res == MR_CANCEL)
-    {
-      SAFE_FREE (dst);
-      return MR_ABORT;
-    }
-
-  wnd = create_process_window ();
-  w_window_show (wnd->window);
-
+  int res = -1;
   wchar_t *rdst = NULL; /* Real destination */
-  int owr_all_rule = 0;
 
   if (isdir (__src))
     {
       vfs_stat_t stat;
 
       /* Get full destination directory name */
-      if (vfs_stat (dst, &stat))
+      if (vfs_stat (__dst, &stat))
         {
-          rdst = wcsdup (dst);
+          rdst = wcsdup (__dst);
         }
       else
         {
-          if (isdir (dst))
+          if (isdir (__dst))
             {
-              rdst = get_real_dst (__src, dst);
+              rdst = get_real_dst (__src, __dst);
             }
           else
             {
@@ -1184,30 +1236,96 @@ make_copy (const wchar_t *__src, const wchar_t *__dst)
         }
 
       /* Copy directory */
-      copy_dir (__src, rdst, &owr_all_rule, wnd);
+      res = copy_dir (__src, rdst, __owr_all_rule, __proc_wnd);
     }
   else
     {
       /* Get full destination filename */
-      if (isdir (dst))
+      if (isdir (__dst))
         {
-          rdst = get_real_dst (__src, dst);
+          rdst = get_real_dst (__src, __dst);
         }
       else
         {
-          rdst = wcsdup (dst);
+          rdst = wcsdup (__dst);
         }
 
       /* Copy single file */
-      copy_file (__src, rdst, &owr_all_rule, wnd);
+      res = copy_file (__src, rdst, __owr_all_rule, __proc_wnd);
     }
 
   SAFE_FREE (rdst);
-  free (dst);
+
+  return res;
+}
+
+/**
+ * Copy file or directory
+ *
+ * @param __base_dir - base directpry
+ * @param __src_list - list of source items
+ * @param __count - count of items to be copied
+ * @param __dst - URL of destination
+ * @return count of copied items
+ */
+static unsigned long
+make_copy (const wchar_t *__base_dir, const file_panel_item_t **__src_list,
+           unsigned long __count, const wchar_t *__dst)
+{
+  process_window_t *wnd;
+  int res, owr_all_rule = 0;
+  wchar_t *dst = (wchar_t*) __dst, *src;
+  unsigned long i, count = 0;
+  file_panel_item_t *item;
+
+  if (!__base_dir || !*__src_list || !dst)
+    {
+      return 0;
+    }
+
+  /* Get customized settings from user */
+  res = show_copy_dialog (__src_list, __count, &dst);
+
+  /* User canceled copying */
+  if (res == MR_CANCEL)
+    {
+      SAFE_FREE (dst);
+      return MR_ABORT;
+    }
+
+  wnd = create_process_window ();
+  w_window_show (wnd->window);
+
+  for (i = 0; i < __count; ++i)
+    {
+      item = (file_panel_item_t*)__src_list[i];
+
+      /* Make copy iteration */
+      src = wcdircatsubdir (__base_dir, item->file->name);
+      res = make_copy_iter (src, __dst, &owr_all_rule, wnd);
+      free (src);
+
+      if (res == 0)
+        {
+          /* In case of successfull copying */
+          /* we need free selection from copied item */
+          item->selected = FALSE;
+          count++;
+        }
+      else
+        {
+          if (res == MR_ABORT)
+            {
+              break;
+            }
+        }
+    }
 
   destroy_process_window (wnd);
 
-  return 0;
+  free (dst);
+
+  return count;
 }
 
 /********
@@ -1224,7 +1342,9 @@ int
 action_copy (file_panel_t *__panel)
 {
   file_panel_t *opposite_panel;
-  wchar_t *src, *dst, *dummy, *cur;
+  wchar_t *dst, *cwd;
+  file_panel_item_t **list;
+  unsigned long count;
 
   if (!__panel)
     {
@@ -1248,22 +1368,23 @@ action_copy (file_panel_t *__panel)
     }
 
   /* Full source and destination URLs */
-  dummy = file_panel_get_full_cwd (__panel);
-  cur = __panel->items.data [__panel->items.current].file->name;
-  src = wcdircatsubdir (dummy, cur);
-
+  cwd = file_panel_get_full_cwd (__panel);
   dst = file_panel_get_full_cwd (opposite_panel);
 
-  /*
-   * TODO: Replace single source file name with list of selected items
-   */
+  /* Get list of items to be copied */
+  count = file_panel_get_selected_items (__panel, &list);
 
   /* Copy files */
-  make_copy (src, dst);
+  count = make_copy (cwd, (const file_panel_item_t**)list, count, dst);
+  __panel->items.selected_count -= count;
 
-  free (src);
+  free (list);
   free (dst);
-  free (dummy);
+  free (cwd);
+
+  /* There may be selection in source panel and it may be changed */
+  /* so, we need to redraw it */
+  file_panel_redraw (__panel);
 
   /* There is new items on opposite panel */
   /* so, we need to rescan it */

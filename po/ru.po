@@ -166,6 +166,15 @@ msgstr "Копировать директорию \"%ls\" в:"
 msgid "Copy file \"%ls\" to:"
 msgstr "Копировать файл \"%ls\" в:"
 
+msgid "Copy %lu files to:"
+msgstr "Копировать эти файлы (%lu шт.) в:"
+
+msgid "Copy %lu directories to:"
+msgstr "Копировать эти директории (%lu шт.) в:"
+
+msgid "Copy %lu files/directories to:"
+msgstr "Копировать эти файлы и директории (2 шт.) в:"
+
 msgid "Cannot create target file \"%ls\":\n%ls"
 msgstr "Невозможно создать целевой файл \"%ls\":\n%ls"
 
