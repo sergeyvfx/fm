@@ -1299,7 +1299,7 @@ make_copy (const wchar_t *__base_dir, const file_panel_item_t **__src_list,
   if (res == MR_CANCEL)
     {
       SAFE_FREE (dst);
-      return MR_ABORT;
+      return 0;
     }
 
   wnd = create_process_window ();
