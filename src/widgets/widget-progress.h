@@ -68,4 +68,8 @@ w_progress_set_max (w_progress_t *__progress, unsigned long __max);
 unsigned long
 w_progress_get_pos (w_progress_t *__progress);
 
+unsigned long
+w_progress_get_max (w_progress_t *__progress);
+
+
 #endif

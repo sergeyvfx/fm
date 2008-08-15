@@ -214,3 +214,20 @@ w_progress_get_pos (w_progress_t *__progress)
 
   return __progress->cur_pos;
 }
+
+/**
+ * Get max position
+ *
+ * @param __progress - from which progress bar position will be gotten
+ * @return ,ax position of progress bar
+ */
+unsigned long
+w_progress_get_max (w_progress_t *__progress)
+{
+  if (!__progress)
+    {
+      return 0;
+    }
+
+  return __progress->max_pos;
+}
