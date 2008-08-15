@@ -197,3 +197,20 @@ w_progress_set_max (w_progress_t *__progress, unsigned long __max)
   __progress->max_pos = __max;
   widget_redraw (WIDGET (__progress));
 }
+
+/**
+ * Get progress position
+ *
+ * @param __progress - from which progress bar position will be gotten
+ * @return position of progress bar
+ */
+unsigned long
+w_progress_get_pos (w_progress_t *__progress)
+{
+  if (!__progress)
+    {
+      return 0;
+    }
+
+  return __progress->cur_pos;
+}
