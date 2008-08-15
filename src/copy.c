@@ -1386,7 +1386,14 @@ action_copy (file_panel_t *__panel)
 
   /* Copy files */
   count = make_copy (cwd, (const file_panel_item_t**)list, count, dst);
-  __panel->items.selected_count -= count;
+
+  /* If there selection_count==0 it means that */
+  /* item under cursor has been copied and we */
+  /* we shouldn't change selected_count */
+  if (__panel->items.selected_count)
+    {
+      __panel->items.selected_count -= count;
+    }
 
   free (list);
   free (dst);
