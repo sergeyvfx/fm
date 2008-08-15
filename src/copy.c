@@ -515,7 +515,7 @@ create_process_window (void)
   res->source = widget_create_text (cnt, L"", 1, 1);
   res->target = widget_create_text (cnt, L"", 1, 2);
 
-  res->file_progress = widget_create_progress (cnt, 100, 10, 4, 49);
+  res->file_progress = widget_create_progress (cnt, 100, 10, 4, 49, 0);
 
   widget_create_text (cnt, _(L"File"), 1, 4);
 

@@ -16,6 +16,13 @@
 #endif
 
 /********
+ * Constants
+ */
+
+/* Do not show percent */
+#define WPBS_NOPERCENT 0x0001
+
+/********
  * Type defenitions
  */
 
@@ -30,6 +37,9 @@ typedef struct
   /* Current position */
   unsigned long cur_pos;
 
+  /* Different additional styles */
+  unsigned int style;
+
   scr_font_t *font;
   scr_font_t *background_font;
   scr_font_t *progress_font;
@@ -41,7 +51,7 @@ typedef struct
 
 w_progress_t*
 widget_create_progress (w_container_t *__parent, unsigned long __max_pos,
-                        int __x, int __y, int __w);
+                        int __x, int __y, int __w, unsigned int __style);
 
 void
 w_progress_set_font (w_progress_t *__progress,

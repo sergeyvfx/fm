@@ -48,7 +48,11 @@ progress_drawer (w_progress_t *__progress)
       return -1;
     }
 
-  width = __progress->position.width - 5;
+  width = __progress->position.width;
+  if (!(__progress->style & WPBS_NOPERCENT))
+    {
+      width -= 5;
+    }
 
   scr_wnd_attr_backup (layout);
 
@@ -82,7 +86,10 @@ progress_drawer (w_progress_t *__progress)
     }
 
   /* Draw percents */
-  scr_wnd_printf (layout, " %3d%%", perc);
+  if (!(__progress->style & WPBS_NOPERCENT))
+    {
+      scr_wnd_printf (layout, " %3d%%", perc);
+    }
 
   scr_wnd_attr_restore (layout);
 
@@ -103,9 +110,8 @@ progress_drawer (w_progress_t *__progress)
  * @return a pointer to progress bar object
  */
 w_progress_t*
-widget_create_progress (w_container_t *__parent,
-                        unsigned long __max_pos,
-                        int __x, int __y, int __w)
+widget_create_progress (w_container_t *__parent, unsigned long __max_pos,
+                        int __x, int __y, int __w, unsigned int __style)
 {
   w_progress_t *res;
 
@@ -120,9 +126,9 @@ widget_create_progress (w_container_t *__parent,
                progress_destructor, progress_drawer, __x, __y, 1, __w, 1);
 
   res->max_pos = __max_pos;
+  res->style = __style;
 
   res->font = &FONT (CID_BLUE, CID_WHITE);
-
   res->background_font = &FONT (CID_BLACK, CID_WHITE);
   res->progress_font = &FONT (CID_WHITE, CID_BLACK);
 
