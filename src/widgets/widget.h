@@ -192,7 +192,10 @@
   }
 
 #define WIDGET_CONTAINER_DELETER(_w) \
-  WIDGET_CONTAINER_ACTION_ITERONLY (_w, widget_destroy)
+  { \
+    WIDGET_CONTAINER_ACTION_ITERONLY (_w, widget_destroy); \
+    SAFE_FREE (_w->container.data); \
+  }
 
 #define _WIDGET_CONTAINER_DRAWER_ITER(_w) \
   if (!_w->focused) \

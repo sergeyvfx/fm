@@ -29,11 +29,7 @@ edit_destructor                   (w_edit_t *__edit)
       return -1;
     }
 
-  /* Destroy screen layout */
-  if (WIDGET_LAYOUT (__edit))
-    {
-      scr_destroy_window (WIDGET_LAYOUT (__edit));
-    }
+  SAFE_FREE (__edit->text.data);
 
   free (__edit);
   return 0;

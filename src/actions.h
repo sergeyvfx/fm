@@ -18,6 +18,27 @@
 BEGIN_HEADER
 
 #include "file_panel.h"
+#include "deque.h"
+#include <vfs/vfs.h>
+
+/********
+ * Constants
+ */
+
+/* Error codes */
+#define ACTION_OK     0
+#define ACTION_ERR   -1
+#define ACTION_ABORT  1
+
+/********
+ *
+ */
+
+#include <action-listing.h>
+
+/********
+ *
+ */
 
 int
 action_copy (file_panel_t *__panel);

@@ -26,10 +26,7 @@ text_destructor                   (w_text_t *__text)
       return -1;
     }
 
-  if (__text->text)
-    {
-      free (__text->text);
-    }
+  SAFE_FREE (__text->text);
 
   free (__text);
   return 0;

@@ -10,7 +10,6 @@
  * See the file COPYING.
  */
 
-#include "messages.h"
 #include "actions.h"
 #include "messages.h"
 #include "i18n.h"
@@ -18,11 +17,11 @@
 #include "file.h"
 
 #include <widget.h>
-#include <vfs/vfs.h>
 
 #include <fcntl.h>
 #include <time.h>
 #include <errno.h>
+#include <wchar.h>
 
 /********
  * Constants and other definitions
@@ -199,13 +198,25 @@
 
 #define FREE_REMAIN_DIRENT() \
   { \
-    int j; \
-    for (j = i; j < count; j++) \
+    if (!prescanned) \
       { \
-        vfs_free_dirent (eps[i]); \
+        int j; \
+        for (j = i; j < count; j++) \
+          { \
+            vfs_free_dirent (eps[i]); \
+          } \
       } \
   }
 
+#define UPDATE_TOTAL_PROGRESS(_progress, _value) \
+  { \
+    if (__proc_wnd->_progress) \
+      { \
+        w_progress_set_pos (__proc_wnd->_progress, \
+                            w_progress_get_pos (__proc_wnd->_progress) + \
+                                    _value); \
+      } \
+  }
 
 /**
  * Modal results for overwrite answers
@@ -224,6 +235,8 @@ typedef struct
   w_text_t *target;
 
   w_progress_t *file_progress;
+  w_progress_t *bytes_progress;
+  w_progress_t *count_progress;
 
   /*
    * NOTE: This descriptor is very convenient to send additional
@@ -240,6 +253,13 @@ typedef struct
   /* Prefix of absolute directory names of sources */
   wchar_t *abs_path_prefix;
 } process_window_t;
+
+/********
+ * Global variables
+ */
+
+/* Recursively scanning before copying */
+static BOOL scan = TRUE;
 
 /********
  * Internal stuff
@@ -444,7 +464,7 @@ skip_button_clicked (w_button_t *__button)
 
   wnd->skip = TRUE;
 
-  return 0;
+  return TRUE;
 }
 
 /**
@@ -466,7 +486,7 @@ abort_button_clicked (w_button_t *__button)
 
   wnd->abort = TRUE;
 
-  return 0;
+  return TRUE;
 }
 
 /**
@@ -497,27 +517,50 @@ button_keydown (w_button_t *__button, wint_t __ch)
 /**
  * Create file copy process window
  *
+ * @param __total_progress - is total progress information avaliable
  * @return created window
  */
 static process_window_t*
-create_process_window (void)
+create_process_window (BOOL __total_progress)
 {
   process_window_t *res;
   w_container_t *cnt;
   w_button_t *btn;
-  int buttons_left;
+  int buttons_left, height;
 
   MALLOC_ZERO (res, sizeof (process_window_t))
 
-  res->window = widget_create_window (_(L"Copy"), 0, 0, 60, 10, WMS_CENTERED);
+  if (__total_progress)
+    {
+      height = 11;
+    }
+  else
+    {
+      height = 8;
+    }
+
+  res->window = widget_create_window (_(L"Copy"), 0, 0,
+                                      59, height, WMS_CENTERED);
   cnt = WIDGET_CONTAINER (res->window);
 
   res->source = widget_create_text (cnt, L"", 1, 1);
   res->target = widget_create_text (cnt, L"", 1, 2);
 
-  res->file_progress = widget_create_progress (cnt, 100, 10, 4, 49, 0);
+  res->file_progress = widget_create_progress (cnt, 100, 10, 4, 48, 0);
 
   widget_create_text (cnt, _(L"File"), 1, 4);
+
+  /* Create progess bars for displaying total progress */
+  if (__total_progress)
+    {
+        widget_create_text (cnt, _(L"Bytes"), 1, 6);
+        res->bytes_progress = widget_create_progress (cnt, 100, 1, 7, 28,
+                                                      WPBS_NOPERCENT);
+
+        widget_create_text (cnt, _(L"Count"), 30, 6);
+        res->count_progress = widget_create_progress (cnt, 100, 30, 7, 28,
+                                                      WPBS_NOPERCENT);
+    }
 
   /* Create buttons */
   buttons_left = (cnt->position.width - widget_shortcut_length (_(L"_Skip")) -
@@ -748,6 +791,30 @@ is_newer (const wchar_t *__src, const wchar_t *__dst)
 }
 
 /**
+ * Is total progress info displaying avaliable
+ *
+ * @param __src_list - list of items to be copied
+ * @param __count - count of items in list
+ * @return is total progress info displaying avaliable
+ */
+static BOOL
+total_progress_avaliable (const file_panel_item_t **__src_list,
+                          unsigned long __count)
+{
+  if (!__src_list || !scan)
+    {
+      return FALSE;
+    }
+
+  if (__count > 1)
+    {
+      return TRUE;
+    }
+
+  return S_ISDIR (__src_list[0]->file->lstat.st_mode);
+}
+
+/**
  * Copy a regular file
  *
  * @param __src - URL of source
@@ -780,7 +847,7 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
       switch (res)
         {
         case MR_NO:
-          return 0;
+          return ACTION_OK;
           break;
         case MR_APPEND:
           create_flags = O_WRONLY | O_APPEND;
@@ -792,21 +859,23 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
         case MR_UPDATE:
           SAVE_OWR_ALL_RULE (MR_UPDATE);
           if (!is_newer (__src, __dst))
-            return 0;
+            {
+              return ACTION_OK;
+            }
           break;
         case MR_MY_NONE:
           SAVE_OWR_ALL_RULE (MR_MY_NONE);
-          return 0;
+          return ACTION_OK;
           break;
         case MR_SIZE_DIFFERS:
           SAVE_OWR_ALL_RULE (MR_SIZE_DIFFERS);
           if (!is_size_differs (__src, __dst))
-            return 0;
+            return ACTION_OK;
           break;
 
         case MR_CANCEL:
         case MR_ABORT:
-          return MR_ABORT;
+          return ACTION_ABORT;
           break;
         }
     }
@@ -860,7 +929,8 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
                      _(L"Cannot write target file \"%ls\":\n%ls"),
                      __dst, vfs_get_error (res));
 
-      copied += read;
+      copied += written;
+      UPDATE_TOTAL_PROGRESS (bytes_progress, written);
       w_progress_set_pos (__proc_wnd->file_progress, copied);
 
       /* Process accamulated queue of characters */
@@ -885,18 +955,25 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
             {
               vfs_unlink (__dst);
             }
-          }
+
+          /* Update limit of max position in bytes progress */
+          if (__proc_wnd->bytes_progress)
+            {
+               w_progress_set_max (__proc_wnd->bytes_progress,
+                     w_progress_get_max (__proc_wnd->bytes_progress) - remain);
+            }
+        }
 
       /* Reset skip flag */
       __proc_wnd->skip = FALSE;
 
       if (__proc_wnd->abort)
         {
-          return MR_ABORT;
+          return ACTION_ABORT;
         }
     }
 
-  return 0;
+  return ACTION_OK;
 }
 
 /**
@@ -916,7 +993,7 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
   wchar_t content[MAX_SYMLINK_CONTENT];
   int res;
 
-  /* Read content of source symbolic link */
+  /* Read content of source symbolic link */  
   vfs_readlink (__src, content, BUF_LEN (content));
 
   for (;;)
@@ -939,7 +1016,7 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
                 {
                   /* Contents are equal, so we can think, that */
                   /* symbolic link has been copied successfully */
-                  return 0;
+                  return ACTION_OK;
                 }
             }
 
@@ -959,7 +1036,7 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
               break;
 
             case MR_NO:
-              return 0;
+              return ACTION_OK;
 
             case MR_ALL:
               SAVE_OWR_ALL_RULE (MR_ALL);
@@ -969,23 +1046,27 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
             case MR_UPDATE:
               SAVE_OWR_ALL_RULE (MR_UPDATE);
               if (!is_newer (__src, __dst))
-                return 0;
+                {
+                  return ACTION_OK;
+                }
               SYMLINK_UNLINK ();
               break;
 
             case MR_MY_NONE:
               SAVE_OWR_ALL_RULE (MR_MY_NONE);
-              return 0;
+              return ACTION_OK;
 
             case MR_SIZE_DIFFERS:
               SAVE_OWR_ALL_RULE (MR_SIZE_DIFFERS);
               if (!is_size_differs (__src, __dst))
-                return 0;
+                {
+                  return ACTION_OK;
+                }
               SYMLINK_UNLINK ();
               break;
 
             case MR_ABORT:
-              return MR_ABORT;
+              return ACTION_ABORT;
             }
         }
       else
@@ -1003,10 +1084,10 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
                   continue;
 
                 case MR_CANCEL:
-                  return MR_ABORT;
+                  return ACTION_ABORT;
 
                 case MR_SKIP:
-                  return 0;
+                  return ACTION_OK;
                 }
             }
         }
@@ -1014,14 +1095,14 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
       /* Create symlink only if 'File not found' error returned */
       if (!vfs_symlink (content, __dst))
         {
-          return 0;
+          return ACTION_OK;
         }
 
       /* Process accamulated queue of characters */
       COPY_PROCESS_QUEUE ();
     }
 
-  return 0;
+  return ACTION_OK;
 }
 
 /**
@@ -1059,7 +1140,7 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
                 _(L"Cannot copy \"%ls\" to itself"), __src);
 
       MESSAGE_ERROR (buf);
-      return -1;
+      return ACTION_ERR;
     }
 
   /* Stat source file to determine it's type */
@@ -1071,11 +1152,13 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
   if (S_ISREG (stat.st_mode))
     {
       res = copy_regular_file (__src, __dst, __owr_all_rule, __proc_wnd);
+      UPDATE_TOTAL_PROGRESS (count_progress, 1);
     }
   else
     if (S_ISLNK (stat.st_mode))
     {
       res = copy_symlink (__src, __dst, __owr_all_rule, __proc_wnd);
+      UPDATE_TOTAL_PROGRESS (count_progress, 1);
     }
   else
     {
@@ -1088,14 +1171,14 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
                 __src, _(L"This feature is not implemented yet"));
       MESSAGE_ERROR (msg);
 
-      res = 0;
+      res = ACTION_OK;
     }
 
   /* Process accamulated queue of characters */
   widget_process_queue ();
   if (__proc_wnd->abort)
     {
-      return MR_ABORT;
+      return ACTION_ABORT;
     }
 
   return res;
@@ -1106,19 +1189,22 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
  *
  * @param __src - URL of source
  * @param __dst - URL of destination
- * @param __owr_all_rule - Rule for overwriting existing files 
+ * @param __owr_all_rule - Rule for overwriting existing files
  * @param __proc_wnd - window with different current information
+ * @param __tree - prescanned tree
  * @return zero on success, non-zero otherwise
  */
 static int
 copy_dir (const wchar_t *__src, const wchar_t *__dst,
-          int *__owr_all_rule, process_window_t *__proc_wnd)
+          int *__owr_all_rule, process_window_t *__proc_wnd,
+          const action_listing_tree_t *__tree)
 {
   vfs_dirent_t **eps = NULL;
   vfs_stat_t stat;
-  int count, i, res = 0;
+  int count, i, res = ACTION_OK;
   wchar_t *full_name, *full_dst;
   size_t fn_len, dst_len;
+  BOOL prescanned = FALSE;
 
   /* Stat source directory */
   COPY_DIR_REP (res = vfs_stat (__src, &stat);, error,
@@ -1126,11 +1212,29 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
                 __src, vfs_get_error (res));
 
   /* Get listing of a directory */
-  COPY_DIR_REP (count = vfs_scandir (__src, &eps, 0, vfs_alphasort);
-                res = count < 0 ? count : 0,
-                error,
-                _(L"Cannot listing source directory \"%ls\":\n%ls"),
-                __src, vfs_get_error (res));
+  if (__tree)
+    {
+      /* Get listing from prescanned data */
+      count = __tree->count;
+      eps = __tree->dirent;
+
+      prescanned = TRUE;
+
+      /*
+       * NOTE: If we use prescanned data, we shouldn't free()
+       *       directory entries from it. They will be freed while
+       *       the whole prescanned tree will be destroying
+       */
+    }
+  else
+    {
+      /* Scan directory */
+      COPY_DIR_REP (count = vfs_scandir (__src, &eps, 0, vfs_alphasort);
+                    res = count < 0 ? count : 0,
+                    error,
+                    _(L"Cannot listing source directory \"%ls\":\n%ls"),
+                    __src, vfs_get_error (res));
+    }
 
   /*
    * NOTE: Destination directory must be created AFTER listing of source one.
@@ -1168,11 +1272,12 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
             }
           else
             {
-              res = copy_dir (full_name, full_dst, __owr_all_rule, __proc_wnd);
+              res = copy_dir (full_name, full_dst, __owr_all_rule, __proc_wnd,
+                              prescanned ? __tree->items[i] : NULL);
             }
 
           /* Copying has been aborted */
-          if (res == MR_ABORT)
+          if (res == ACTION_ABORT)
             {
               /* Free allocated memory */
               FREE_REMAIN_DIRENT ();
@@ -1188,18 +1293,26 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
 
           if (__proc_wnd->abort)
             {
-              res = MR_ABORT;
+              res = ACTION_ABORT;
             }
 
           break;
         }
 
-      vfs_free_dirent (eps[i]);
+      if (!prescanned)
+        {
+          vfs_free_dirent (eps[i]);
+        }
     }
 
   /* Free used variables */
-  SAFE_FREE (eps);
+  if (!prescanned)
+    {
+      SAFE_FREE (eps);
+    }
+
   free (full_name);
+  free (full_dst);
 
   return res;
 }
@@ -1211,13 +1324,16 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
  * @param __dst - full destination URL
  * @param __owr_all_rule - Rule for overwriting existing files
  * @param __proc_wnd - window with different current information
+ * @param __tree - prescanned tree of items. This tree will be
+ * send to copy_dir().
  * @return zero on success, non-zero otherwise
  */
 static int
 make_copy_iter (const wchar_t *__src, const wchar_t *__dst,
-                int *__owr_all_rule, process_window_t *__proc_wnd)
+                int *__owr_all_rule, process_window_t *__proc_wnd,
+                const action_listing_tree_t *__tree)
 {
-  int res = -1;
+  int res = ACTION_ERR;
   wchar_t *rdst = NULL; /* Real destination */
 
   if (isdir (__src))
@@ -1240,12 +1356,12 @@ make_copy_iter (const wchar_t *__src, const wchar_t *__dst,
               /*
                * TODO: Add error handling here
                */
-              return -1;
+              return ACTION_ERR;
             }
         }
 
       /* Copy directory */
-      res = copy_dir (__src, rdst, __owr_all_rule, __proc_wnd);
+      res = copy_dir (__src, rdst, __owr_all_rule, __proc_wnd, __tree);
     }
   else
     {
@@ -1286,11 +1402,15 @@ make_copy (const wchar_t *__base_dir, const file_panel_item_t **__src_list,
   wchar_t *dst = (wchar_t*) __dst, *src;
   unsigned long i, count = 0;
   file_panel_item_t *item;
+  BOOL scan_allowed;
+  actions_listing_t listing;
 
   if (!__base_dir || !*__src_list || !dst)
     {
       return 0;
     }
+
+  memset (&listing, 0, sizeof (listing));
 
   /* Get customized settings from user */
   res = show_copy_dialog (__src_list, __count, &dst);
@@ -1302,7 +1422,35 @@ make_copy (const wchar_t *__base_dir, const file_panel_item_t **__src_list,
       return 0;
     }
 
-  wnd = create_process_window ();
+  scan_allowed = total_progress_avaliable (__src_list, __count);
+
+  /* Get listing of items */
+  if (scan_allowed)
+    {
+      if ((res = action_get_listing (__base_dir, __src_list,
+                                   __count, &listing)) != ACTION_OK)
+        {
+          /* There was an error listing items */
+          if (res == ACTION_ABORT)
+            {
+              /* User just aborted scanning */
+              scan_allowed = FALSE;
+            }
+          else
+            {
+              return res;
+            }
+        }
+    }
+
+  wnd = create_process_window (scan_allowed);
+  if (scan_allowed)
+    {
+      /* Set limits */
+      w_progress_set_max (wnd->count_progress, listing.count);
+      w_progress_set_max (wnd->bytes_progress, listing.size);
+    }
+
   wnd->abs_path_prefix = (wchar_t*)__base_dir;
   w_window_show (wnd->window);
 
@@ -1312,7 +1460,8 @@ make_copy (const wchar_t *__base_dir, const file_panel_item_t **__src_list,
 
       /* Make copy iteration */
       src = wcdircatsubdir (__base_dir, item->file->name);
-      res = make_copy_iter (src, __dst, &owr_all_rule, wnd);
+      res = make_copy_iter (src, __dst, &owr_all_rule, wnd,
+                            scan_allowed ? listing.tree->items[i] : NULL);
       free (src);
 
       if (res == 0)
@@ -1332,6 +1481,12 @@ make_copy (const wchar_t *__base_dir, const file_panel_item_t **__src_list,
     }
 
   destroy_process_window (wnd);
+
+  /* Free listing information */
+  if (scan_allowed)
+    {
+      action_free_listing (&listing);
+    }
 
   free (dst);
 
@@ -1353,12 +1508,12 @@ action_copy (file_panel_t *__panel)
 {
   file_panel_t *opposite_panel;
   wchar_t *dst, *cwd;
-  file_panel_item_t **list;
+  file_panel_item_t **list = NULL;
   unsigned long count;
 
   if (!__panel)
     {
-      return -1;
+      return ACTION_ERR;
     }
 
   /* Check file panels count */
@@ -1366,7 +1521,7 @@ action_copy (file_panel_t *__panel)
     {
       MESSAGE_ERROR (_(L"File copying may be start at least "
                         "with two file panels"));
-      return -1;
+      return ACTION_ERR;
     }
 
   /* Get second panel to start copying */
@@ -1374,7 +1529,7 @@ action_copy (file_panel_t *__panel)
   if (!opposite_panel)
     {
       /* User canceled operation */
-      return 0;
+      return ACTION_ABORT;
     }
 
   /* Full source and destination URLs */
@@ -1383,6 +1538,23 @@ action_copy (file_panel_t *__panel)
 
   /* Get list of items to be copied */
   count = file_panel_get_selected_items (__panel, &list);
+
+  /*
+   * NOTE: I hope that file panel cannot give access to select
+   *       pseudo-directories. So, only item under cursor may be
+   *       a pseudo-directory.
+   *       Lets check it.
+   */
+  if (count == 1 && (wcscmp (list[0]->file->name, L".") == 0 ||
+                     wcscmp (list[0]->file->name, L"..") == 0))
+
+    {
+      wchar_t msg[1024];
+      swprintf (msg, BUF_LEN (msg), _(L"Cannot operate on \"%ls\""),
+                list[0]->file->name);
+      MESSAGE_ERROR (msg);
+      return ACTION_ERR;
+    }
 
   /* Copy files */
   count = make_copy (cwd, (const file_panel_item_t**)list, count, dst);
@@ -1395,7 +1567,7 @@ action_copy (file_panel_t *__panel)
       __panel->items.selected_count -= count;
     }
 
-  free (list);
+  SAFE_FREE (list);
   free (dst);
   free (cwd);
 
@@ -1407,5 +1579,5 @@ action_copy (file_panel_t *__panel)
   /* so, we need to rescan it */
   file_panel_rescan (opposite_panel);
 
-  return 0;
+  return ACTION_OK;
 }

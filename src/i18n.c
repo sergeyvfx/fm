@@ -147,7 +147,7 @@ i18n_list_binary_search (const i18n_list *__list, const wchar_t *__text)
         }
       else
         {
-          if (retval > 0)
+          if (retval < 0)
             {
               last = middle - 1;
             }

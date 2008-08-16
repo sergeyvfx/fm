@@ -496,6 +496,7 @@ localfs_readlink (const wchar_t *__fn, wchar_t *__buf, size_t __bufsize)
 
       if (res >= 0)
         {
+          mbbuf[res] = 0;
           mbstowcs (__buf, mbbuf, __bufsize);
         }
       else

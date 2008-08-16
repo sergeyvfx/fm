@@ -31,8 +31,9 @@ SOURCES = \
 	deque.c \
 	hashmap.c \
 	hook.c \
-	choose_panel.c \
-	copy.c
+	action-choose_panel.c \
+	action-listing.c \
+	action-copy.c
 
 OBJECTS = ${SOURCES:.c=.o}
 

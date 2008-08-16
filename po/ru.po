@@ -148,6 +148,9 @@ msgstr "Плагин '${plugin-name}' не найден"
 msgid "Error loading plugin: ${dl-error}"
 msgstr "Ошибка загрузки плагина: ${dl-error}"
 
+msgid "Cannot operate on \"%ls\""
+msgstr "Эта операция не может быть применена к \"%ls\""
+
 ##
 # File actions
 
@@ -174,6 +177,12 @@ msgstr "Копировать эти директории (%lu шт.) в:"
 
 msgid "Copy %lu files/directories to:"
 msgstr "Копировать эти файлы и директории (2 шт.) в:"
+
+msgid "Bytes"
+msgstr "Байт"
+
+msgid "Count"
+msgstr "Счёт"
 
 msgid "Cannot create target file \"%ls\":\n%ls"
 msgstr "Невозможно создать целевой файл \"%ls\":\n%ls"

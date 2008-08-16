@@ -917,9 +917,10 @@ file_panel_refresh (file_panel_t *__panel)
       return -1;
     }
 
+  __panel->items.selected_count = 0;
+
   if ((res = refill_items (__panel)))
     {
-      FILE_PANEL_ACTION_CALL (__panel, free_saved_selection);
       return res;
     }
 
