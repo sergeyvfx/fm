@@ -40,7 +40,7 @@ static int
 progress_drawer (w_progress_t *__progress)
 {
   scr_window_t layout = WIDGET_LAYOUT (__progress);
-  int width, i, count, perc;
+  int width, i, count, perc, start, finito;
 
   /* Widget is invisible or there is no layout */
   if (!WIDGET_VISIBLE (__progress) || !layout)
@@ -54,13 +54,6 @@ progress_drawer (w_progress_t *__progress)
       width -= 5;
     }
 
-  scr_wnd_attr_backup (layout);
-
-  scr_wnd_move_caret (layout, __progress->position.x, __progress->position.y);
-
-  /* Draw bar */
-  scr_wnd_font (layout, *__progress->progress_font);
-
   if (__progress->max_pos)
     {
       perc = (double) __progress->cur_pos / __progress->max_pos * 100;
@@ -71,15 +64,46 @@ progress_drawer (w_progress_t *__progress)
     }
   count = (double) perc / 100 * width;
 
+  /*
+   * NOTE: If WFPB_UPDATEONLY flag is set only
+   *       changes will pe placed on the layout
+   */
+  if (WIDGET_TEST_FLAG (__progress, WFPB_UPDATEONLY))
+    {
+      if (count == __progress->prev_count)
+        {
+          return 0;
+        }
+      start = MAX (__progress->prev_count, 0);
+      finito = __progress->prev_count;
+      WIDGET_RESET_FLAG (__progress, WFPB_UPDATEONLY);
+      __progress->prev_count = count;
+    }
+  else
+    {
+      start = 0;
+      finito = width;
+    }
+
+  scr_wnd_attr_backup (layout);
+
+  scr_wnd_move_caret (layout, __progress->position.x + start,
+                      __progress->position.y);
+
+  /* Draw bar */
   scr_wnd_font (layout, *__progress->progress_font);
-  for (i = 0; i < count; i++)
+
+  for (i = start; i < count; i++)
     {
       scr_wnd_putch (layout, ' ');
     }
 
   /* Draw the rest bar */
+  i = count;
+  scr_wnd_move_caret (layout, __progress->position.x + i,
+                      __progress->position.y);
   scr_wnd_font (layout, *__progress->background_font);
-  while (i < width)
+  while (i < finito)
     {
       scr_wnd_putch (layout, ACS_CKBOARD);
       i++;
@@ -88,6 +112,8 @@ progress_drawer (w_progress_t *__progress)
   /* Draw percents */
   if (!(__progress->style & WPBS_NOPERCENT))
     {
+      scr_wnd_move_caret (layout, __progress->position.x + width - 5,
+                          __progress->position.y);
       scr_wnd_printf (layout, " %3d%%", perc);
     }
 
@@ -131,6 +157,8 @@ widget_create_progress (w_container_t *__parent, unsigned long __max_pos,
   res->font = &FONT (CID_BLUE, CID_WHITE);
   res->background_font = &FONT (CID_BLACK, CID_WHITE);
   res->progress_font = &FONT (CID_WHITE, CID_BLACK);
+
+  res->prev_count = -1;
 
   WIDGET_POST_INIT (res);
 
@@ -177,6 +205,7 @@ w_progress_set_pos (w_progress_t *__progress, unsigned long __pos)
     }
 
   __progress->cur_pos = __pos;
+  WIDGET_SET_FLAG (__progress, WFPB_UPDATEONLY);
   widget_redraw (WIDGET (__progress));
 }
 
@@ -195,6 +224,7 @@ w_progress_set_max (w_progress_t *__progress, unsigned long __max)
     }
 
   __progress->max_pos = __max;
+  WIDGET_SET_FLAG (__progress, WFPB_UPDATEONLY);
   widget_redraw (WIDGET (__progress));
 }
 

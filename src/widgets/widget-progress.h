@@ -22,6 +22,8 @@
 /* Do not show percent */
 #define WPBS_NOPERCENT 0x0001
 
+#define WFPB_UPDATEONLY 0x0100
+
 /********
  * Type defenitions
  */
@@ -43,6 +45,11 @@ typedef struct
   scr_font_t *font;
   scr_font_t *background_font;
   scr_font_t *progress_font;
+
+  /* Deep-core data */
+
+  /* Previously drawed count of filled chars */
+  int prev_count;
 } w_progress_t;
 
 /********
