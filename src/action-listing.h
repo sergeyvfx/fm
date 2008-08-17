@@ -37,7 +37,7 @@ typedef struct {
 
   /* Tree of items */
   action_listing_tree_t *tree;
-} actions_listing_t;
+} action_listing_t;
 
 /********
  *
@@ -46,10 +46,10 @@ typedef struct {
 int
 action_get_listing (const wchar_t *__base_dir,
                     const file_panel_item_t **__list,
-                    unsigned long __count, actions_listing_t *__res);
+                    unsigned long __count, action_listing_t *__res);
 
 void
-action_free_listing (actions_listing_t *__self);
+action_free_listing (action_listing_t *__self);
 
 END_HEADER
 

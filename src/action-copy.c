@@ -28,7 +28,7 @@
  */
 
 /* Size of buffer in copying operation */
-#define BUF_SIZE 4096
+#define BUF_SIZE 65536
 
 /* Maximal size of content of symbolic link */
 #define MAX_SYMLINK_CONTENT 4096
@@ -218,6 +218,43 @@
       } \
   }
 
+#define SET_DIGIT_CAPTION(_caption, _format, _args...) \
+  { \
+    wchar_t text[1024]; \
+    swprintf (text, BUF_LEN (text), _format, _args); \
+    w_text_set (__proc_wnd->_caption, text); \
+  }
+
+#define BUFFER_COPIED(_size) \
+  { \
+    static wchar_t *format = NULL; \
+    if (format == NULL) \
+      { \
+        format = _(L"(%lldKb of %lldKb)"); \
+      } \
+    w_progress_set_pos (__proc_wnd->file_progress, copied); \
+    UPDATE_TOTAL_PROGRESS (bytes_progress, _size); \
+    __proc_wnd->bytes_copied += _size; \
+    if (iteration % 8 /* Magick constant */) \
+      { \
+        SET_DIGIT_CAPTION (bytes_digit, format, \
+            __proc_wnd->bytes_copied / 1024, __proc_wnd->bytes_total / 1024); \
+      } \
+  }
+
+#define FILE_COPIED() \
+  { \
+    static wchar_t *format = NULL; \
+    if (format == NULL) \
+      { \
+        format = _(L"(%lld of %lld)"); \
+      } \
+    UPDATE_TOTAL_PROGRESS (count_progress, 1); \
+    ++__proc_wnd->files_copied; \
+    SET_DIGIT_CAPTION (count_digit, format, \
+        __proc_wnd->files_copied, __proc_wnd->files_total); \
+  }
+
 /**
  * Modal results for overwrite answers
  */
@@ -238,6 +275,9 @@ typedef struct
   w_progress_t *bytes_progress;
   w_progress_t *count_progress;
 
+  w_text_t *bytes_digit;
+  w_text_t *count_digit;
+
   /*
    * NOTE: This descriptor is very convenient to send additional
    *       information to deep-core functions and leave their
@@ -252,6 +292,12 @@ typedef struct
 
   /* Prefix of absolute directory names of sources */
   wchar_t *abs_path_prefix;
+
+  __u64_t bytes_total;
+  __u64_t files_total;
+
+  __u64_t bytes_copied;
+  __u64_t files_copied;
 } process_window_t;
 
 /********
@@ -477,7 +523,7 @@ static int
 abort_button_clicked (w_button_t *__button)
 {
   process_window_t *wnd;
-  if (!__button | !WIDGET_USER_DATA (__button))
+  if (!__button || !WIDGET_USER_DATA (__button))
     {
       return 0;
     }
@@ -498,7 +544,7 @@ abort_button_clicked (w_button_t *__button)
 static int
 button_keydown (w_button_t *__button, wint_t __ch)
 {
-  if (!__button | !WIDGET_USER_DATA (__button))
+  if (!__button || !WIDGET_USER_DATA (__button))
     {
       return 0;
     }
@@ -518,10 +564,12 @@ button_keydown (w_button_t *__button, wint_t __ch)
  * Create file copy process window
  *
  * @param __total_progress - is total progress information avaliable
+ * @param __listing - listing to get summary information
  * @return created window
  */
 static process_window_t*
-create_process_window (BOOL __total_progress)
+create_process_window (BOOL __total_progress,
+                       const action_listing_t *__listing)
 {
   process_window_t *res;
   w_container_t *cnt;
@@ -546,20 +594,34 @@ create_process_window (BOOL __total_progress)
   res->source = widget_create_text (cnt, L"", 1, 1);
   res->target = widget_create_text (cnt, L"", 1, 2);
 
-  res->file_progress = widget_create_progress (cnt, 100, 10, 4, 48, 0);
+  res->file_progress = widget_create_progress (cnt, 100, 10, 4, 53, 0);
 
   widget_create_text (cnt, _(L"File"), 1, 4);
 
   /* Create progess bars for displaying total progress */
   if (__total_progress)
     {
-        widget_create_text (cnt, _(L"Bytes"), 1, 6);
-        res->bytes_progress = widget_create_progress (cnt, 100, 1, 7, 28,
-                                                      WPBS_NOPERCENT);
+      wchar_t text[1024];
 
-        widget_create_text (cnt, _(L"Count"), 30, 6);
-        res->count_progress = widget_create_progress (cnt, 100, 30, 7, 28,
-                                                      WPBS_NOPERCENT);
+      swprintf (text, BUF_LEN (text), _(L"(%lldKb of %lldKb)"),
+                res->bytes_copied, __listing->size / 1024);
+      widget_create_text (cnt, _(L"Bytes"), 1, 6);
+      res->bytes_digit = widget_create_text (cnt, text,
+                                             2 + wcslen (_(L"Bytes")), 6);
+      res->bytes_progress = widget_create_progress (cnt, __listing->size,
+                                                    1, 7, 28,
+                                                    WPBS_NOPERCENT);
+      res->bytes_total = __listing->size;
+
+      swprintf (text, BUF_LEN (text), _(L"(%lld of %lld)"), res->files_copied,
+                __listing->count);
+      widget_create_text (cnt, _(L"Count"), 30, 6);
+      res->count_digit = widget_create_text (cnt, text,
+                                             31 + wcslen (_(L"Count")), 6);
+      res->count_progress = widget_create_progress (cnt, __listing->count,
+                                                    30, 7, 28,
+                                                    WPBS_NOPERCENT);
+      res->files_total = __listing->count;
     }
 
   /* Create buttons */
@@ -833,6 +895,7 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
   char buffer[BUF_SIZE];
   vfs_size_t remain, copied, read, written;
   struct utimbuf times;
+  __u64_t iteration = 0;
 
   /* Open descriptor of source file */
   OPEN_FD (fd_src, __src, O_RDONLY, res,
@@ -930,13 +993,13 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
                      __dst, vfs_get_error (res));
 
       copied += written;
-      UPDATE_TOTAL_PROGRESS (bytes_progress, written);
-      w_progress_set_pos (__proc_wnd->file_progress, copied);
+      BUFFER_COPIED (written);
 
       /* Process accamulated queue of characters */
       COPY_PROCESS_QUEUE ();
 
       remain -= read;
+      ++iteration;
     }
 
   /* Set access and modification time of new file */
@@ -1152,13 +1215,13 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
   if (S_ISREG (stat.st_mode))
     {
       res = copy_regular_file (__src, __dst, __owr_all_rule, __proc_wnd);
-      UPDATE_TOTAL_PROGRESS (count_progress, 1);
+      FILE_COPIED ();
     }
   else
     if (S_ISLNK (stat.st_mode))
     {
       res = copy_symlink (__src, __dst, __owr_all_rule, __proc_wnd);
-      UPDATE_TOTAL_PROGRESS (count_progress, 1);
+      FILE_COPIED ();
     }
   else
     {
@@ -1403,7 +1466,7 @@ make_copy (const wchar_t *__base_dir, const file_panel_item_t **__src_list,
   unsigned long i, count = 0;
   file_panel_item_t *item;
   BOOL scan_allowed;
-  actions_listing_t listing;
+  action_listing_t listing;
 
   if (!__base_dir || !*__src_list || !dst)
     {
@@ -1443,13 +1506,7 @@ make_copy (const wchar_t *__base_dir, const file_panel_item_t **__src_list,
         }
     }
 
-  wnd = create_process_window (scan_allowed);
-  if (scan_allowed)
-    {
-      /* Set limits */
-      w_progress_set_max (wnd->count_progress, listing.count);
-      w_progress_set_max (wnd->bytes_progress, listing.size);
-    }
+  wnd = create_process_window (scan_allowed, &listing);
 
   wnd->abs_path_prefix = (wchar_t*)__base_dir;
   w_window_show (wnd->window);

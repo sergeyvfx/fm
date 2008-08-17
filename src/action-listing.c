@@ -125,7 +125,12 @@ get_listing_iter (const wchar_t *__path, action_listing_tree_t **__res,
           if (S_ISREG (stat.st_mode) || S_ISLNK (stat.st_mode))
             {
               (*__count)++;
-              (*__size) += stat.st_size;
+
+              /* There is no need to collect sizes of symbolic links */
+              if (S_ISREG (stat.st_mode))
+                {
+                  (*__size) += stat.st_size;
+                }
             }
         }
       else
@@ -178,7 +183,7 @@ free_listing_iter (action_listing_tree_t *__tree)
 int
 action_get_listing (const wchar_t *__base_dir,
                     const file_panel_item_t **__list,
-                    unsigned long __count, actions_listing_t *__res)
+                    unsigned long __count, action_listing_t *__res)
 {
   unsigned long i;
   wchar_t *cur, *format;
@@ -241,7 +246,7 @@ action_get_listing (const wchar_t *__base_dir,
  * @param __self - listing information to free
  */
 void
-action_free_listing (actions_listing_t *__self)
+action_free_listing (action_listing_t *__self)
 {
   if (!__self)
     {
