@@ -10,6 +10,7 @@
  * See the file COPYING.
  */
 
+#include <dirent.h>
 #include "actions.h"
 #include "deque.h"
 #include "dir.h"

@@ -379,7 +379,7 @@ format_exists_file_data (BOOL __use_lstat, wchar_t *__buf,
       vfs_stat (__url, &stat);
     }
 
-  format_file_time (date, 100, stat.st_mtim.tv_sec);
+  format_file_time (date, 100, stat.st_mtime);
 
 #ifdef __USE_FILE_OFFSET64
   swprintf (__buf, __buf_size, _(L"date %ls, size %lld bytes"),
@@ -839,17 +839,17 @@ is_newer (const wchar_t *__src, const wchar_t *__dst)
   vfs_lstat (__src, &s1);
   vfs_lstat (__dst, &s2);
 
-  if (s1.st_mtim.tv_sec > s2.st_mtim.tv_sec)
+  if (s1.st_mtime > s2.st_mtime)
     {
       return TRUE;
     }
 
-  if (s1.st_mtim.tv_sec < s2.st_mtim.tv_sec)
+  if (s1.st_mtime < s2.st_mtime)
     {
       return FALSE;
     }
 
-  return s1.st_mtim.tv_nsec > s2.st_mtim.tv_nsec;
+  return s1.st_mtime > s2.st_mtime;
 }
 
 /**
@@ -951,8 +951,8 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
   remain = stat.st_size;
 
   /* Save access and modification time */
-  times.actime = stat.st_atim.tv_sec;
-  times.modtime = stat.st_mtim.tv_sec;
+  times.actime = stat.st_atime;
+  times.modtime = stat.st_mtime;
 
   /* Create destination file */
   OPEN_FD (fd_dst, __dst, create_flags, res,

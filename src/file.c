@@ -19,7 +19,9 @@
  *
  */
 
-#define FILE_TRUNCATOR '~'
+#define FILE_TRUNCATOR '.'
+#define FILE_TRUNCATOR_MIN_LEN 3
+
 #define DIGITS_IN_HUMAN_SIZE 7
 
 /* Default Formats of date strings for recent and older dates */
@@ -35,47 +37,81 @@
  */
 
 /**
- * Fit filename to specified length
+ * Fit filename to specified width
  *
  * @param __file_name - file name to be fitted
- * @param __len - length to which fit the file name
+ * @param __width - width to which fit the file name
  * @param __res - pointer to buffer where result will be stored
  */
 void
-fit_filename (const wchar_t *__file_name, long __len, wchar_t *__res)
+fit_filename (const wchar_t *__file_name, size_t __width, wchar_t *__res)
 {
   size_t len;
 
-  if (__len <= 0)
+  if (__width <= 0)
     {
       /* Wanted length of file name is too short */
       *__res = 0;
       return;
     }
 
-  if ((len = wcslen (__file_name)) <= __len)
+  len = wcslen (__file_name);
+  if (wcswidth (__file_name, len) <= __width)
     {
       /* Do not call any specific stuff */
       wcscpy (__res, __file_name);
     }
   else
     {
-      /* Cast truncation */
-      size_t i, t = __len / 2 - (__len % 2 ? 0 : 1), ptr = 0;
+      size_t i, j, ptr = 0, mid = __width / 2, cur_width = 0, suff_ptr = 0;
+      int ch_wid;
+      wchar_t *suffix;
 
-      /* Copy prefix */
-      for (i = 0; i < t; i++)
+      /* Copy left part of truncated name */
+      for (i = 0; i < len; i++)
         {
+          ch_wid = wcwidth (__file_name[i]);
+          if (cur_width + ch_wid > mid)
+            {
+              break;
+            }
+          cur_width += ch_wid;
           __res[ptr++] = __file_name[i];
         }
 
-      __res[ptr++] = FILE_TRUNCATOR;
-
-      for (i = len - __len + ptr; i < len; i++)
+      /* Collect right part of truncated file name */
+      /* NOTE: Suffix will be collected in reverse mode */
+      suffix = malloc (sizeof (wchar_t) * (len + 1));
+      for (j = len - 1; j > i; --j)
         {
-          __res[ptr++] = __file_name[i];
+          ch_wid = wcwidth (__file_name[j]);
+          if (__width - (cur_width + ch_wid) < FILE_TRUNCATOR_MIN_LEN)
+            {
+              break;
+            }
+          cur_width += ch_wid;
+          suffix[suff_ptr++] = __file_name[j];
         }
 
+      /* Copy truncator */
+      for (j = 0; j < __width - cur_width; ++j)
+        {
+          __res[ptr++] = FILE_TRUNCATOR;
+        }
+
+      /* Copy suffix */
+      --suff_ptr;
+      for (;;)
+        {
+          __res[ptr++] = suffix[suff_ptr];
+          if (suff_ptr == 0)
+            {
+              break;
+            }
+          --suff_ptr;
+        }
+
+      free (suffix);
       __res[ptr] = 0;
     }
 }

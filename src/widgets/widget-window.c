@@ -99,7 +99,9 @@ window_drawer (w_window_t *__window)
       /* Draw caption */
       scr_wnd_move_caret (layout,
                           (__window->position.width -
-                          wcslen (__window->caption.text) - 4) / 2, 0);
+                          wcswidth (__window->caption.text,
+                                    wcslen (__window->caption.text)
+                                    ) - 4) / 2, 0);
       scr_wnd_putch (layout, CH_RTEE);
 
       scr_wnd_font (layout, *__window->caption.font);

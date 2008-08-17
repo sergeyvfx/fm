@@ -55,7 +55,7 @@ typedef struct
 
 /* Fit filename to specified length */
 void
-fit_filename (const wchar_t *__file_name, long __len, wchar_t *__res);
+fit_filename (const wchar_t *__file_name, size_t __len, wchar_t *__res);
 
 /* Strip directory prefix from file name */
 wchar_t*

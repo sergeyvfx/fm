@@ -19,7 +19,7 @@
 
 /* Fit string to specified length */
 wchar_t*
-wcsfit (const wchar_t *__str, size_t __len, const wchar_t *__suffix);
+wcsfit (const wchar_t *__str, size_t __width, const wchar_t *__suffix);
 
 /* Copies at most n characters of string */
 wchar_t*

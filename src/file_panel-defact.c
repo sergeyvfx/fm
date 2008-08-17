@@ -130,7 +130,7 @@ print_column_string (scr_window_t __layout, const wchar_t *__str, int __width,
 {
   int i, n, padding_left = 0;
   wchar_t *str;
-  size_t len;
+  size_t text_width;
 
   /* Unsupported parameters */
   if (__width <= 0 || !__str)
@@ -140,7 +140,7 @@ print_column_string (scr_window_t __layout, const wchar_t *__str, int __width,
 
   /* Get string which will be fit to width of column */
   str = wcsfit (__str, __width, COLUMN_TEXT_TRUNCATOR);
-  len = wcslen (str);
+  text_width = wcswidth (str, wcslen (str));
 
   /* Draw string */
   if (__string_font)
@@ -149,13 +149,13 @@ print_column_string (scr_window_t __layout, const wchar_t *__str, int __width,
   /* Apply alignment */
   if (__flags & CF_ALIGN_CENTER)
     {
-      padding_left = (__width - len) / 2;
+      padding_left = (__width - text_width) / 2;
     }
   else
     {
       if (__flags & CF_ALIGN_RIGHT)
         {
-          padding_left = __width - len;
+          padding_left = __width - text_width;
         }
     }
 
@@ -169,7 +169,7 @@ print_column_string (scr_window_t __layout, const wchar_t *__str, int __width,
   scr_wnd_printf (__layout, "%ls", str);
 
   /* Append needed spaces */
-  for (i = 0, n = __width - len - padding_left; i < n; i++)
+  for (i = 0, n = __width - text_width - padding_left; i < n; i++)
     {
       scr_wnd_putch (__layout, ' ');
     }
@@ -328,12 +328,12 @@ draw_full_row (const file_panel_t *__panel, unsigned long __index,
 
               /* Get current time_t and time_t of item */
               if (column->type == COLUMN_MTIME)
-                t = item->file->lstat.st_mtim.tv_sec;
+                t = item->file->lstat.st_mtime;
               else
                 if (column->type == COLUMN_ATIME)
-                t = item->file->lstat.st_atim.tv_sec;
+                t = item->file->lstat.st_atime;
               else
-                t = item->file->lstat.st_ctim.tv_sec;
+                t = item->file->lstat.st_ctime;
 
               format_file_time (pchar, MAX_SCREEN_WIDTH, t);
               break;
@@ -1392,7 +1392,7 @@ fpd_draw_widget (file_panel_widget_t *__panel_widget)
       /* Move caret to needed position */
       scr_wnd_move_caret (layout,
                           (__panel_widget->position.width -
-                             wcslen (pchar) - 2) / 2,
+                             wcswidth (pchar, wcslen (pchar)) - 2) / 2,
                           0);
 
       /* Set font of CWD text */

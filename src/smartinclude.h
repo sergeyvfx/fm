@@ -34,6 +34,8 @@ BEGIN_HEADER
 #include "package.h"
 #include "version.h"
 
+#define _XOPEN_SOURCE 500
+
 #include "macrodef.h"
 
 /* Some definitions to tell compiler use specified stuff */

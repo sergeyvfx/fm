@@ -11,38 +11,36 @@
  */
 
 #include "util.h"
-#include <wctype.h>
-#include <wchar.h>
 
 /**
- * Fit string to specified length.
- * If length of string is greater than length to which this string is
+ * Fit string to specified width.
+ * If width of string is greater than with to which this string is
  * going to be fit, some characters will be replaced with
  * specified suffix.
  *
  * @param __str - string to be fit
- * @param __len - length to which string is going to be fit
+ * @param __width - width to which string is going to be fit
  * @param __suffix - suffix which will be used to show
  * that string is truncated
  * @return pointer to new string, which must be freed
  */
 wchar_t*
-wcsfit (const wchar_t *__str, size_t __len, const wchar_t *__suffix)
+wcsfit (const wchar_t *__str, size_t __width, const wchar_t *__suffix)
 {
-  size_t len, in_len;
+  size_t len, in_len, i, copy_len;
   wchar_t *str;
-  size_t suff_len;
+  size_t suff_width, cur_width;
 
   if (!__str || !__suffix)
     {
       return 0;
     }
 
-  suff_len = wcslen (__suffix);
+  suff_width = wcswidth (__suffix, wcslen (__str));
 
   /* If string should be smaller or equal to truncated suffix */
   /* it would be better if we truncate string to empty sequence */
-  if (__len <= suff_len)
+  if (__width <= suff_width)
     {
       /* Use wcsdup because returned buffer must be freed */
       return wcsdup (L"");
@@ -50,18 +48,43 @@ wcsfit (const wchar_t *__str, size_t __len, const wchar_t *__suffix)
 
   /* Calculate length of new string */
   in_len = wcslen (__str);
-  len = MIN (__len, in_len);
+  if (__width < wcswidth (__str, wcslen (__str)))
+    {
+      len = 0;
+      cur_width = 0;
+      for (i = 0; i < in_len; ++i)
+        {
+          if (cur_width + wcwidth (__str[i]) > __width - suff_width)
+            {
+              break;
+            }
+          cur_width += wcwidth (__str[i]);
+          len++;
+        }
+
+      /* Length of string to copy from source string */
+      copy_len = len;
+
+      /* Length of allocated string */
+      len += wcslen (__suffix);
+    }
+  else
+    {
+      copy_len = len = in_len;
+    }
 
   /* Allocate memory for new string */
   MALLOC_ZERO (str, sizeof (wchar_t)*(len + 1));
 
   /* Copy needed amount of data from input string */
-  wcsncpy (str, __str, in_len <= len ? in_len : len - suff_len);
+  wcsncpy (str, __str, copy_len);
 
   /* If original length is greater than new length, */
   /* append an ellipsis */
   if (in_len > len)
-    wcscat (str, __suffix);
+    {
+      wcscat (str, __suffix);
+    }
 
   return str;
 }

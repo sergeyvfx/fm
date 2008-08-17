@@ -20,8 +20,6 @@ BEGIN_HEADER
 #include "file.h"
 #include <vfs/vfs.h>
 
-#include <dirent.h>
-
 /********
  * Macro defenitions
  */
@@ -51,7 +49,7 @@ wcdircatsubdir (const wchar_t *__name, const wchar_t *__subname);
 
 /* Fit dirname to specified length */
 void
-fit_dirname (const wchar_t *__dir_name, long __len, wchar_t *__res);
+fit_dirname (const wchar_t *__dir_name, size_t __len, wchar_t *__res);
 
 /* Strip non-directory suffix from file name */
 wchar_t*

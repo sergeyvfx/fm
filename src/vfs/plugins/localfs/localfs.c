@@ -10,14 +10,13 @@
  * See the file COPYING.
  */
 
+#include <dirent.h>
 #include <vfs/plugin.c>
-
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <errno.h>
-#include <dirent.h>
 #include <stdlib.h>
 
 /*******

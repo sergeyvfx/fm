@@ -129,26 +129,51 @@ wcdircatsubdir (const wchar_t *__name, const wchar_t *__subname)
 }
 
 /**
- * Fit name of directory to specified length
+ * Fit name of directory to specified width
  *
  * @param __dir_name - directory name to be fitted
- * @param __len - length to which fit the file name
+ * @param __width - width to which fit the directory name
  * @param __res - pointer to buffer where result will be stored
  */
 void
-fit_dirname (const wchar_t *__dir_name, long __len, wchar_t *__res)
+fit_dirname (const wchar_t *__dir_name, size_t __width, wchar_t *__res)
 {
-  int i, len, ptr;
+  size_t i, len, ptr, cur_width;
+  int ch_wid;
   len = wcslen (__dir_name);
 
-  if (len > __len)
+  if (wcswidth (__dir_name, len) > __width)
     {
-      swprintf (__res, len, L"...");
-      ptr = 3;
-      for (i = len - __len + 3; i <= len; i++)
+      wcscpy (__res, L"...");
+      ptr = wcslen (__res);
+
+      /* Get character from which copying is 'safe' */
+      cur_width = wcswidth (__res, ptr);
+      i = len - 1;
+      for (;;)
+        {
+          ch_wid = wcwidth (__dir_name[i]);
+          if (cur_width + ch_wid >= __width)
+            {
+              break;
+            }
+
+          cur_width += ch_wid;
+
+          if (i == 0)
+            {
+              break;
+            }
+          --i;
+        }
+
+      /* Copy tail */
+      while (i < len)
         {
           __res[ptr++] = __dir_name[i];
+          ++i;
         }
+
       __res[ptr] = 0;
     }
   else
