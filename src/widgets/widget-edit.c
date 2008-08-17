@@ -10,6 +10,8 @@
  * See the file COPYING.
  */
 
+#define _XOPEN_SOURCE 500 /* For wcwidth */
+
 #include "widget.h"
 #include "util.h"
 
