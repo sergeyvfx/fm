@@ -101,11 +101,14 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE",[Package name for gettext]
 case "$screen" in
   ncursesw)
     AC_DEFINE_UNQUOTED(SCREEN_NCURSESW,"1",[Library for terminal handling])
+    SCREENLIBS="-lncursesw -lpanel"
   ;;
   *)
     AC_DEFINE_UNQUOTED(SCREEN_NCURSESW,"1",[Library for terminal handling])
+    SCREENLIBS=""
   ;;
 esac
+AC_SUBST(SCREENLIBS)
 
 str_debug="no"
 if test "x${debug}" = 'xyes'; then

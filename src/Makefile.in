@@ -10,7 +10,7 @@ SUBDIRS = widgets vfs
 OBJECTIVE_BINS = fm
 
 CFLAGS += -I./widgets
-LIBADD = -ldl -lncursesw -lpanel -lm -Lwidgets -lwidgets -Lvfs -lvfs
+LIBADD = -ldl @SCREENLIBS@ -lm -Lwidgets -lwidgets -Lvfs -lvfs
 
 HEADERS =
 SOURCES = \
