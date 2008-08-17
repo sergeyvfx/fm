@@ -8,7 +8,7 @@ include ${top_builddir}/mk/init.mk
 OBJECTIVE_LIBS = liblocalfs.so
 
 SOURCES = \
-	main.c
+	localfs.c
 
 OBJECTS = ${SOURCES:.c=.o}
 
