@@ -23,6 +23,14 @@ BEGIN_HEADER
 #include <dirent.h>
 
 /********
+ * Macro defenitions
+ */
+
+/* Check if _dir is a name of pseudo-directory */
+#define IS_PSEUDODIR(_dir) \
+  (wcscmp (_dir, L".") == 0 || wcscmp (_dir, L"..") == 0)
+
+/********
  * Type definitions
  */
 

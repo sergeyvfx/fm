@@ -1259,7 +1259,7 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
   /* Get contents of source directory */
   for (i = 0; i < count; i++)
     {
-      if (wcscmp (eps[i]->name, L".") && wcscmp (eps[i]->name, L".."))
+      if (!IS_PSEUDODIR (eps[i]->name))
         {
           /* Get full filename of current file or directory and */
           /* it's destination */
@@ -1545,8 +1545,7 @@ action_copy (file_panel_t *__panel)
    *       a pseudo-directory.
    *       Lets check it.
    */
-  if (count == 1 && (wcscmp (list[0]->file->name, L".") == 0 ||
-                     wcscmp (list[0]->file->name, L"..") == 0))
+  if (count == 1 && IS_PSEUDODIR (list[0]->file->name))
 
     {
       wchar_t msg[1024];

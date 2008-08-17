@@ -209,8 +209,7 @@ wcdirname (const wchar_t *__name)
 int
 scandir_filter_skip_hidden (const vfs_dirent_t * __data)
 {
-  if (wcscmp (__data->name, L".") && wcscmp (__data->name, L"..") &&
-      __data->name[0] == '.')
+  if (!IS_PSEUDODIR (__data->name) && __data->name[0] == '.')
     {
       return 0;
     }
@@ -232,7 +231,7 @@ wcscandir_alphasort (const void *__a, const void *__b)
 {
   file_t *a = *(file_t**) __a, *b = *(file_t**) __b;
 
-  if (!wcscmp (a->name, L".") || !wcscmp (a->name, L".."))
+  if (IS_PSEUDODIR (a->name))
     {
       return -1;
     }
@@ -256,12 +255,12 @@ wcscandir_alphasort_sep (const void *__a, const void *__b)
   file_t *a = *(file_t**) __a, *b = *(file_t**) __b;
 
   /* Directories `.` and `..` must be at the top op list */
-  if (!wcscmp (a->name, L".") || !wcscmp (a->name, L".."))
+  if (IS_PSEUDODIR (a->name))
     {
       return -1;
     }
 
-  if (!wcscmp (b->name, L".") || !wcscmp (b->name, L".."))
+  if (IS_PSEUDODIR (b->name))
     {
       return 1;
     }

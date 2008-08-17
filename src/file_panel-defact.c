@@ -902,13 +902,23 @@ open_current_file (file_panel_t *__panel)
 
 /**
  * Toggle selection flag for specified item on file panel
+ *
+ * @param __panel - for which panel item belongs to
+ * @param __item - item which selection will be toggled
+ * @return zero on success, non-zero otherwise
  */
-static void
+static int
 toggle_item_selection (file_panel_t *__panel, file_panel_item_t *__item)
 {
   if (!__panel || !__item)
     {
-      return;
+      return -1;
+    }
+
+  if (IS_PSEUDODIR (__item->file->name))
+    {
+      /* Pseudo-directories can't be selected */
+      return -1;
     }
 
   /* Toggle selection flag */
@@ -923,6 +933,8 @@ toggle_item_selection (file_panel_t *__panel, file_panel_item_t *__item)
     {
       __panel->items.selected_count--;
     }
+
+  return 0;
 }
 
 /**
@@ -930,19 +942,20 @@ toggle_item_selection (file_panel_t *__panel, file_panel_item_t *__item)
  *
  * @param __panel - determines file panel in which current item selection
  * will be toggled
+ * @return zero on success, non-zero otherwise
  */
-static void
+static int
 toggle_current_selection (file_panel_t *__panel)
 {
   file_panel_item_t *item;
 
   if (!__panel || !__panel->items.length)
     {
-      return;
+      return -1;
     }
 
   item = &__panel->items.data[__panel->items.current];
-  toggle_item_selection (__panel, item);
+  return toggle_item_selection (__panel, item);
 }
 
 /********
@@ -965,19 +978,20 @@ toggle_selection_action (file_panel_t *__panel)
     }
 
   /* Toggle selection flag */
-  toggle_current_selection (__panel);
-
-  if (move_after_selection)
+  if (!toggle_current_selection (__panel))
     {
-      /* Move cursor to next item */
-      if (__panel->items.current < __panel->items.length - 1)
+      if (move_after_selection)
         {
-          __panel->items.current++;
+          /* Move cursor to next item */
+          if (__panel->items.current < __panel->items.length - 1)
+            {
+              __panel->items.current++;
+            }
         }
-    }
 
-  /* Now we should redraf specified file panel */
-  file_panel_redraw (__panel);
+      /* Now we should redraf specified file panel */
+      file_panel_redraw (__panel);
+    }
 
   return 0;
 }

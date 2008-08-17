@@ -105,8 +105,7 @@ get_listing_iter (const wchar_t *__path, action_listing_tree_t **__res,
       for (i = 0; i < count; ++i)
         {
           /* Do not add pseudo-dirs '.' and '..' */
-          if (wcscmp (dirent[i]->name, L".") != 0 &&
-              wcscmp (dirent[i]->name, L"..") != 0)
+          if (!IS_PSEUDODIR (dirent[i]->name))
             {
               swprintf (cur, len, L"%ls/%ls", __path, dirent[i]->name);
               get_listing_iter (cur, &(*__res)->items[i], __count, __size);

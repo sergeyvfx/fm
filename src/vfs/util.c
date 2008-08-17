@@ -11,6 +11,7 @@
  */
 
 #include "vfs.h"
+#include "dir.h"
 
 #include <wchar.h>
 
@@ -28,7 +29,7 @@ vfs_alphasort (const void *__a, const void *__b)
 {
   vfs_dirent_t *a = *(vfs_dirent_t**) __a, *b = *(vfs_dirent_t**) __b;
 
-  if (!wcscmp (a->name, L".") || !wcscmp (a->name, L".."))
+  if (IS_PSEUDODIR (a->name))
     {
       return -1;
     }
