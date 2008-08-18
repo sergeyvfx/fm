@@ -13,6 +13,7 @@
 #include "action-copy-iface.h"
 #include "i18n.h"
 #include "util.h"
+#include "dir.h"
 
 /********
  * Macro definitions
@@ -326,7 +327,7 @@ action_copy_create_proc_wnd (BOOL __total_progress,
   pchar = _(L"ETA:");
   left = 30;
   widget_create_text (cnt, pchar, left, 6);
-  res->eta_text = widget_create_text (cnt, _(L"00:00:00"),
+  res->eta_text = widget_create_text (cnt, L"--:--:--",
                                    wcswidth (pchar, wcslen (pchar)) + left + 1,
                                    6);
 
@@ -371,7 +372,7 @@ action_copy_create_proc_wnd (BOOL __total_progress,
   btn = widget_create_button (cnt, _(L"_Abort"), left,
                               cnt->position.height - 2, 0);
 
-  res->prev_timestamp = res->timestamp = now ();
+  res->prev_timestamp = res->speed_timestamp = res->timestamp = now ();
 
   WIDGET_USER_DATA (btn) = res;
   WIDGET_USER_CALLBACK (btn, clicked) = (widget_action)abort_button_clicked;
@@ -406,11 +407,11 @@ void
 action_copy_eval_speed (copy_process_window_t *__proc_wnd)
 {
   timeval_t tv_delta;
-  __u64_t time_delta, bytes_delta;
-  wchar_t msg[100];
+  __u64_t time_delta;
 
   /* Calculate time delta */
-  tv_delta = timedist (__proc_wnd->prev_timestamp, __proc_wnd->timestamp);
+  tv_delta = timedist (__proc_wnd->prev_timestamp,
+                       __proc_wnd->speed_timestamp);
   time_delta = tv_delta.tv_sec * 1000000 + tv_delta.tv_usec;
 
   /* To avoid division by zero */
@@ -419,9 +420,14 @@ action_copy_eval_speed (copy_process_window_t *__proc_wnd)
       /* Calculate copying speed */
       double speed;
       static wchar_t *format = NULL;
+      __u64_t bytes_copied, bytes_total, bytes_delta, elapsed;
+      timeval_t t;
+      int eta;
+      wchar_t msg[100];
 
       if (format == NULL)
         {
+          /* For some optimization */
           format = _(L"%.2lfMbps");
         }
 
@@ -432,10 +438,42 @@ action_copy_eval_speed (copy_process_window_t *__proc_wnd)
 
       swprintf (msg, BUF_LEN (msg), format, speed);
       w_text_set (__proc_wnd->speed_text, msg);
+
+      /* Calculate ETA */
+      if (__proc_wnd->bytes_progress != NULL)
+        {
+          /* If there is bytes_progress created */
+          /* it means that we can use __proc_wnd->bytes_total */
+          bytes_copied = __proc_wnd->bytes_copied;
+          bytes_total = __proc_wnd->bytes_total;
+        }
+      else
+        {
+          /* We can't use __proc_wnd->bytes_total*/
+          /* Count of copied bytes can be get from __proc_wnd->file_progress */
+          /* And size of file can be get from __proc_wnd->file_progress */
+          bytes_copied = w_progress_get_pos (__proc_wnd->file_progress);
+          bytes_total = w_progress_get_max (__proc_wnd->file_progress);
+        }
+
+      /* Get elapsed count of seconds */
+      t = timedist (__proc_wnd->timestamp, now ());
+
+      /*
+       * NOTE: I suppose we may ignore t.tv_usec and avoid this stupid
+       *       but who knows? Maybe this field cat store more than one second?
+       */
+
+      elapsed = t.tv_sec + t.tv_usec / 1000000;
+
+      eta = elapsed * ((double)bytes_total / bytes_copied - 1);
+      swprintf (msg, BUF_LEN (msg), L"%02ld:%02ld:%02ld", eta / 3600,
+                eta / 60 % 60, eta % 60);
+      w_text_set (__proc_wnd->eta_text, msg);
     }
 
   /* Re-new stored information  */
-  __proc_wnd->prev_timestamp = __proc_wnd->timestamp;
+  __proc_wnd->prev_timestamp = __proc_wnd->speed_timestamp;
   __proc_wnd->prev_copied = __proc_wnd->bytes_copied;
 }
 
@@ -470,7 +508,7 @@ action_copy_exists_dialog (const wchar_t *__src, const wchar_t *__dst,
                       &FONT (CID_YELLOW, CID_RED));
 
   fn_len = width - wcslen (_(L"Target file \"%ls\" already exists!"));
-  fit_filename (__dst, fn_len, dummy);
+  fit_dirname (__dst, fn_len, dummy);
   EXIST_QUESTION_TEXT (1, L"Target file \"%ls\" already exists!", dummy);
 
   format_exists_file_data (__use_lstat, dummy, BUF_LEN (dummy), __src);

@@ -15,7 +15,6 @@
 #include "messages.h"
 #include "i18n.h"
 #include "dir.h"
-#include "file.h"
 #include "util.h"
 #include "timer.h"
 
@@ -34,7 +33,7 @@
 #define MAX_SYMLINK_CONTENT 4096
 
 /* Period to evalute speed and ETA */
-#define EVAL_SPEED_PERIOD 0.7 * 1000 * 1000
+#define EVAL_SPEED_PERIOD 1.05 * 1000 * 1000
 
 /**
  * Close file descriptors in copy_file()
@@ -78,7 +77,7 @@
  */
 #define COPY_SET_FN(_fn, _dst, _text) \
   { \
-    fit_filename (_fn, \
+    fit_dirname (_fn, \
       __proc_wnd->window->position.width+1-wcslen (_(_text L": %ls")), fn); \
     swprintf (msg, BUF_LEN (msg), _(_text L": %ls"), fn); \
     w_text_set (__proc_wnd->_dst, msg); \
@@ -226,14 +225,18 @@
         __u64_t copied, total; \
         char cs, ts; \
         /* Update progress of total copied bytes */ \
-        UPDATE_TOTAL_PROGRESS (bytes_progress, _size); \
+        if (__proc_wnd->bytes_progress) \
+          { \
+            w_progress_set_pos (__proc_wnd->bytes_progress, \
+                            __proc_wnd->bytes_copied); \
+          } \
         /* Update cpations of digital information */ \
         copied = fsizetohuman (__proc_wnd->bytes_copied, &cs); \
         total = fsizetohuman (__proc_wnd->bytes_total, &ts); \
         SET_DIGIT_CAPTION (bytes_digit, format, copied, cs, total, ts); \
       } \
     /* Evalute speed and ETA */ \
-    CALL_DELAYED (__proc_wnd->timestamp, EVAL_SPEED_PERIOD, \
+    CALL_DELAYED (__proc_wnd->speed_timestamp, EVAL_SPEED_PERIOD, \
                   action_copy_eval_speed, __proc_wnd); \
   }
 
@@ -524,6 +527,11 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
             {
                w_progress_set_max (__proc_wnd->bytes_progress,
                      w_progress_get_max (__proc_wnd->bytes_progress) - remain);
+
+               /*
+                * TODO: Or bytes_total may be without bytes_progress?
+                */
+               __proc_wnd->bytes_total -= remain;
             }
         }
 

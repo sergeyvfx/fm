@@ -78,6 +78,7 @@ typedef struct
   timeval_t timestamp;
 
   __u64_t prev_copied;
+  timeval_t speed_timestamp;
   timeval_t prev_timestamp;
 } copy_process_window_t;
 
