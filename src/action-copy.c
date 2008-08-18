@@ -15,6 +15,8 @@
 #include "i18n.h"
 #include "dir.h"
 #include "file.h"
+#include "util.h"
+#include "timer.h"
 
 #include <widget.h>
 
@@ -32,6 +34,8 @@
 
 /* Maximal size of content of symbolic link */
 #define MAX_SYMLINK_CONTENT 4096
+
+#define EVAL_SPEED_TIMEDIST 0.7 * 1000 * 1000
 
 /* Length of static wide-string buffer */
 #define BUF_LEN(_buf) \
@@ -218,6 +222,7 @@
       } \
   }
 
+/* Set caption of text widget, which shows a digital summary information */
 #define SET_DIGIT_CAPTION(_caption, _format, _args...) \
   { \
     wchar_t text[1024]; \
@@ -225,23 +230,40 @@
     w_text_set (__proc_wnd->_caption, text); \
   }
 
+/* Next buffer of file was copied */
+
+/*
+ * NOTE: The magick value in this macros is needed to
+ *       make load of CPU not so enormous
+ */
+
 #define BUFFER_COPIED(_size) \
   { \
     static wchar_t *format = NULL; \
     if (format == NULL) \
       { \
-        format = _(L"(%lldKb of %lldKb)"); \
+        format = _(L"(%lld%c of %lld%c)"); \
       } \
+    /* Set progress for current copying file */ \
     w_progress_set_pos (__proc_wnd->file_progress, copied); \
-    UPDATE_TOTAL_PROGRESS (bytes_progress, _size); \
     __proc_wnd->bytes_copied += _size; \
     if (iteration % 8 /* Magick constant */) \
       { \
-        SET_DIGIT_CAPTION (bytes_digit, format, \
-            __proc_wnd->bytes_copied / 1024, __proc_wnd->bytes_total / 1024); \
+        __u64_t copied, total; \
+        char cs, ts; \
+        /* Update progress of total copied bytes */ \
+        UPDATE_TOTAL_PROGRESS (bytes_progress, _size); \
+        /* Update cpations of digital information */ \
+        copied = fsizetohuman (__proc_wnd->bytes_copied, &cs); \
+        total = fsizetohuman (__proc_wnd->bytes_total, &ts); \
+        SET_DIGIT_CAPTION (bytes_digit, format, copied, cs, total, ts); \
       } \
+    /* Evalute speed and ETA */ \
+    CALL_DELAYED (__proc_wnd->timestamp, EVAL_SPEED_TIMEDIST, \
+                  eval_speed_and_eta, __proc_wnd); \
   }
 
+/* The while file was copied */
 #define FILE_COPIED() \
   { \
     static wchar_t *format = NULL; \
@@ -278,6 +300,9 @@ typedef struct
   w_text_t *bytes_digit;
   w_text_t *count_digit;
 
+  w_text_t *speed_text;
+  w_text_t *eta_text;
+
   /*
    * NOTE: This descriptor is very convenient to send additional
    *       information to deep-core functions and leave their
@@ -298,6 +323,11 @@ typedef struct
 
   __u64_t bytes_copied;
   __u64_t files_copied;
+
+  timeval_t timestamp;
+
+  __u64_t prev_copied;
+  timeval_t prev_timestamp;
 } process_window_t;
 
 /********
@@ -574,29 +604,45 @@ create_process_window (BOOL __total_progress,
   process_window_t *res;
   w_container_t *cnt;
   w_button_t *btn;
-  int buttons_left, height;
+  int left, height;
+  wchar_t *pchar;
 
   MALLOC_ZERO (res, sizeof (process_window_t))
 
   if (__total_progress)
     {
-      height = 11;
+      height = 13;
     }
   else
     {
-      height = 8;
+      height = 10;
     }
 
   res->window = widget_create_window (_(L"Copy"), 0, 0,
                                       59, height, WMS_CENTERED);
   cnt = WIDGET_CONTAINER (res->window);
 
+  /* Names of source and destination files */
   res->source = widget_create_text (cnt, L"", 1, 1);
   res->target = widget_create_text (cnt, L"", 1, 2);
 
+  /* Progress bar for current file */
+  widget_create_text (cnt, _(L"File"), 1, 4);
   res->file_progress = widget_create_progress (cnt, 100, 10, 4, 53, 0);
 
-  widget_create_text (cnt, _(L"File"), 1, 4);
+  /* Speed */
+  pchar = _(L"Speed:");
+  widget_create_text (cnt, pchar, 1, 6);
+  res->speed_text = widget_create_text (cnt, _(L"-,--Mbps"),
+                                        wcswidth (pchar, wcslen (pchar)) + 2,
+                                        6);
+
+  pchar = _(L"ETA:");
+  left = 30;
+  widget_create_text (cnt, pchar, left, 6);
+  res->eta_text = widget_create_text (cnt, _(L"00:00:00"),
+                                   wcswidth (pchar, wcslen (pchar)) + left + 1,
+                                   6);
 
   /* Create progess bars for displaying total progress */
   if (__total_progress)
@@ -605,39 +651,41 @@ create_process_window (BOOL __total_progress,
 
       swprintf (text, BUF_LEN (text), _(L"(%lldKb of %lldKb)"),
                 res->bytes_copied, __listing->size / 1024);
-      widget_create_text (cnt, _(L"Bytes"), 1, 6);
+      widget_create_text (cnt, _(L"Bytes"), 1, 8);
       res->bytes_digit = widget_create_text (cnt, text,
-                                             2 + wcslen (_(L"Bytes")), 6);
+                                             2 + wcslen (_(L"Bytes")), 8);
       res->bytes_progress = widget_create_progress (cnt, __listing->size,
-                                                    1, 7, 28,
+                                                    1, 9, 28,
                                                     WPBS_NOPERCENT);
       res->bytes_total = __listing->size;
 
       swprintf (text, BUF_LEN (text), _(L"(%lld of %lld)"), res->files_copied,
                 __listing->count);
-      widget_create_text (cnt, _(L"Count"), 30, 6);
+      widget_create_text (cnt, _(L"Count"), 30, 8);
       res->count_digit = widget_create_text (cnt, text,
-                                             31 + wcslen (_(L"Count")), 6);
+                                             31 + wcslen (_(L"Count")), 8);
       res->count_progress = widget_create_progress (cnt, __listing->count,
-                                                    30, 7, 28,
+                                                    30, 9, 28,
                                                     WPBS_NOPERCENT);
       res->files_total = __listing->count;
     }
 
   /* Create buttons */
-  buttons_left = (cnt->position.width - widget_shortcut_length (_(L"_Skip")) -
+  left = (cnt->position.width - widget_shortcut_length (_(L"_Skip")) -
                   widget_shortcut_length (_(L"_Abort")) - 9) / 2;
 
-  btn = widget_create_button (cnt, _(L"_Skip"), buttons_left,
+  btn = widget_create_button (cnt, _(L"_Skip"), left,
                               cnt->position.height - 2, 0);
 
   WIDGET_USER_DATA (btn) = res;
   WIDGET_USER_CALLBACK (btn, clicked) = (widget_action)skip_button_clicked;
   WIDGET_USER_CALLBACK (btn, keydown) = (widget_keydown_proc)button_keydown;
 
-  buttons_left += widget_shortcut_length (_(L"_Skip")) + 5;
-  btn = widget_create_button (cnt, _(L"_Abort"), buttons_left,
+  left += widget_shortcut_length (_(L"_Skip")) + 5;
+  btn = widget_create_button (cnt, _(L"_Abort"), left,
                               cnt->position.height - 2, 0);
+
+  res->prev_timestamp = res->timestamp = now ();
 
   WIDGET_USER_DATA (btn) = res;
   WIDGET_USER_CALLBACK (btn, clicked) = (widget_action)abort_button_clicked;
@@ -874,6 +922,48 @@ total_progress_avaliable (const file_panel_item_t **__src_list,
     }
 
   return S_ISDIR (__src_list[0]->file->lstat.st_mode);
+}
+
+/**
+ * Evalute and set speed of copying and ETA
+ *
+ * @param __proc_wnd - descriptor of a process window
+ */
+static void
+eval_speed_and_eta (process_window_t *__proc_wnd)
+{
+  timeval_t tv_delta;
+  __u64_t time_delta, bytes_delta;
+  wchar_t msg[100];
+
+  /* Calculate time delta */
+  tv_delta = timedist (__proc_wnd->prev_timestamp, __proc_wnd->timestamp);
+  time_delta = tv_delta.tv_sec * 1000000 + tv_delta.tv_usec;
+
+  /* To avoid division by zero */
+  if (time_delta > 0)
+    {
+      /* Calculate copying speed */
+      double speed;
+      static wchar_t *format = NULL;
+
+      if (format == NULL)
+        {
+          format = _(L"%.2lfMbps");
+        }
+
+      /* Calculate bytes delta */
+      bytes_delta = __proc_wnd->bytes_copied - __proc_wnd->prev_copied;
+
+      speed = 1000000.0 / time_delta * bytes_delta / 1024 / 1024;
+
+      swprintf (msg, BUF_LEN (msg), format, speed);
+      w_text_set (__proc_wnd->speed_text, msg);
+    }
+
+  /* Re-new stored information  */
+  __proc_wnd->prev_timestamp = __proc_wnd->timestamp;
+  __proc_wnd->prev_copied = __proc_wnd->bytes_copied;
 }
 
 /**

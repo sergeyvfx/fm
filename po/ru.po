@@ -184,11 +184,14 @@ msgstr "Байт"
 msgid "Count"
 msgstr "Счёт"
 
+msgid "Speed:"
+msgstr "Скорость:"
+
 msgid "(%lld of %lld)"
 msgstr "(%lld из %lld)"
 
-msgid "(%lldKb of %lldKb)"
-msgstr "(%lldКб из %lldКб)"
+msgid "(%lld%c of %lld%c)"
+msgstr "(%lld%c из %lld%c)"
 
 msgid "Cannot create target file \"%ls\":\n%ls"
 msgstr "Невозможно создать целевой файл \"%ls\":\n%ls"

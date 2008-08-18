@@ -198,5 +198,86 @@ wcsrep (wchar_t *__str, size_t __max_len,
   free (f);
   free (res);
 }
-
 #undef S
+
+/**
+ * Get the number of seconds and microseconds since the Epoch
+ *
+ * @return the number of seconds and microseconds since the Epoch
+ */
+timeval_t
+now (void)
+{
+  timeval_t res;
+  gettimeofday (&res, 0);
+  return res;
+}
+
+/**
+ * Compare timeval_t and count of microsecods
+ *
+ * @param __tv - input timeval
+ * @param __usec - count of microsecods
+ * @return -1 if timeval is less than usec, 1 if timeval is greaterthan
+ * usec and zero it they are equal
+ */
+int
+tv_usec_cmp (timeval_t __tv, __u64_t __usec)
+{
+  __u64_t sec, usec;
+  sec = __usec / 1000000;
+  usec = __usec % 1000000;
+
+  if (__tv.tv_sec > sec)
+    {
+      return 1;
+    }
+  if (__tv.tv_sec < sec)
+    {
+      return -1;
+    }
+  if (__tv.tv_usec > usec)
+    {
+      return 1;
+    }
+  if (__tv.tv_usec < usec)
+    {
+      return -1;
+    }
+  return 0;
+}
+
+/**
+ * Get difference between two timevals
+ *
+ * @param __from -from which timeval difference will be measured
+ * @param __to - to which timewal difference will be measured
+ * @return difference between this two timevals, or {0, 0} if
+ * 'from' timeval is later, that 'to' timeval
+ */
+timeval_t
+timedist (timeval_t __from, timeval_t __to)
+{
+  timeval_t res = {0, 0};
+
+  if ((__from.tv_sec > __to.tv_sec) ||
+      (__from.tv_sec == __to.tv_sec && __from.tv_usec > __to.tv_usec)
+      )
+    {
+      return res;
+    }
+
+  res.tv_sec = __to.tv_sec - __from.tv_sec;
+
+  if (__to.tv_usec >= __from.tv_usec)
+    {
+      res.tv_usec = __to.tv_usec - __from.tv_usec;
+    }
+  else
+    {
+      res.tv_sec--;
+      res.tv_usec = __to.tv_usec + 1000000 - __from.tv_usec;
+    }
+
+  return res;
+}

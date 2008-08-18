@@ -14,7 +14,8 @@
 #define _types_h_
 
 #ifdef LINUX
-#include <sys/types.h>
+#  include <sys/types.h>
+#  include <sys/time.h>
 #endif
 
 #ifndef BOOL
