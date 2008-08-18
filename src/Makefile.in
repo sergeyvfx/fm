@@ -33,7 +33,8 @@ SOURCES = \
 	hook.c \
 	action-choose_panel.c \
 	action-listing.c \
-	action-copy.c
+	action-copy.c \
+	action-copy-iface.c
 
 OBJECTS = ${SOURCES:.c=.o}
 

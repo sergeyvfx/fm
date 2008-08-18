@@ -19,21 +19,19 @@
 #endif
 
 #ifndef BOOL
+#  define BOOL int
 
-#define BOOL int
+#  ifndef FALSE
+#    define FALSE 0
+#  endif
 
-#ifndef FALSE
-#define FALSE 0
-#endif
-
-#ifndef TRUE
-#define TRUE 1
-#endif
-
+#  ifndef TRUE
+#    define TRUE 1
+#  endif
 #endif
 
 #ifndef DWORD
-#define DWORD unsigned long long
+#  define DWORD unsigned long long
 #endif
 
 typedef unsigned char __u8_t;

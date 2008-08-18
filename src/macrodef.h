@@ -57,6 +57,10 @@ BEGIN_HEADER
     mbstowcs (_res, _src, len+1); \
   }
 
+/* Length of static wide-string buffer */
+#define BUF_LEN(_buf) \
+  sizeof (_buf)/sizeof (wchar_t)
+
 END_HEADER
 
 #endif
