@@ -8,6 +8,8 @@
  * See the file COPYING.
  */
 
+#define NEED_SIGWINCH
+
 #include "iface.h"
 #include "screen.h"
 #include "hotkeys.h"

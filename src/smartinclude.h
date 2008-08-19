@@ -34,7 +34,9 @@ BEGIN_HEADER
 #include "package.h"
 #include "version.h"
 
-#define _XOPEN_SOURCE 500
+#ifndef NEED_SIGWINCH
+#  define _XOPEN_SOURCE 500
+#endif
 
 #include "macrodef.h"
 
