@@ -36,7 +36,7 @@ wcsfit (const wchar_t *__str, size_t __width, const wchar_t *__suffix)
       return 0;
     }
 
-  suff_width = wcswidth (__suffix, wcslen (__str));
+  suff_width = wcswidth (__suffix, wcslen (__suffix));
 
   /* If string should be smaller or equal to truncated suffix */
   /* it would be better if we truncate string to empty sequence */

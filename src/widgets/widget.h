@@ -38,6 +38,7 @@
 #define WT_CHECKBOX   (WT_SINGLE+4)
 #define WT_TEXT       (WT_SINGLE+5)
 #define WT_PROGRESS   (WT_SINGLE+6)
+#define WT_LIST       (WT_SINGLE+7)
 
 /****
  * Widgets' flags
@@ -300,16 +301,23 @@ typedef struct
 } w_container_t;
 
 /********
+ *
+ */
+
+#include "widget-util.h"
+
+/********
  * Include widgets
  */
 
 #include "widget-box.h"
-#include "widget-edit.h"
-#include "widget-progress.h"
 #include "widget-button.h"
-#include "widget-text.h"
 #include "widget-checkbox.h"
+#include "widget-edit.h"
+#include "widget-list.h"
 #include "widget-menu.h"
+#include "widget-progress.h"
+#include "widget-text.h"
 #include "widget-window.h"
 
 /********

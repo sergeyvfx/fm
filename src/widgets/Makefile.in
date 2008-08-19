@@ -12,14 +12,16 @@ LDFLAGS += -Wl,-export-dynamic
 
 SOURCES = \
 	widget.c \
-	widget-text.c \
 	widget-box.c \
-	widget-checkbox.c \
-	widget-menu.c \
-	widget-window.c \
 	widget-button.c \
+	widget-checkbox.c \
 	widget-edit.c \
-	widget-progress.c
+	widget-list.c \
+	widget-menu.c \
+	widget-progress.c \
+	widget-text.c \
+	widget-util.c \
+	widget-window.c
 
 OBJECTS = ${SOURCES:.c=.o}
 

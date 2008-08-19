@@ -17,7 +17,7 @@
 
 #include <wchar.h>
 
-/* Fit string to specified length */
+/* Fit string to specified width */
 wchar_t*
 wcsfit (const wchar_t *__str, size_t __width, const wchar_t *__suffix);
 
