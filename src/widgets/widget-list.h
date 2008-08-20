@@ -43,6 +43,8 @@ typedef struct
 
   __u32_t scroll_top;
 
+  widget_t *scrollbar;
+
   /* Fonts */
   scr_font_t *font;
   scr_font_t *cursor_font, *cursor_unfocused_font;
@@ -73,5 +75,9 @@ w_list_set_fonts (w_list_t *__list, scr_font_t *__font,
                   scr_font_t *__cursor_font,
                   scr_font_t *__cursor_unfocused_font,
                   scr_font_t *__caption_font);
+
+/* Get current item */
+w_list_item_t*
+w_list_get_current_item (w_list_t *__list);
 
 #endif

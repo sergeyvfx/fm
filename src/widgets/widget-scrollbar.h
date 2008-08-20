@@ -50,7 +50,7 @@ typedef struct
 
 /* Create new scrollbar widget */
 w_scrollbar_t*
-widget_create_scrollbar (w_container_t *__parent, unsigned long __size,
+widget_create_scrollbar (widget_t *__parent, unsigned long __size,
                          int __x, int __y, int __length, unsigned int __style);
 
 /* Set position of scrollbar */

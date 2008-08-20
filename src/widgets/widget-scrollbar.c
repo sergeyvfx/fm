@@ -68,8 +68,15 @@ scrollbar_drawer (w_scrollbar_t *__scrollbar)
       scr_wnd_font (layout, *__scrollbar->button_font);
       scr_wnd_putch (layout, ACS_RARROW);
 
-      offset = (double)__scrollbar->pos / __scrollbar->size *
-              (__scrollbar->position.width - 3);
+      if (__scrollbar->size > 0)
+        {
+          offset = (double)__scrollbar->pos / __scrollbar->size *
+                  (__scrollbar->position.width - 3);
+        }
+      else
+        {
+          offset = 0;
+        }
 
       scr_wnd_move_caret (layout, __scrollbar->position.x + offset + 1,
                           __scrollbar->position.y);
@@ -94,8 +101,15 @@ scrollbar_drawer (w_scrollbar_t *__scrollbar)
                           __scrollbar->position.y + n);
       scr_wnd_putch (layout, ACS_DARROW);
 
-      offset = (double)__scrollbar->pos / __scrollbar->size *
-              (__scrollbar->position.height - 3);
+      if (__scrollbar->size > 0)
+        {
+          offset = (double)__scrollbar->pos / __scrollbar->size *
+                  (__scrollbar->position.height - 3);
+        }
+      else
+        {
+          offset = 0;
+        }
 
       scr_wnd_move_caret (layout, __scrollbar->position.x,
                           __scrollbar->position.y + offset + 1);
@@ -122,7 +136,7 @@ scrollbar_drawer (w_scrollbar_t *__scrollbar)
  * @return pointer to scrollbar object
  */
 w_scrollbar_t*
-widget_create_scrollbar (w_container_t *__parent, unsigned long __size,
+widget_create_scrollbar (widget_t *__parent, unsigned long __size,
                          int __x, int __y, int __length, unsigned int __style)
 {
   w_scrollbar_t *res;

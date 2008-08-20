@@ -31,6 +31,8 @@ list_destructor (w_list_t *__list)
       return -1;
     }
 
+  widget_destroy (__list->scrollbar);
+
   SAFE_FREE (__list->items.data);
 
   free (__list);
@@ -113,6 +115,12 @@ list_drawer (w_list_t *__list)
         }
 
       free (text);
+    }
+
+  if (__list->items.count > ITEMS_PER_PAGE (__list))
+    {
+      /* Draw scrollbar only if items more than lines pre page */
+      widget_draw (__list->scrollbar);
     }
 
   scr_wnd_attr_restore (layout);
@@ -198,7 +206,30 @@ list_keydown (w_list_t *__list, wint_t __ch)
       return FALSE;
     }
 
+  /* Update position of scrollbar */
+  w_scrollbar_set_pos ((w_scrollbar_t*)__list->scrollbar,
+                        __list->items.current);
+
   widget_redraw (WIDGET (__list));
+
+  return TRUE;
+}
+
+/**
+ * Handler of onresize callback
+ *
+ * @param __list - descriptor of a list which catched this callback
+ */
+static int
+list_onresize (w_list_t *__list)
+{
+  if (!__list)
+    {
+      return FALSE;
+    }
+
+  widget_onresize (WIDGET (__list));
+  widget_onresize (__list->scrollbar);
 
   return TRUE;
 }
@@ -230,12 +261,17 @@ widget_create_list (w_container_t *__parent, const wchar_t *__caption,
   WIDGET_INIT (res, w_list_t, WT_LIST, __parent, WF_NOLAYOUT,
                list_destructor, list_drawer, __x, __y, 1, __w, __h);
 
-  WIDGET_CALLBACK (res, keydown) = (widget_keydown_proc)list_keydown;
+  WIDGET_CALLBACK (res, keydown)  = (widget_keydown_proc)list_keydown;
+  WIDGET_CALLBACK (res, onresize) = (widget_action)list_onresize;
 
   if (__caption)
     {
       res->caption = wcsdup (__caption);
     }
+
+  res->scrollbar = (widget_t*)widget_create_scrollbar (WIDGET (res), 0,
+                                            __x + __w - 1,
+                                            __y + 1, __h - 2, 0);
 
   res->font = &FONT (CID_BLACK, CID_WHITE);
   res->cursor_font = &FONT (CID_BLACK, CID_CYAN);
@@ -281,6 +317,10 @@ w_list_insert_item (w_list_t *__list, __u32_t __pos,
   /* Fill fields of new item */
   __list->items.data[__pos].text = wcsdup (__text);
   __list->items.data[__pos].tag = __tag;
+
+  /* Update size of scrollbar */
+  w_scrollbar_set_szie ((w_scrollbar_t*)__list->scrollbar,
+                        __list->items.count);
 
   ++__list->items.count;
 
@@ -336,4 +376,21 @@ w_list_set_fonts (w_list_t *__list, scr_font_t *__font,
   WIDGET_SAFE_SET_FONT (__list, caption_font, __caption_font);
 
   widget_redraw (WIDGET (__list));
+}
+
+/**
+ * Get current item
+ *
+ * @param __list - from which list item will be gotten
+ * @reutrn currently selected item
+ */
+w_list_item_t*
+w_list_get_current_item (w_list_t *__list)
+{
+  if (__list == NULL || __list->items.count == 0)
+    {
+      return NULL;
+    }
+
+  return &__list->items.data[__list->items.current];
 }
