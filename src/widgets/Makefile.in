@@ -19,6 +19,7 @@ SOURCES = \
 	widget-list.c \
 	widget-menu.c \
 	widget-progress.c \
+	widget-scrollbar.c \
 	widget-text.c \
 	widget-util.c \
 	widget-window.c

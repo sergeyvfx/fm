@@ -39,6 +39,7 @@
 #define WT_TEXT       (WT_SINGLE+5)
 #define WT_PROGRESS   (WT_SINGLE+6)
 #define WT_LIST       (WT_SINGLE+7)
+#define WT_SCROLLBAR  (WT_SINGLE+8)
 
 /****
  * Widgets' flags
@@ -317,6 +318,7 @@ typedef struct
 #include "widget-list.h"
 #include "widget-menu.h"
 #include "widget-progress.h"
+#include "widget-scrollbar.h"
 #include "widget-text.h"
 #include "widget-window.h"
 
