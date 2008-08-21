@@ -200,16 +200,24 @@ window_proc (w_window_t *__window)
             {
             case KEY_ESC:
             case KEY_ESC_ESC:
+            case KEY_RETURN:
               /* If window is modal, then we can close */
-              /* it when users hits `Esc` */
+              /* it when users hits `Esc` or `Enter` */
               if (__window->show_mode & WSM_MODAL)
                 {
                   /* Suggest that non-zero modal_result means that */
                   /* somebody wants to return this modal_result */
-                  /* instead of MR_CANCEL */
+                  /* instead of MR_CANCEL or MR_OK */
                   if (!__window->modal_result)
                     {
-                      __window->modal_result = MR_CANCEL;
+                      if (ch == KEY_RETURN)
+                        {
+                          __window->modal_result = MR_OK;
+                        }
+                      else
+                        {
+                          __window->modal_result = MR_CANCEL;
+                        }
                     }
                   finito = TRUE;
                 }
