@@ -57,6 +57,61 @@ fill_list (w_list_t *__list)
 }
 
 /**
+ * Get window dimenstions
+ *
+ * @param __caption - caption of a window
+ * @param __short_msg - short message which will be used as list's caption
+ * @return dimenstions of a window
+ */
+static widget_position_t
+window_dimensions (const wchar_t *__caption, const wchar_t *__short_msg)
+{
+  deque_t *panels;
+  wchar_t *cpt_ok, *cpt_cancel, *cwd;
+  int w_ok, w_cancel;
+  file_panel_t *panel;
+
+  widget_position_t res = {0, 0, 0, 0, 0};
+
+  cpt_ok = _(L"_Ok");
+  w_ok = widget_shortcut_length (cpt_ok) + 6;
+  cpt_cancel = _(L"_Cancel");
+  w_cancel = widget_shortcut_length (cpt_cancel) + 4;
+
+  res.width = 20;
+  if (__caption)
+    {
+      res.width = MAX (res.width, wcswidth (__caption,
+                                            wcslen (__caption)) + 4);
+    }
+
+  if (__short_msg)
+    {
+      res.width = MAX (res.width, wcswidth (__short_msg,
+                                            wcslen (__short_msg)) + 8);
+    }
+
+  res.width = MAX (res.width, w_ok + w_cancel + 10);
+
+  res.height = 7;
+  res.height = MAX (res.height, file_panel_get_count () + 5);
+
+  panels = file_panel_get_list ();
+
+  deque_foreach (panels, panel);
+    cwd = file_panel_get_full_cwd (panel);
+    res.width = MAX (res.width, wcswidth (cwd, wcslen (cwd)) + 7);
+    free (cwd);
+  deque_foreach_done
+
+  /* Limit dimensions of window */
+  res.width = MIN (res.width, SCREEN_WIDTH * 0.7);
+  res.height = MIN (res.height, SCREEN_HEIGHT * 0.8);
+
+  return res;
+}
+
+/**
  * Show window with list of panels
  *
  * @param __caption - caption of a window
@@ -72,10 +127,12 @@ show_list (const wchar_t *__caption, const wchar_t *__short_msg)
   file_panel_t *res;
   wchar_t *cpt_ok, *cpt_cancel;
   w_button_t *btn;
+  widget_position_t pos;
 
   /* Create window */
-  wnd = widget_create_window (__caption, 0, 0,
-                              SCREEN_WIDTH * 0.7, SCREEN_HEIGHT * 0.8,
+  pos = window_dimensions (__caption, __short_msg);
+
+  wnd = widget_create_window (__caption, 0, 0, pos.width, pos.height,
                               WMS_CENTERED);
   list = widget_create_list (WIDGET_CONTAINER (wnd), __short_msg, 1, 1,
                              wnd->position.width - 2,

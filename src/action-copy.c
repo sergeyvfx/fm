@@ -1089,18 +1089,6 @@ action_copy (file_panel_t *__panel)
       return ACTION_ERR;
     }
 
-  /* Get second panel to start copying */
-  opposite_panel = action_choose_file_panel (_(L"Copy"), _(L"Target panel"));
-  if (!opposite_panel)
-    {
-      /* User canceled operation */
-      return ACTION_ABORT;
-    }
-
-  /* Full source and destination URLs */
-  cwd = file_panel_get_full_cwd (__panel);
-  dst = file_panel_get_full_cwd (opposite_panel);
-
   /* Get list of items to be copied */
   count = file_panel_get_selected_items (__panel, &list);
 
@@ -1117,8 +1105,22 @@ action_copy (file_panel_t *__panel)
       swprintf (msg, BUF_LEN (msg), _(L"Cannot operate on \"%ls\""),
                 list[0]->file->name);
       MESSAGE_ERROR (msg);
+      SAFE_FREE (list);
       return ACTION_ERR;
     }
+
+  /* Get second panel to start copying */
+  opposite_panel = action_choose_file_panel (_(L"Copy"), _(L"Target panel"));
+  if (!opposite_panel)
+    {
+      /* User canceled operation */
+      SAFE_FREE (list);
+      return ACTION_ABORT;
+    }
+
+  /* Full source and destination URLs */
+  cwd = file_panel_get_full_cwd (__panel);
+  dst = file_panel_get_full_cwd (opposite_panel);
 
   /* Copy files */
   count = make_copy (cwd, (const file_panel_item_t**)list, count, dst);
