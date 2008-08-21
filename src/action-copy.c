@@ -1090,7 +1090,7 @@ action_copy (file_panel_t *__panel)
     }
 
   /* Get second panel to start copying */
-  opposite_panel = action_choose_file_panel ();
+  opposite_panel = action_choose_file_panel (_(L"Copy"), _(L"Target panel"));
   if (!opposite_panel)
     {
       /* User canceled operation */

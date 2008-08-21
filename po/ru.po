@@ -154,6 +154,12 @@ msgstr "Эта операция не может быть применена к \
 ##
 # File actions
 
+msgid "Select panel"
+msgstr "Выберите панель"
+
+msgid "Target panel"
+msgstr "Целевая панель"
+
 msgid "File"
 msgstr "Файл"
 

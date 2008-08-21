@@ -18,6 +18,8 @@
 
 /**
  * Fill list with file panels
+ *
+ * @param __list - list which will be filled
  */
 static void
 fill_list (w_list_t *__list)
@@ -57,10 +59,12 @@ fill_list (w_list_t *__list)
 /**
  * Show window with list of panels
  *
+ * @param __caption - caption of a window
+ * @param __short_msg - short message which will be used as list's caption
  * @return selected file panel
  */
 static file_panel_t*
-show_list (void)
+show_list (const wchar_t *__caption, const wchar_t *__short_msg)
 {
   int modal_result, w_ok, w_cancel, button_left;
   w_window_t *wnd;
@@ -70,10 +74,10 @@ show_list (void)
   w_button_t *btn;
 
   /* Create window */
-  wnd = widget_create_window (_(L"Select panel"), 0, 0,
+  wnd = widget_create_window (__caption, 0, 0,
                               SCREEN_WIDTH * 0.7, SCREEN_HEIGHT * 0.8,
                               WMS_CENTERED);
-  list = widget_create_list (WIDGET_CONTAINER (wnd), 0, 1, 1,
+  list = widget_create_list (WIDGET_CONTAINER (wnd), __short_msg, 1, 1,
                              wnd->position.width - 2,
                              wnd->position.height - 3);
 
@@ -134,13 +138,16 @@ show_list (void)
 /**
  * Chooses file panel for action
  *
+ * @param __caption - caption of a window with file panels list
+ * @param __short_msg - short message which will be used as list's caption
  * @return
  *  - If there is only one panel or user canceled operation, NULL returnef
  *  - If there is only two file panels, opposite to curretn will be returned
  *  - If there is more than two file panels, user'll see a list of
  */
 file_panel_t*
-action_choose_file_panel (void)
+action_choose_file_panel (const wchar_t *__caption,
+                          const wchar_t *__short_msg)
 {
   int count = file_panel_get_count ();
   deque_t *panels = file_panel_get_list ();
@@ -164,7 +171,7 @@ action_choose_file_panel (void)
     }
   else
     {
-      return show_list ();
+      return show_list (__caption, __short_msg);
     }
 
   return NULL;

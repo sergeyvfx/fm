@@ -44,7 +44,8 @@ int
 action_copy (file_panel_t *__panel);
 
 file_panel_t*
-action_choose_file_panel (void);
+action_choose_file_panel (const wchar_t *__caption,
+                          const wchar_t *__short_msg);
 
 END_HEADER
 
