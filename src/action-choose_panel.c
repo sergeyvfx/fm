@@ -40,18 +40,23 @@ fill_list (w_list_t *__list)
   panels = file_panel_get_list ();
 
   deque_foreach (panels, panel);
-    /* Prepare text of list item */
-    cwd = file_panel_get_full_cwd (panel);
-    len = wcslen (cwd) + 64;
-    text = malloc ((len + 1) * sizeof (wchar_t));
-    swprintf (text, len, L"%d. %ls", i + 1, cwd);
+    if (panel != current_panel)
+      {
+        /* Do not include current panel to list */
 
-    /* Append item */
-    item = w_list_append_item (__list, text, 0);
-    item->data = panel;
+        /* Prepare text of list item */
+        cwd = file_panel_get_full_cwd (panel);
+        len = wcslen (cwd) + 64;
+        text = malloc ((len + 1) * sizeof (wchar_t));
+        swprintf (text, len, L"%d. %ls", i + 1, cwd);
 
-    free (text);
-    free (cwd);
+        /* Append item */
+        item = w_list_append_item (__list, text, 0);
+        item->data = panel;
+
+        free (text);
+        free (cwd);
+      }
     i++;
   deque_foreach_done
 }
@@ -94,7 +99,7 @@ window_dimensions (const wchar_t *__caption, const wchar_t *__short_msg)
   res.width = MAX (res.width, w_ok + w_cancel + 10);
 
   res.height = 7;
-  res.height = MAX (res.height, file_panel_get_count () + 5);
+  res.height = MAX (res.height, file_panel_get_count () + 4);
 
   panels = file_panel_get_list ();
 
