@@ -1038,7 +1038,7 @@ make_copy (const wchar_t *__base_dir, const file_panel_item_t **__src_list,
         }
       else
         {
-          if (res == MR_ABORT)
+          if (res == ACTION_ABORT)
             {
               break;
             }
