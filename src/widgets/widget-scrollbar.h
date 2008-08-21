@@ -59,7 +59,7 @@ w_scrollbar_set_pos (w_scrollbar_t *__scrollbar, unsigned long __pos);
 
 /* Set size of scrollbar */
 void
-w_scrollbar_set_szie (w_scrollbar_t *__scrollbar, unsigned long __size);
+w_scrollbar_set_size (w_scrollbar_t *__scrollbar, unsigned long __size);
 
 /* Get position of scrollbar */
 unsigned long
@@ -67,7 +67,7 @@ w_scrollbar_get_pos (w_scrollbar_t *__scrollbar);
 
 /* Get size of scrollbar */
 unsigned long
-w_scrollbar_get_szie (w_scrollbar_t *__scrollbar);
+w_scrollbar_get_size (w_scrollbar_t *__scrollbar);
 
 /* Set fonts used in scrollbar */
 void

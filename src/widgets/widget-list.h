@@ -25,6 +25,7 @@ typedef struct
 {
   wchar_t *text;
   long     tag;
+  void    *data;
 } w_list_item_t;
 
 typedef struct

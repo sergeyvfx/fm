@@ -199,7 +199,7 @@ w_scrollbar_set_pos (w_scrollbar_t *__scrollbar, unsigned long __pos)
  * @param __size - new walue of size
  */
 void
-w_scrollbar_set_szie (w_scrollbar_t *__scrollbar, unsigned long __size)
+w_scrollbar_set_size (w_scrollbar_t *__scrollbar, unsigned long __size)
 {
   if (!__scrollbar)
     {
@@ -234,7 +234,7 @@ w_scrollbar_get_pos (w_scrollbar_t *__scrollbar)
  * @return size of scrollbar
  */
 unsigned long
-w_scrollbar_get_szie (w_scrollbar_t *__scrollbar)
+w_scrollbar_get_size (w_scrollbar_t *__scrollbar)
 {
   if (!__scrollbar)
     {

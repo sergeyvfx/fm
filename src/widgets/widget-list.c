@@ -319,7 +319,7 @@ w_list_insert_item (w_list_t *__list, __u32_t __pos,
   __list->items.data[__pos].tag = __tag;
 
   /* Update size of scrollbar */
-  w_scrollbar_set_szie ((w_scrollbar_t*)__list->scrollbar,
+  w_scrollbar_set_size ((w_scrollbar_t*)__list->scrollbar,
                         __list->items.count);
 
   ++__list->items.count;
