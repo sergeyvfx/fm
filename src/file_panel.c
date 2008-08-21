@@ -22,7 +22,10 @@
 
 static deque_t *panels = NULL;
 static file_panel_t *last_focused = NULL;
-static w_box_t *panels_grid;
+static widget_t *root_grid_parent; /* Parent of root grid  for file panels */
+static w_box_t *root_panels_grid, /* Root grid for file panels */
+               *last_row_grid; /* Grid for which panels of */
+                               /* last row are belong to */
 static int panels_count = 0;
 
 /* Count of panels which will be created */
@@ -38,7 +41,7 @@ file_panel_t *current_panel = NULL;
 /* Macros for panels initialization which creates new panel */
 /* and returns from file_panels_init with error */
 #define SPAWN_NEW_PANEL() \
-  if (!file_panel_create ()) \
+  if (!file_panel_create (-1, FPCF_SAMEROW)) \
     { \
       return -1; \
     }
@@ -385,6 +388,198 @@ refill_items (file_panel_t *__panel)
 }
 
 /**
+ * 'The same row' strategy of getting new file panel's parent
+ *
+ * @param __width - width for file panel. Use -1 for automatically calc.
+ * @return parent for new file panel
+ */
+static widget_t*
+panel_creation_same_row_strategy (int __width)
+{
+  return WIDGET (w_box_append_item (last_row_grid, __width));
+}
+
+/**
+ * 'New row' strategy of getting new file panel's parent
+ *
+ * @param __width - width for file panel. Use -1 for automatically calc.
+ * @return parent for new file panel
+ */
+static widget_t*
+panel_creation_newrow_strategy (int __width)
+{
+  w_container_t *new_row;
+
+  if (!(root_panels_grid->style & WBS_HORISONTAL))
+    {
+      /* root_panels_grid is vertical-oriented */
+
+      /*
+       * We should create ambient box which is horisontal-oriented and
+       * append to it current root grid, create new row and
+       * vertical-oriented grid in this row. The last grid will
+       * ne a new  last_row_grid. After this we can simply
+       * call a file_creation_same_row_strategy() function.
+       */
+
+      w_box_t *new_root_grid;
+
+      /* Drop current grid form parent */
+      w_container_drop (WIDGET_CONTAINER (root_grid_parent),
+                        WIDGET (root_panels_grid));
+
+      new_root_grid = widget_create_box (WIDGET_CONTAINER (root_grid_parent),
+                                         0, 0, 0, 0, WBS_HORISONTAL, 1);
+
+      /* Append root_panels_grid to the first row of new root grid */
+      w_container_append_child (WIDGET_CONTAINER (w_box_item (new_root_grid,
+                                                              0)),
+                                WIDGET (root_panels_grid));
+
+      root_panels_grid = new_root_grid;
+
+      /*
+       * NOTE: The rest steps of strategy is the same as the
+       *       horisontal-oriented root grrid.
+       */
+    }
+
+  /*
+   * Root grid is horisontal oriented, so we should append new row
+   * to it. In this row we should create new vertical-oriented grid.
+   * This grid will be new last_row_grid. After this steps we can simply call
+   * a file_creation_same_row_strategy() function.
+   */
+
+  new_row = WIDGET_CONTAINER (w_box_append_item (root_panels_grid, -1));
+
+  last_row_grid = widget_create_box (new_row, 0, 0, 0, 0, WBS_VERTICAL, 0);
+
+  return panel_creation_same_row_strategy (__width);
+}
+
+/**
+ * Common part of '... "ear"' strategy of getting new file panel's parent
+ *
+ * @param __width - width for file panel. Use -1 for automatically calc.
+ * @param __left - is creating panel should be a left ear
+ * @return parent for new file panel
+ */
+static widget_t*
+panel_creation_ear_strategy (int __width, BOOL __left)
+{
+  w_box_item_t *parent;
+
+  if (root_panels_grid->style & WBS_HORISONTAL)
+    {
+      /*
+       * We should create ambient vertical-oriented grid with two
+       * columns, one of which will contain current root panels grid
+       * and the other column will contain new panel
+       */
+
+      w_box_t *new_root_grid;
+
+      /* Drop current grid form parent */
+      w_container_drop (WIDGET_CONTAINER (root_grid_parent),
+                        WIDGET (root_panels_grid));
+
+      new_root_grid = widget_create_box (WIDGET_CONTAINER (root_grid_parent),
+                                         0, 0, 0, 0, WBS_VERTICAL, 1);
+
+      /* Append root_panels_grid to the first row of new root grid */
+      w_container_append_child (WIDGET_CONTAINER (w_box_item (new_root_grid,
+                                                              0)),
+                                WIDGET (root_panels_grid));
+
+      root_panels_grid = new_root_grid;
+
+      /*
+       * NOTE: The rest steps of strategy is the same as the
+       *       vertical-oriented root grrid.
+       */
+    }
+
+  /*
+   * We should create new column in current root grid and this
+   * column will be needed parent.
+   */
+  if (__left)
+    {
+      parent = w_box_insert_item (root_panels_grid, 0, __width);
+    }
+  else
+    {
+      parent = w_box_append_item (root_panels_grid, __width);
+    }
+
+  return WIDGET (parent);
+}
+
+/**
+ * 'Left "ear"' strategy of getting new file panel's parent
+ *
+ * @param __width - width for file panel. Use -1 for automatically calc.
+ * @return parent for new file panel
+ */
+static widget_t*
+panel_creation_left_strategy (int __width)
+{
+  return panel_creation_ear_strategy (__width, TRUE);
+}
+
+/**
+ * 'Right "ear"' strategy of getting new file panel's parent
+ *
+ * @return parent for new file panel
+ */
+static widget_t*
+panel_creation_right_strategy (int __width)
+{
+  return panel_creation_ear_strategy (__width, FALSE);
+}
+
+/**
+ * Return parent for new creating panel
+ *
+ * @param __width - width for file panel. Use -1 for automatically calc.
+ * @param __params - panel creation parameters
+ * @return widget for which panel should belong to
+ */
+static widget_t*
+get_new_panel_parent (int __width, unsigned int __params)
+{
+  unsigned int row_strategy;
+  widget_t *res;
+
+  row_strategy = __params & 7;
+
+  switch (row_strategy)
+    {
+    case FPCF_SAMEROW:
+      res = panel_creation_same_row_strategy (__width);
+      break;
+
+    case FPCF_NEWROW:
+      res = panel_creation_newrow_strategy (__width);
+      break;
+
+    case FPCF_LEFT:
+      res = panel_creation_left_strategy (__width);
+      break;
+
+    case FPCF_RIGHT:
+      res = panel_creation_right_strategy (__width);
+      break;
+
+    default:
+      res = panel_creation_same_row_strategy (__width);
+    }
+
+  return res;
+}
+
+/**
  * Set default action to panel
  *
  * @param __panel - panel for which set default actions
@@ -435,86 +630,6 @@ set_default_params (file_panel_t *__panel)
   file_panel_set_vfs (__panel, DEFAULT_VFS_NAME);
   file_panel_set_cwd (__panel, DEFAULT_CWD);
   file_panel_set_columns (__panel, DEFAULT_FULL_ROW_MASK);
-}
-
-/**
- * Spawn new file panel
- *
- * @return new spawned panel or NULL if creation failed
- */
-static file_panel_t*
-file_panel_create (void)
-{
-  file_panel_t *res;
-  BOOL prev;
-  widget_t *parent;
-
-  /* Allocate memory for panel and its widget */
-  MALLOC_ZERO (res, sizeof (file_panel_t));
-
-  parent = WIDGET (w_box_append_item (panels_grid, -1));
-
-  /* Fill up the actions */
-  set_default_actions (res);
-  FILE_PANEL_ACTION_CALL (res, create);
-
-  /* Set file panel number */
-  res->number = panels_count;
-
-  /****
-   * General widget initialization
-   */
-  WIDGET_INIT (res->widget, file_panel_widget_t, WT_SINGLE, parent, 0,
-               fpd_widget_destructor,
-               fpd_draw_widget,
-               0, 0, 1, 0, 0);
-
-  /* Set up panels fonts */
-  res->widget->font             = &FONT (CID_CYAN, CID_BLUE);
-  res->widget->border_font      = &FONT (CID_CYAN, CID_BLUE);
-  res->widget->focused_dir_font = &FONT (CID_BLACK, CID_CYAN);
-  res->widget->caption_font     = &FONT (CID_YELLOW, CID_BLUE);
-
-  /* Save pointer to file panel descriptor in userdata in widget */
-  WIDGET_USER_DATA (WIDGET (res->widget)) = res;
-
-  /* Fill up callbacks */
-  WIDGET_CALLBACK (WIDGET (res->widget), keydown) =
-          (widget_keydown_proc) file_panel_keydown;
-
-  WIDGET_CALLBACK (WIDGET (res->widget), onresize) =
-          (widget_action) file_panel_onresize;
-
-  WIDGET_CALLBACK (WIDGET (res->widget), focused) =
-          (widget_action) file_panel_focused;
-
-  WIDGET_POST_INIT (res->widget);
-
-  set_default_params (res);
-
-  prev = deque_head (panels) != NULL;
-
-  ++panels_count;
-
-  if (panels_count == 3)
-    {
-      /* Need this because while there were less than three panels */
-      /* they didn't draw theri numbers. */
-      widget_redraw (WIDGET (panels_grid));
-    }
-
-  deque_push_back (panels, res);
-
-  if (!prev)
-    {
-      file_panel_set_focus (res);
-    }
-  else
-    {
-      file_panel_redraw (res);
-    }
-
-  return res;
 }
 
 /**
@@ -739,9 +854,14 @@ file_panels_init (widget_t *__parent)
       return -1;
     }
 
-  /* Create grid to manage panels' position */
-  panels_grid = widget_create_box (WIDGET_CONTAINER (__parent),
+  root_grid_parent = __parent;
+
+  /* Create grids to manage panels' position */
+  root_panels_grid = widget_create_box (WIDGET_CONTAINER (root_grid_parent),
                                    0, 0, 0, 0, WBS_VERTICAL, 0);
+
+  /* Initially last_row_grid is the same grid as panels_grid */
+  last_row_grid = root_panels_grid;
 
   panels = deque_create ();
 
@@ -764,13 +884,95 @@ file_panels_done (void)
   deque_destroy (panels, file_panel_destructor);
 
   /* Delete grid from widget tree */
-  if (panels_grid)
+  if (root_panels_grid)
     {
-      w_container_delete (WIDGET_CONTAINER (panels_grid->parent),
-                          WIDGET (panels_grid));
+      w_container_delete (WIDGET_CONTAINER (root_panels_grid->parent),
+                          WIDGET (root_panels_grid));
     }
 
   fpd_done ();
+}
+
+/**
+ * Create new file panel
+ *
+ * @param __width - width for file panel. Use -1 for automatically calc.
+ * @param __params - creation parameters
+ * @return new spawned panel or NULL if creation failed
+ */
+file_panel_t*
+file_panel_create (int __width, unsigned int __params)
+{
+  file_panel_t *res;
+  BOOL prev;
+  widget_t *parent;
+
+  /* Allocate memory for panel and its widget */
+  MALLOC_ZERO (res, sizeof (file_panel_t));
+
+  parent = get_new_panel_parent (__width, __params);
+
+  /* Fill up the actions */
+  set_default_actions (res);
+  FILE_PANEL_ACTION_CALL (res, create);
+
+  /* Set file panel number */
+  res->number = panels_count;
+
+  /****
+   * General widget initialization
+   */
+  WIDGET_INIT (res->widget, file_panel_widget_t, WT_SINGLE, parent, 0,
+               fpd_widget_destructor,
+               fpd_draw_widget,
+               0, 0, 1, 0, 0);
+
+  /* Set up panels fonts */
+  res->widget->font             = &FONT (CID_CYAN, CID_BLUE);
+  res->widget->border_font      = &FONT (CID_CYAN, CID_BLUE);
+  res->widget->focused_dir_font = &FONT (CID_BLACK, CID_CYAN);
+  res->widget->caption_font     = &FONT (CID_YELLOW, CID_BLUE);
+
+  /* Save pointer to file panel descriptor in userdata in widget */
+  WIDGET_USER_DATA (WIDGET (res->widget)) = res;
+
+  /* Fill up callbacks */
+  WIDGET_CALLBACK (WIDGET (res->widget), keydown) =
+          (widget_keydown_proc) file_panel_keydown;
+
+  WIDGET_CALLBACK (WIDGET (res->widget), onresize) =
+          (widget_action) file_panel_onresize;
+
+  WIDGET_CALLBACK (WIDGET (res->widget), focused) =
+          (widget_action) file_panel_focused;
+
+  WIDGET_POST_INIT (res->widget);
+
+  set_default_params (res);
+
+  prev = deque_head (panels) != NULL;
+
+  ++panels_count;
+
+  if (panels_count == 3)
+    {
+      /* Need this because while there were less than three panels */
+      /* they didn't draw theri numbers. */
+      widget_redraw (WIDGET (root_panels_grid));
+    }
+
+  deque_push_back (panels, res);
+
+  if (!prev)
+    {
+      file_panel_set_focus (res);
+    }
+  else
+    {
+      file_panel_redraw (res);
+    }
+
+  return res;
 }
 
 /**

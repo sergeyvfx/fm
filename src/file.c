@@ -100,15 +100,18 @@ fit_filename (const wchar_t *__file_name, size_t __width, wchar_t *__res)
         }
 
       /* Copy suffix */
-      --suff_ptr;
-      for (;;)
+      if (suff_ptr>0)
         {
-          __res[ptr++] = suffix[suff_ptr];
-          if (suff_ptr == 0)
-            {
-              break;
-            }
           --suff_ptr;
+          for (;;)
+            {
+              __res[ptr++] = suffix[suff_ptr];
+              if (suff_ptr == 0)
+                {
+                  break;
+                }
+              --suff_ptr;
+            }
         }
 
       free (suffix);

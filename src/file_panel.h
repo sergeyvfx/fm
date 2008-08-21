@@ -29,8 +29,30 @@ BEGIN_HEADER
  * Constants
  */
 
+/* Panels' flags */
+
 /* Panel can't be focused */
 #define FPF_UNFOCUSABLE    0x0001
+
+
+/* Creation flags */
+
+/*
+ * NOTE: Three lower bits is reserved for file panels rows' strategy.
+ *       Other bits is unused now.
+ */
+
+/* File panel will be appended to the last row of panels */
+#define FPCF_SAMEROW 0x0000
+
+/* File panel will be appended to new row of file panels */
+#define FPCF_NEWROW  0x0001
+
+/* File panel will appened as a left "ear" */
+#define FPCF_LEFT    0x0002
+
+/* File panel will appened as a right "ear" */
+#define FPCF_RIGHT   0x0003
 
 /********
  * Macroses
@@ -296,6 +318,10 @@ file_panels_init (widget_t *__parent);
 void
 file_panels_done (void);
 
+/* Create new file panel */
+file_panel_t*
+file_panel_create (int __width, unsigned int __params);
+
 /* Set name of VFS */
 int
 file_panel_set_vfs (file_panel_t *__panel, const wchar_t *__vfs);
@@ -320,6 +346,7 @@ file_panel_draw (file_panel_t *__panel);
 int
 file_panel_redraw (file_panel_t *__panel);
 
+/* Set list of columns to file panel */
 int
 file_panel_set_columns (file_panel_t *__panel, const wchar_t *__columns);
 
@@ -332,21 +359,27 @@ unsigned long
 file_panel_item_index_by_name (file_panel_t *__panel, const wchar_t *__name,
                                BOOL *__found);
 
+/* Set file panel's listing mode */
 void
 file_panel_set_listing_mode (file_panel_t *__panel, int __mode);
 
+/* Updates widths of file panels */
 void
 file_panel_update_columns_widths (file_panel_t *__panel);
 
+/* Get count of file panels */
 int
 file_panel_get_count (void);
 
+/* Get list of file panels */
 deque_t*
 file_panel_get_list (void);
 
+/* Get full URL of panel's CWD */
 wchar_t*
 file_panel_get_full_cwd (file_panel_t *__panel);
 
+/* Get list of selected items */
 unsigned long
 file_panel_get_selected_items (file_panel_t *__panel,
                                file_panel_item_t *** __items);

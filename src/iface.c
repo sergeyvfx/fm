@@ -187,6 +187,12 @@ iface_init (void)
   /* Create menu */
   _INIT_ITERATOR (iface_create_menu);
 
+  /*
+   * FIXME: There is some troubles with panels' disappearing after
+   *        menu has been created.
+   */
+  widget_redraw (WIDGET (w_box_item (main_box, 1)));
+
   hotkey_register (L"F10", exit_hotkey);
 
   return 0;
