@@ -1356,6 +1356,7 @@ fpd_draw_widget (file_panel_widget_t *__panel_widget)
   scr_window_t layout;
   file_panel_t *panel;
   wchar_t pchar[MAX_SCREEN_WIDTH];
+  int delta;
 
   /* There is no needed attributes */
   if (!__panel_widget || !(layout = WIDGET_LAYOUT (__panel_widget)))
@@ -1381,18 +1382,44 @@ fpd_draw_widget (file_panel_widget_t *__panel_widget)
       panel->actions.draw_items (panel);
     }
 
-  /* Draw current working directory */
+  /* Draw panel's number */
   scr_wnd_font (layout, *__panel_widget->font);
+  if (file_panel_get_count () > 2)
+    {
+      size_t len;
+
+      /* Format string */
+      /* NOTE: Panel's number is zero-based */
+      swprintf (pchar, BUF_LEN (pchar), L" %d ", panel->number + 1);
+      len = wcslen (pchar);
+
+      /* Print number in tee-s */
+      scr_wnd_move_caret (layout, 1, 0);
+      /* scr_wnd_putch (layout, ACS_RTEE); */
+      scr_wnd_add_nstr (layout, pchar, len);
+      /* scr_wnd_putch (layout, ACS_LTEE); */
+
+      /* Calculate delta for CWD position */
+      delta = wcswidth (pchar, len) + 1;
+    }
+  else
+    {
+      /* If there is only two panels printing of it's number is useless */
+      delta = 0;
+    }
+
+  /* Draw current working directory */
   if (panel->cwd.data)
     {
       /* Fit CWD name to panel's width */
       /* (4=margin from border and padding inside caption) */
-      fit_dirname (panel->cwd.data, __panel_widget->position.width - 4, pchar);
+      fit_dirname (panel->cwd.data, __panel_widget->position.width - 4 - delta,
+                   pchar);
 
       /* Move caret to needed position */
       scr_wnd_move_caret (layout,
-                          (__panel_widget->position.width -
-                             wcswidth (pchar, wcslen (pchar)) - 2) / 2,
+                          (__panel_widget->position.width - delta -
+                             wcswidth (pchar, wcslen (pchar)) - 2) / 2 + delta,
                           0);
 
       /* Set font of CWD text */

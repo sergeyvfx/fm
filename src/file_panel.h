@@ -168,6 +168,9 @@ typedef int (*file_panel_data_action) (void *__panel, void *__data);
 
 typedef struct
 {
+  /* Number of a panel */
+  int number;
+
   /* Widget of file panel which task is */
   /* draw panel on screen and caught messages from user */
   file_panel_widget_t *widget;

@@ -58,6 +58,9 @@ file_panel_t *current_panel = NULL;
 /* Name of default virtual file system */
 #define DEFAULT_VFS_NAME      VFS_LOCALFS_PLUGIN
 
+/* Directory name of default CWD */
+#define DEFAULT_CWD L"/"
+
 /********
  *
  */
@@ -430,7 +433,7 @@ set_default_params (file_panel_t *__panel)
 {
   file_panel_set_listing_mode (__panel, LISTING_MODE_MEDIUM);
   file_panel_set_vfs (__panel, DEFAULT_VFS_NAME);
-  file_panel_set_cwd (__panel, L"/");
+  file_panel_set_cwd (__panel, DEFAULT_CWD);
   file_panel_set_columns (__panel, DEFAULT_FULL_ROW_MASK);
 }
 
@@ -454,6 +457,9 @@ file_panel_create (void)
   /* Fill up the actions */
   set_default_actions (res);
   FILE_PANEL_ACTION_CALL (res, create);
+
+  /* Set file panel number */
+  res->number = panels_count;
 
   /****
    * General widget initialization
@@ -489,6 +495,13 @@ file_panel_create (void)
   prev = deque_head (panels) != NULL;
 
   ++panels_count;
+
+  if (panels_count == 3)
+    {
+      /* Need this because while there were less than three panels */
+      /* they didn't draw theri numbers. */
+      widget_redraw (WIDGET (panels_grid));
+    }
 
   deque_push_back (panels, res);
 
