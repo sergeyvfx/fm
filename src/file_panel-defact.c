@@ -1395,12 +1395,12 @@ fpd_draw_widget (file_panel_widget_t *__panel_widget)
 
       /* Print number in tee-s */
       scr_wnd_move_caret (layout, 1, 0);
-      /* scr_wnd_putch (layout, ACS_RTEE); */
+      scr_wnd_putch (layout, ACS_RTEE);
       scr_wnd_add_nstr (layout, pchar, len);
-      /* scr_wnd_putch (layout, ACS_LTEE); */
+      scr_wnd_putch (layout, ACS_LTEE);
 
       /* Calculate delta for CWD position */
-      delta = wcswidth (pchar, len) + 1;
+      delta = wcswidth (pchar, len) + 2;
     }
   else
     {
