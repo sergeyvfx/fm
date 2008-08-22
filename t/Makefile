@@ -16,7 +16,7 @@ include ${top_builddir}/mk/objective.mk
 # Run-tests part of makefile
 
 all:
-	test-all.sh || exit 1
+	./test-all.sh || exit 1
 
 clean-tests:
 	rm -f .tests-passed > /dev/null 2>&1

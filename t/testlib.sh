@@ -48,7 +48,7 @@ for t in test-*; do
     let total++
 
     # Run test
-    description=`${t}`
+    description=`./${t}`
 
     # Review exit code
     exit_code=$?
@@ -104,7 +104,7 @@ fi
 if test "x${subdirs}" != "x"; then
   for subdir in ${subdirs}; do
     cd ${subdir}
-    make-test.sh
+    ./make-test.sh
     exit_code=$?
     cd ..
 
