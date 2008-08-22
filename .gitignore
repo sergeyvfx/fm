@@ -23,6 +23,7 @@ src/vfs/plugins/localfs/Makefile
 src/vfs/plugins/localfs/liblocalfs.so
 stamp-h1
 t/vfs/Makefile
-t/vfs/test
+t/vfs/vfs-test
+t/.tests-passed
 autom4te.cache/
 Makefile
