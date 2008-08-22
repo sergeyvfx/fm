@@ -61,6 +61,7 @@ typedef int (*comporator) (const void *, const void *);
             __next_ = deque_next (__cur_);
 
 #define deque_foreach_break break
+#define deque_foreach_continue {__cur_ = __next_; continue;}
 #define deque_foreach_done \
             __cur_ = __next_; \
         }\

@@ -236,24 +236,31 @@ void *
 deque_pop_back (deque_t *__this)
 {
   void *data;
+  iterator_t *iter;
 
-  if (!__this)
+  if (!__this || !__this->head)
     {
       return NULL;
     }
 
-  data = __this->tail->data;
+  iter = __this->tail;
+  data = iter->data;
   __this->tail = __this->tail->prev;
-  __this->tail->next = NULL;
 
   if (!__this->tail)
     {
       __this->head = NULL;
     }
+  else
+    {
+      __this->tail->next = NULL;
+    }
 
 #ifdef PROFILE_DEQUE_LENGTH
   --__this->length;
 #endif
+
+  free (iter);
 
   return data;
 }
@@ -267,14 +274,16 @@ deque_pop_back (deque_t *__this)
 void *
 deque_pop_front (deque_t *__this)
 {
-  iterator_t *pop_iter;
+  iterator_t *iter;
+  void *data;
 
-  if (!__this)
+  if (!__this || !__this->head)
     {
       return NULL;
     }
 
-  pop_iter = __this->head;
+  iter = __this->head;
+  data = iter->data;
   __this->head = __this->head->next;
 
   if (!__this->head)
@@ -286,7 +295,9 @@ deque_pop_front (deque_t *__this)
   --__this->length;
 #endif
 
-  return pop_iter;
+  free (iter);
+
+  return data;
 }
 
 /**
