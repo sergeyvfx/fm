@@ -40,9 +40,15 @@ BEGIN_HEADER
  *
  */
 
+/* Copy list of files from specified panel */
 int
 action_copy (file_panel_t *__panel);
 
+/* Create directory on specified panel */
+int
+action_mkdir (file_panel_t *__panel);
+
+/* Chooses file panel for action */
 file_panel_t*
 action_choose_file_panel (const wchar_t *__caption,
                           const wchar_t *__short_msg);

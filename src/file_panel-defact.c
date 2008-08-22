@@ -1174,6 +1174,10 @@ fpd_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
     case KEY_F (5):
       action_copy (__panel);
       break;
+    case KEY_F (7):
+    case 'c':
+      action_mkdir (__panel);
+      break;
     /*
      *
      ********/
@@ -1640,7 +1644,7 @@ fpd_centre_to_item (file_panel_t *__panel, wchar_t *__name)
 
   cursor_to_item (__panel, __name);
   centralize_current_item (__panel);
-  file_panel_draw (__panel);
+  file_panel_redraw (__panel);
 
   return 0;
 }
@@ -1662,7 +1666,7 @@ fpd_scroll_to_item (file_panel_t *__panel, wchar_t *__name)
 
   cursor_to_item (__panel, __name);
   update_scroll_data (__panel);
-  file_panel_draw (__panel);
+  file_panel_redraw (__panel);
 
   return 0;
 }

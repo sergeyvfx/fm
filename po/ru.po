@@ -27,7 +27,7 @@ msgid "_No"
 msgstr "_Нет"
 
 msgid "_Cancel"
-msgstr "_Отмена"
+msgstr "О_тмена"
 
 msgid "_Retry"
 msgstr "_Повтор"
@@ -264,6 +264,12 @@ msgstr "Невозможно сменить права целевого ктал
 
 msgid "Cannot listing source directory \"%ls\":\n%ls"
 msgstr "Невозможно получить листинг каталога \"%ls\":\n%ls"
+
+msgid "Create a new directory"
+msgstr "Создать новую директорию"
+
+msgid "Enter directory name:"
+msgstr "Введите имя директории:"
 
 ##
 # POSIX errors

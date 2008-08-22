@@ -34,7 +34,8 @@ SOURCES = \
 	action-choose_panel.c \
 	action-listing.c \
 	action-copy.c \
-	action-copy-iface.c
+	action-copy-iface.c \
+	action-mkdir.c
 
 OBJECTS = ${SOURCES:.c=.o}
 

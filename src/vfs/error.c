@@ -38,6 +38,7 @@ static error_t errors[] = {
   {VFS_ERR_PLUGIN_FORMAT,      L"Invalid plugin format"},
   {VFS_ERR_PLUGIN_INIT,        L"Error initializating plugin"},
   {VFS_ERR_PLUGIN_NOT_FOUND,   L"Plugin '${plugin-name}' not found"},
+  {VFS_ERR_INVALID_URL,        L"URL is invalid"}
 };
 
 #define MAX_ERROR_LENGTH 1024
