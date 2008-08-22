@@ -1175,7 +1175,6 @@ fpd_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
       action_copy (__panel);
       break;
     case KEY_F (7):
-    case 'c':
       action_mkdir (__panel);
       break;
     /*

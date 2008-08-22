@@ -112,6 +112,11 @@ wcdircatsubdir (const wchar_t *__name, const wchar_t *__subname)
       return wcdirname (__name);
     }
 
+  while (__subname[0] == '/')
+    {
+      ++__subname;
+    }
+
   /* Allocate memory for new directory name */
   /* 2=null-terminator+directory separator */
   new_len = wcslen (__name) + wcslen (__subname) + 2;

@@ -147,7 +147,7 @@ wcfilename (const wchar_t *__name)
   /* Search last '/' */
   for (i = len - 1; i >= 0; i--)
     {
-      if (__name[i] == '/')
+      if (__name[i] == '/' || i == 0)
         {
           break;
         }
@@ -157,7 +157,11 @@ wcfilename (const wchar_t *__name)
   res = malloc (sizeof (wchar_t)*(len - i + 1));
 
   /* Copy data to new filename */
-  i++;
+  if (__name[i] == '/')
+    {
+      i++;
+    }
+
   while (i < len)
     {
       res[ptr++] = __name[i++];
@@ -357,7 +361,7 @@ filename_normalize (const wchar_t *__fn)
 
   i = 0;
   deque_foreach (n_items, item)
-    if (!(abs && i == 0))
+    if (i > 0)
       {
         wcscat (res, L"/");
       }

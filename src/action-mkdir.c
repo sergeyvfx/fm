@@ -122,15 +122,46 @@ do_create_directory (const wchar_t *__base_dir, const wchar_t *__dir_name,
  * Centre cursor to created item
  *
  * @param __panel - on which panel item was created
+ * @param __basedir - base directory of __dir_name
  * @param __dir_name - created directory name
  */
 static void
-make_centre (file_panel_t *__panel, wchar_t *__dir_name)
+make_centre (file_panel_t *__panel, const wchar_t *__basedir,
+             const wchar_t *__dir_name)
 {
-  /*
-   * FIXME: Use more smart stuff
-   */
-  FILE_PANEL_ACTION_CALL (__panel, centre_to_item, __dir_name);
+  wchar_t *n_dir, *full_dir, *cwd;
+
+  /* Get full normalized directory name */
+  n_dir = filename_normalize (__dir_name);
+  full_dir = wcdircatsubdir (__basedir, n_dir);
+
+  /* Get CWD of panel */
+  cwd = file_panel_get_full_cwd (__panel);
+
+  if (wcsncmp (cwd, full_dir, wcslen (cwd)) == 0)
+    {
+      wchar_t *rel_dir = full_dir + wcslen (cwd);
+
+      /* Get name of item to select */
+      if (rel_dir[0] == '/')
+        {
+          long i, len = 0;
+          wchar_t name[MAX_FILENAME_LEN + 1] = {0};
+          ++rel_dir;
+
+          i = 0;
+          while (rel_dir[i] && rel_dir[i] != '/')
+            {
+              name[len++] = rel_dir[i++];
+            }
+          name[len] = 0;
+
+          FILE_PANEL_ACTION_CALL (__panel, centre_to_item, name);
+        }
+    }
+
+  free (n_dir);
+  free (full_dir);
 }
 
 /********
@@ -146,7 +177,7 @@ make_centre (file_panel_t *__panel, wchar_t *__dir_name)
 int
 action_mkdir (file_panel_t *__panel)
 {
-  wchar_t *dir_name, *cwd;
+  wchar_t *dir_name, *basedir;
   int res;
 
   if (__panel == NULL)
@@ -163,10 +194,30 @@ action_mkdir (file_panel_t *__panel)
       return ACTION_ABORT;
     }
 
-  cwd = file_panel_get_full_cwd (__panel);
+  if (dir_name[0]=='/')
+    {
+      size_t len;
+      len = wcslen (__panel->vfs) + wcslen (VFS_PLUGIN_DELIMETER) + 1;
+      basedir = malloc ((len + 1) * sizeof (wchar_t));
+
+      if (wcscmp (__panel->vfs, VFS_LOCALFS_PLUGIN))
+        {
+          wcscpy (basedir, __panel->vfs);
+          wcscat (basedir, VFS_PLUGIN_DELIMETER);
+          wcscat (basedir, L"/");
+        }
+      else
+        {
+          wcscpy (basedir, L"/");
+        }
+    }
+  else
+    {
+      basedir = file_panel_get_full_cwd (__panel);
+    }
 
   /* Recursively creation of a directory */
-  res = do_create_directory (dir_name[0]=='/'?L"/":cwd, dir_name, TRUE);
+  res = do_create_directory (basedir, dir_name, TRUE);
 
   if (res)
     {
@@ -175,14 +226,16 @@ action_mkdir (file_panel_t *__panel)
                 vfs_get_error (res));
       MESSAGE_ERROR (msg);
     }
-
-  /* Rescan panel and set cursor to created item */
-  file_panel_rescan (__panel);
-  make_centre (__panel, dir_name);
+  else
+    {
+      /* Rescan panel and set cursor to created item */
+      file_panel_rescan (__panel);
+      make_centre (__panel, basedir, dir_name);
+    }
 
   /* Free all used memory */
   free (dir_name);
-  free (cwd);
+  free (basedir);
 
   return ACTION_OK;
 }
