@@ -276,105 +276,6 @@ format_file_time (wchar_t *__buf, size_t __buf_size, time_t __time)
   wcsftime (__buf, __buf_size, format, &tm);
 }
 
-/**
- * Trim file name
- * (Deletes duplicated '/' from file name)
- * Returned buffer must be freed
- *
- * @return truncated file name.
- */
-wchar_t*
-filename_normalize (const wchar_t *__fn)
-{
-  size_t i, len, ptr = 0;
-  wchar_t *res, *s, *old_s, *item;
-  deque_t *items, *n_items;
-  BOOL abs = FALSE;
-
-  len = wcslen (__fn);
-
-  void free_ref_data (void *__data)
-    {
-      SAFE_FREE (__data);
-    }
-
-  /* Length of file name can not become longer after trim */
-  res = malloc ((len + 1) * sizeof (wchar_t));
-
-  /* Step 1: avoid multimly slahes  */
-  for (i = 0; i < len; i++)
-    {
-      if (__fn[i] == '/' && ptr > 0 && res[ptr - 1] == '/')
-        {
-          continue;
-        }
-      else
-        {
-          res[ptr++] = __fn[i];
-        }
-    }
-
-  res[ptr] = 0;
-
-  /* Step 2: process . and .. subdirectories */
-
-  /* Get stack of path items */
-  items = deque_create ();
-  s = wcsdup (res);
-  while (wcscmp (s, L"") != 0 && wcscmp (s, L"/") != 0)
-    {
-      deque_push_front (items, wcfilename (s));
-      old_s = s;
-      s = wcdirname (s);
-      free (old_s);
-    }
-  free (s);
-
-  /* Get stack of normalized items */
-  n_items = deque_create ();
-  deque_foreach (items, item)
-    if (wcscmp (item, L".") == 0)
-      {
-        deque_foreach_continue;
-      }
-
-    if (wcscmp (item, L"..") == 0)
-      {
-        deque_pop_back (n_items);
-      }
-    else
-      {
-        deque_push_back (n_items, item);
-      }
-  deque_foreach_done
-
-  /* Collect normalized path */
-  if (res[0] == '/')
-    {
-      wcscpy (res, L"/");
-      abs = TRUE;
-    }
-  else
-    {
-      wcscpy (res, L"");
-    }
-
-  i = 0;
-  deque_foreach (n_items, item)
-    if (i > 0)
-      {
-        wcscat (res, L"/");
-      }
-    wcscat (res, item);
-    ++i;
-  deque_foreach_done
-
-  /* Step 3: Free used memory */
-  deque_destroy (n_items, 0);
-  deque_destroy (items, free_ref_data);
-
-  return res;
-}
 
 /**
  * Compare two file names
@@ -386,8 +287,8 @@ filename_compare (const wchar_t *__a, const wchar_t *__b)
 {
   int res;
   wchar_t *a, *b;
-  a = filename_normalize (__a);
-  b = filename_normalize (__b);
+  a = vfs_normalize (__a);
+  b = vfs_normalize (__b);
 
   res = wcscmp (a, b);
 

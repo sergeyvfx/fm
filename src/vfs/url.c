@@ -18,10 +18,6 @@
 
 #include <wchar.h>
 
-#define USE_DEFAULT_PLUGIN
-#define VFS_DEFAULT_PLUGIN       VFS_LOCALFS_PLUGIN
-#define VFS_DEFAULT_PLUGIN_IDENT '/'
-
 /**
  * Parse url string and returns responsible plugin and
  * local path inside plugin
@@ -46,7 +42,7 @@ vfs_url_parse (const wchar_t *__url, vfs_plugin_t **__plugin,
 
   wchar_t *plugin_name = 0;
 
-#ifdef USE_DEFAULT_PLUGIN
+#ifdef VFS_USE_DEFAULT_PLUGIN
   if (__url[0] == VFS_DEFAULT_PLUGIN_IDENT)
     {
       (*__path) = wcsdup (__url);
@@ -64,7 +60,7 @@ vfs_url_parse (const wchar_t *__url, vfs_plugin_t **__plugin,
       size_t pos = wcslen (__url) - wcslen (s); /* Position of occurance*/
       plugin_name = wcsndup (__url, pos); /* Name of plugin */
       (*__path) = wcsdup (__url + pos + wcslen (VFS_PLUGIN_DELIMETER));
-#ifdef USE_DEFAULT_PLUGIN
+#ifdef VFS_USE_DEFAULT_PLUGIN
     }
 #endif
 

@@ -1357,10 +1357,12 @@ file_panel_get_full_cwd (file_panel_t *__panel)
       return NULL;
     }
 
-  if (wcscmp (__panel->vfs, VFS_LOCALFS_PLUGIN) == 0)
+#ifdef VFS_USE_DEFAULT_PLUGIN
+  if (wcscmp (__panel->vfs, VFS_DEFAULT_PLUGIN) == 0)
     {
       return wcsdup (__panel->cwd.data);
     }
+#endif
 
   /* Length of URL */
   len = wcslen (__panel->vfs) + wcslen (__panel->cwd.data) +

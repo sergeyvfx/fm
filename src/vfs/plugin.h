@@ -23,6 +23,10 @@ BEGIN_HEADER
 
 #define VFS_LOCALFS_PLUGIN   L"localfs"
 
+#define VFS_USE_DEFAULT_PLUGIN
+#define VFS_DEFAULT_PLUGIN       VFS_LOCALFS_PLUGIN
+#define VFS_DEFAULT_PLUGIN_IDENT '/'
+
 /********
  * Type defenitions
  */

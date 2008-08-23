@@ -77,9 +77,6 @@ fsizetohuman (__u32_t __size, char *__suffix);
 void
 format_file_time (wchar_t *__buf, size_t __buf_size, time_t __time);
 
-wchar_t*
-filename_normalize (const wchar_t *__fn);
-
 int
 filename_compare (const wchar_t *__a, const wchar_t *__b);
 

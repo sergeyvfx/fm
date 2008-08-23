@@ -1025,7 +1025,7 @@ make_copy (const wchar_t *__base_dir, const file_panel_item_t **__src_list,
 
       /* Make copy iteration */
       src = wcdircatsubdir (__base_dir, item->file->name);
-      res = make_copy_iter (src, __dst, &owr_all_rule, wnd,
+      res = make_copy_iter (src, dst, &owr_all_rule, wnd,
                             scan_allowed ? listing.tree->items[i] : NULL);
       free (src);
 

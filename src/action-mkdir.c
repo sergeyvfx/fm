@@ -132,7 +132,7 @@ make_centre (file_panel_t *__panel, const wchar_t *__basedir,
   wchar_t *n_dir, *full_dir, *cwd;
 
   /* Get full normalized directory name */
-  n_dir = filename_normalize (__dir_name);
+  n_dir = vfs_normalize (__dir_name);
   full_dir = wcdircatsubdir (__basedir, n_dir);
 
   /* Get CWD of panel */

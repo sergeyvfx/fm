@@ -157,6 +157,9 @@ vfs_readlink (const wchar_t *__url, wchar_t *__buf, size_t __bufsize);
 int
 vfs_alphasort (const void *__a, const void *__b);
 
+wchar_t*
+vfs_normalize (const wchar_t *__fn);
+
 /********
  *
  */
