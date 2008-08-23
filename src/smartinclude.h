@@ -34,6 +34,10 @@ BEGIN_HEADER
 #include "package.h"
 #include "version.h"
 
+/* There is some strange errors with using SIGWINCH when */
+/* _XOPEN_SOURCE is defined. So, if your module needs */
+/* SIGWINCH you need define NEED_SIGWINCH before includeing */
+/* this header file. */
 #ifndef NEED_SIGWINCH
 #  define _XOPEN_SOURCE 500
 #endif
@@ -47,6 +51,8 @@ BEGIN_HEADER
 #define USE_WIDEC_SUPPORT
 #define _XOPEN_SOURCE_EXTENDED
 
+/* Attribute for unused parameter to avoid */
+/* compilator's waringns */
 #ifdef HAVE__ATTRIBUTE__
 #  define ATTR_UNUSED __attribute__((unused))
 #else
