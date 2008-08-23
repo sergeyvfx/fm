@@ -52,6 +52,12 @@
     return -1; \
   item->user_data=__panel;
 
+#define CHECK_PERM_PREFIX(_func, _ch) \
+  if (_func (__mode)) \
+    { \
+      return _ch; \
+    }
+
 /********
  *
  */
@@ -228,6 +234,25 @@ draw_columns_headers (const file_panel_t *__panel,
 }
 
 /**
+ * Get prefix character for permission string
+ *
+ * @param __mode - mode of item
+ * @return refix of perm string
+ */
+static wchar_t
+perm_prefix (vfs_mode_t __mode)
+{
+  CHECK_PERM_PREFIX (S_ISDIR,  'd');
+  CHECK_PERM_PREFIX (S_ISLNK,  'l');
+  CHECK_PERM_PREFIX (S_ISBLK,  'b');
+  CHECK_PERM_PREFIX (S_ISCHR,  'c');
+  CHECK_PERM_PREFIX (S_ISSOCK, 's');
+  CHECK_PERM_PREFIX (S_ISFIFO, 'p');
+
+  return '-';
+}
+
+/**
  * Draw row of full-view table
  *
  * @param __panel - panel for which item is belong to
@@ -348,21 +373,7 @@ draw_full_row (const file_panel_t *__panel, unsigned long __index,
             umasktowcs (item->file->lstat.st_mode, pchar + 1);
 
             /* Append directory/symlink prefix to umask string */
-            if (S_ISDIR (item->file->lstat.st_mode))
-              {
-                pchar[0] = 'd';
-              }
-            else
-              {
-                if (S_ISLNK (item->file->lstat.st_mode))
-                  {
-                    pchar[0] = 'l';
-                  }
-                else
-                  {
-                    pchar[0] = '-';
-                  }
-              }
+            pchar[0] = perm_prefix (item->file->lstat.st_mode);
             break;
           case COLUMN_OCTPERM:
             {
