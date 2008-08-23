@@ -37,6 +37,7 @@ BEGIN_HEADER
 typedef size_t vfs_size_t;
 typedef off_t vfs_offset_t;
 typedef mode_t vfs_mode_t;
+typedef dev_t vfs_dev_t;
 typedef uid_t vfs_uid_t;
 typedef gid_t vfs_gid_t;
 typedef struct stat vfs_stat_t;
@@ -148,6 +149,9 @@ vfs_link (const wchar_t *__old_url, const wchar_t *__new_path);
 
 int
 vfs_readlink (const wchar_t *__url, wchar_t *__buf, size_t __bufsize);
+
+int
+vfs_mknod (const wchar_t *__url, vfs_mode_t __mode, vfs_dev_t __dev);
 
 
 /********

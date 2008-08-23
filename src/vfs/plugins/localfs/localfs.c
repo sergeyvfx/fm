@@ -470,6 +470,7 @@ localfs_link (const wchar_t *__old_path, const wchar_t *__new_path)
 
 /**
  * Read value of a symbolic link
+ * Wrapper for POSIX function readlink()
  *
  * @param __fn - name of symlink to read
  * @param __buf - buffer where whalue of link will be saved
@@ -508,6 +509,26 @@ localfs_readlink (const wchar_t *__fn, wchar_t *__buf, size_t __bufsize)
 
   free (fn);
   return res;
+}
+
+/**
+ * Create a special or ordinary file
+ * Wrapper for POSIX function mknod()
+ *
+ * @param __fn - terget file name
+ * @param __mode - permittions and type of file
+ * @param __dev - specifies the major and minor numbers of the newly
+   created device
+ */
+static int
+localfs_mknod (const wchar_t *__fn, vfs_mode_t __mode, vfs_dev_t __dev)
+{
+  if (!__fn)
+    {
+      return VFS_ERR_INVLAID_ARGUMENT;
+    }
+
+  _FILEOP (mknod, __mode, __dev);
 }
 
 /********
@@ -549,7 +570,9 @@ static vfs_plugin_info_t plugin_info = {
 
   localfs_symlink,
   localfs_link,
-  localfs_readlink
+  localfs_readlink,
+
+  localfs_mknod
 };
 
 /* Initialize plugin */

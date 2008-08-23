@@ -872,7 +872,7 @@ set_default_userdata (file_panel_t *__panel)
 static int
 open_file (file_panel_t *__panel, file_panel_item_t *__item)
 {
-  MESSAGE_ERROR (L"This feature is not implemented yet");
+  MESSAGE_ERROR (_(L"This feature is not implemented yet"));
 
   /*
    * TODO: 1. Call an 'open-file' hook

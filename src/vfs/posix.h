@@ -82,6 +82,10 @@ typedef int (*vfs_readlink_proc) (const wchar_t *__fn,
                                   wchar_t *__buf,
                                   size_t __bufsize);
 
+typedef int (*vfs_mknod_proc) (const wchar_t *__fn,
+                               vfs_mode_t __mode,
+                               vfs_dev_t __dev);
+
 END_HEADER
 
 #endif

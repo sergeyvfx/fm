@@ -103,6 +103,8 @@ typedef struct
   vfs_symlink_proc symlink;
   vfs_symlink_proc link;
   vfs_readlink_proc readlink;
+
+  vfs_mknod_proc mknod;
 } vfs_plugin_info_t;
 
 struct _vfs_plugin_t

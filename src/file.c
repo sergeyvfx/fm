@@ -276,7 +276,6 @@ format_file_time (wchar_t *__buf, size_t __buf_size, time_t __time)
   wcsftime (__buf, __buf_size, format, &tm);
 }
 
-
 /**
  * Compare two file names
  *

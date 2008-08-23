@@ -159,6 +159,13 @@ vfs_normalize (const wchar_t *__fn)
          * NOTE: This could happen only if a symlink has been detected
          *       and this symlink contains an absolutely path
          */
+
+        if (len <= wcslen (item))
+          {
+            len = wcslen (item);
+            res = realloc (res, (len + 1) * sizeof (wchar_t));
+          }
+
         wcscpy (res, item);
       }
     else

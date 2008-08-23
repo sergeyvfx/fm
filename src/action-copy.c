@@ -69,7 +69,7 @@
         } \
     } \
   if (_code==MR_CANCEL) \
-    _code=MR_ABORT; \
+    _code=ACTION_ABORT; \
   return _code;
 
 /**
@@ -113,7 +113,8 @@
   REP (_act, _error_proc, COPY_RETERR (res), _error, ##_error_args)
 
 #define COPY_DIR_REP(_act, _error_proc, _error, _error_args...) \
-  REP (_act, _error_proc, return res, _error, ##_error_args)
+  REP (_act, _error_proc, return res==MR_CANCEL?ACTION_ABORT:res, \
+       _error, ##_error_args)
 
 /**
  * Open file descriptor
@@ -147,9 +148,9 @@
 /*
  * Unlink symlink in copy_symlink()
  */
-#define SYMLINK_UNLINK() \
+#define UNLINK_TARGET() \
   REP (res=vfs_unlink (__dst), error, \
-  return (res==MR_CANCEL?MR_ABORT:res), \
+  return (res==MR_CANCEL?ACTION_ABORT:res), \
    _(L"Cannot unlink target file \"%ls\":\n%ls"), __dst, \
   vfs_get_error (res))
 
@@ -603,7 +604,7 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
                * NOTE: Appending of symlinks is equal
                *       to it's replacement.
                */
-              SYMLINK_UNLINK ();
+              UNLINK_TARGET ();
               break;
 
             case MR_NO:
@@ -611,7 +612,7 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
 
             case MR_COPY_REPLACE_ALL:
               SAVE_OWR_ALL_RULE (MR_COPY_REPLACE_ALL);
-              SYMLINK_UNLINK ();
+              UNLINK_TARGET ();
               break;
 
             case MR_COPY_UPDATE:
@@ -620,7 +621,7 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
                 {
                   return ACTION_OK;
                 }
-              SYMLINK_UNLINK ();
+              UNLINK_TARGET ();
               break;
 
             case MR_COPY_NONE:
@@ -633,7 +634,7 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
                 {
                   return ACTION_OK;
                 }
-              SYMLINK_UNLINK ();
+              UNLINK_TARGET ();
               break;
 
             case MR_ABORT:
@@ -652,6 +653,8 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
               switch (res)
                 {
                 case MR_RETRY:
+                  /* Process accamulated queue of characters */
+                  COPY_PROCESS_QUEUE ();
                   continue;
 
                 case MR_CANCEL:
@@ -663,14 +666,146 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
             }
         }
 
-      /* Create symlink only if 'File not found' error returned */
-      if (!vfs_symlink (content, __dst))
-        {
-          return ACTION_OK;
-        }
-
       /* Process accamulated queue of characters */
       COPY_PROCESS_QUEUE ();
+
+      break;
+    }
+
+  /* Create symlink */
+  REP (res = vfs_symlink (content, __dst), error, return (res),
+     _(L"Cannot create symbolic link \"%ls\":\n%ls"), __src,
+       vfs_get_error (res));
+
+  return ACTION_OK;
+}
+
+/**
+ * Copy a special file
+ *
+ * @param __src - URL of source
+ * @param __dst - URL of destination
+ * @param __owr_all_rule - Rule for overwriting existing files
+ * @param __proc_wnd - window with different current information
+ * @return zero on success, non-zero otherwise
+ */
+static int
+copy_special_file (const wchar_t *__src, const wchar_t *__dst,
+                   int *__owr_all_rule, copy_process_window_t *__proc_wnd)
+{
+  vfs_stat_t stat, dst_stat;
+  int res;
+
+  /* Stat source file */
+  REP (res = vfs_stat (__src, &stat), error, return (res),
+       _(L"Cannot stat source file \"%ls\":\n%ls"), __src,
+       vfs_get_error (res));
+
+  if (S_ISCHR (stat.st_mode) || S_ISBLK (stat.st_mode) ||
+      S_ISFIFO (stat.st_mode) || S_ISSOCK (stat.st_mode))
+    {
+      for (;;)
+        {
+          /* Check if file already exists */
+          if ((res = vfs_stat (__dst, &dst_stat)) == VFS_OK)
+            {
+              res = GET_OWR_RULE (FALSE);
+
+              /* Review user's answer */
+              switch (res)
+                {
+                case MR_YES:
+                case MR_COPY_APPEND:
+                  /*
+                   * NOTE: Appending of special files is equal
+                   *       to it's replacement.
+                   */
+                  UNLINK_TARGET ();
+                  break;
+
+                case MR_NO:
+                  return ACTION_OK;
+
+                case MR_COPY_REPLACE_ALL:
+                  SAVE_OWR_ALL_RULE (MR_COPY_REPLACE_ALL);
+                  UNLINK_TARGET ();
+                  break;
+
+                case MR_COPY_UPDATE:
+                  SAVE_OWR_ALL_RULE (MR_COPY_UPDATE);
+                  if (!is_newer (__src, __dst))
+                    {
+                      return ACTION_OK;
+                    }
+                  UNLINK_TARGET ();
+                  break;
+
+                case MR_COPY_NONE:
+                  SAVE_OWR_ALL_RULE (MR_COPY_NONE);
+                  return ACTION_OK;
+
+                case MR_COPY_SIZE_DIFFERS:
+                  SAVE_OWR_ALL_RULE (MR_COPY_SIZE_DIFFERS);
+                  /*
+                   * TODO: But does it work properly?
+                   */
+                  if (!is_size_differs (__src, __dst))
+                    {
+                      return ACTION_OK;
+                    }
+                  UNLINK_TARGET ();
+                  break;
+
+                case MR_ABORT:
+                  return ACTION_ABORT;
+                }
+            }
+          else
+            {
+              if (res != -ENOENT)
+                {
+                  /* Error STAT'ing*/
+                  res = error (_(L"Cannot stat target file \"%ls\":\n%ls"),
+                               __dst, vfs_get_error (res));
+
+                  /* Review user's answer */
+                  switch (res)
+                    {
+                    case MR_RETRY:
+                      /* Process accamulated queue of characters */
+                      COPY_PROCESS_QUEUE ();
+                      continue;
+
+                    case MR_CANCEL:
+                      return ACTION_ABORT;
+
+                    case MR_SKIP:
+                      return ACTION_OK;
+                    }
+                }
+            }
+
+          /* Process accamulated queue of characters */
+          COPY_PROCESS_QUEUE ();
+
+          break;
+        }
+
+      /* Create special file */
+      REP (res = vfs_mknod (__dst, stat.st_mode, stat.st_rdev), error,
+           return res == MR_CANCEL ? ACTION_ABORT : res,
+           _(L"Cannot create special file \"%ls\":\n%ls"), __src,
+           vfs_get_error (res));
+    }
+  else
+    {
+      wchar_t msg[1024];
+      swprintf (msg, BUF_LEN (msg),
+                _(L"Cannot copy special file \"%ls\":\n%ls"),
+                __src, _(L"This feature is not implemented yet"));
+      MESSAGE_ERROR (msg);
+
+      return ACTION_OK;
     }
 
   return ACTION_OK;
@@ -716,7 +851,7 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
 
   /* Stat source file to determine it's type */
   REP (res = vfs_lstat (__src, &stat), error,
-       if (res == MR_CANCEL) res = MR_ABORT; return res,
+       if (res == MR_CANCEL) res = ACTION_ABORT; return res,
        _(L"Cannot stat source file \"%ls\":\n%ls"),
        __src, vfs_get_error (res));
 
@@ -733,16 +868,8 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
     }
   else
     {
-      /*
-       * TODO: Need to implement coping non-regular files
-       */
-
-      swprintf (msg, BUF_LEN (msg),
-                _(L"Cannot copy special file \"%ls\":\n%ls"),
-                __src, _(L"This feature is not implemented yet"));
-      MESSAGE_ERROR (msg);
-
-      res = ACTION_OK;
+      res = copy_special_file (__src, __dst, __owr_all_rule, __proc_wnd);
+      FILE_COPIED ();
     }
 
   /* Process accamulated queue of characters */

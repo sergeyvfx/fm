@@ -505,3 +505,18 @@ vfs_readlink (const wchar_t *__url, wchar_t *__buf, size_t __bufsize)
 {
   _FILEOP (readlink, __buf, __bufsize);
 }
+
+/**
+ * Abstraction for POSIX function mknod()
+ * Create a special or ordinary file
+ *
+ * @param __url - url of terget file
+ * @param __mode - permittions and type of file
+ * @param __dev - specifies the major and minor numbers of the newly
+   created device
+ */
+int
+vfs_mknod (const wchar_t *__url, vfs_mode_t __mode, vfs_dev_t __dev)
+{
+  _FILEOP (mknod, __mode, __dev);
+}

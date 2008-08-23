@@ -123,7 +123,9 @@ get_listing_iter (const wchar_t *__path, action_listing_tree_t **__res,
       /* There is no children */
       if ((res=vfs_lstat (__path, &stat)) == VFS_OK)
         {
-          if (S_ISREG (stat.st_mode) || S_ISLNK (stat.st_mode))
+          if (S_ISREG (stat.st_mode) || S_ISLNK (stat.st_mode) ||
+              S_ISCHR (stat.st_mode) || S_ISBLK (stat.st_mode) ||
+              S_ISFIFO (stat.st_mode) || S_ISSOCK (stat.st_mode))
             {
               (*__count)++;
 

@@ -274,6 +274,12 @@ msgstr "Введите имя директории:"
 msgid "Error creating directory:\n%ls"
 msgstr "Ошибка создания директории:\n%ls"
 
+msgid "Cannot unlink target file \"%ls\":\n%ls"
+msgstr "Невозможно удалить целевой файл \"%ls\":\n%ls"
+
+msgid "Cannot create special file \"%ls\":\n%ls"
+msgstr "Невозможно создать специальный файл \"%ls\":\n%ls"
+
 ##
 # POSIX errors
 
