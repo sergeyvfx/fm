@@ -222,7 +222,7 @@ action_mkdir (file_panel_t *__panel)
   if (res)
     {
       wchar_t msg[4096];
-      swprintf (msg, BUF_LEN (msg), L"Error creating directory:\n%ls",
+      swprintf (msg, BUF_LEN (msg), _(L"Error creating directory:\n%ls"),
                 vfs_get_error (res));
       MESSAGE_ERROR (msg);
     }

@@ -271,6 +271,9 @@ msgstr "Создать новую директорию"
 msgid "Enter directory name:"
 msgstr "Введите имя директории:"
 
+msgid "Error creating directory:\n%ls"
+msgstr "Ошибка создания директории:\n%ls"
+
 ##
 # POSIX errors
 
