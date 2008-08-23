@@ -204,6 +204,13 @@
     w_text_set (__proc_wnd->_caption, text); \
   }
 
+/* Evalute speed and ETA */
+#define EVAL_SPEED() \
+  { \
+    CALL_DELAYED (__proc_wnd->speed_timestamp, EVAL_SPEED_PERIOD, \
+                  action_copy_eval_speed, __proc_wnd); \
+  }
+
 /* Next buffer of file was copied */
 
 /*
@@ -237,8 +244,7 @@
         SET_DIGIT_CAPTION (bytes_digit, format, copied, cs, total, ts); \
       } \
     /* Evalute speed and ETA */ \
-    CALL_DELAYED (__proc_wnd->speed_timestamp, EVAL_SPEED_PERIOD, \
-                  action_copy_eval_speed, __proc_wnd); \
+    EVAL_SPEED (); \
   }
 
 /* The while file was copied */
@@ -253,6 +259,8 @@
     ++__proc_wnd->files_copied; \
     SET_DIGIT_CAPTION (count_digit, format, \
         __proc_wnd->files_copied, __proc_wnd->files_total); \
+    /* Evalute speed and ETA */ \
+    EVAL_SPEED (); \
   }
 
 /********

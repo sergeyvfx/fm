@@ -439,6 +439,12 @@ action_copy_eval_speed (copy_process_window_t *__proc_wnd)
       swprintf (msg, BUF_LEN (msg), format, speed);
       w_text_set (__proc_wnd->speed_text, msg);
 
+      /*
+       * TODO: In case of milliards of non-regular files or
+       *       files which are very small this method is useless.
+       *       Fix it!
+       */
+
       /* Calculate ETA */
       if (__proc_wnd->bytes_progress != NULL)
         {

@@ -77,6 +77,7 @@ vfs_normalize (const wchar_t *__fn)
   len = wcslen (__fn);
 
   /* Length of file name can not become longer after trim */
+  /* At this stage only. Later we should check allocated buffer's length */
   res = malloc ((len + 1) * sizeof (wchar_t));
 
   /* Step 1: avoid multimly slahes  */
@@ -190,12 +191,15 @@ vfs_normalize (const wchar_t *__fn)
   if (wcscmp (__fn, res) == 0)
     {
       /* Result is equal to source. We can stop normalization */
-      return res;
+    }
+  else
+    {
+      /* After reading symlinks new pseydodirs and symlinks could appear. */
+      s = vfs_normalize (res);
+      free (res);
+      res = s;
     }
 
-  /* After reading symlinks new pseydodirs and symlinks could appear. */
-  s = vfs_normalize (res);
-  free (res);
-
-  return s;
+  /* To free unused memory */
+  return realloc (res, (wcslen (res) + 1) * sizeof (wchar_t));
 }
