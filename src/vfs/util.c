@@ -163,6 +163,13 @@ vfs_normalize (const wchar_t *__fn)
       }
     else
       {
+        /* Make sure that there is enough allocated memory */
+        if (len <= wcslen (res) + wcslen (item))
+          {
+            len += wcslen (item) + 1;
+            res = realloc (res, (len + 1) * sizeof (wchar_t));
+          }
+
         wcscat (res, item);
       }
     ++i;

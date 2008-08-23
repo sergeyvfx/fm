@@ -132,15 +132,15 @@ make_centre (file_panel_t *__panel, const wchar_t *__basedir,
   wchar_t *n_dir, *full_dir, *cwd;
 
   /* Get full normalized directory name */
-  n_dir = vfs_normalize (__dir_name);
-  full_dir = wcdircatsubdir (__basedir, n_dir);
+  full_dir = wcdircatsubdir (__basedir, __dir_name);
+  n_dir = vfs_normalize (full_dir);
 
   /* Get CWD of panel */
   cwd = file_panel_get_full_cwd (__panel);
 
-  if (wcsncmp (cwd, full_dir, wcslen (cwd)) == 0)
+  if (wcsncmp (cwd, n_dir, wcslen (cwd)) == 0)
     {
-      wchar_t *rel_dir = full_dir + wcslen (cwd);
+      wchar_t *rel_dir = n_dir + wcslen (cwd);
 
       /* Get name of item to select */
       if (rel_dir[0] == '/')
