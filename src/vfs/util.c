@@ -200,6 +200,12 @@ vfs_normalize (const wchar_t *__fn)
       res = s;
     }
 
+  if (res[wcslen (res) - 1] == '/')
+    {
+      /* Fix '/' from tail */
+      res[wcslen (res) - 1] = 0;
+    }
+
   /* To free unused memory */
   return realloc (res, (wcslen (res) + 1) * sizeof (wchar_t));
 }

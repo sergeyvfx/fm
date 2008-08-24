@@ -86,6 +86,9 @@ typedef int (*vfs_mknod_proc) (const wchar_t *__fn,
                                vfs_mode_t __mode,
                                vfs_dev_t __dev);
 
+typedef int (*vfs_move_strategy_proc) (const wchar_t *__src_path,
+                                       const wchar_t *__dst_path);
+
 END_HEADER
 
 #endif

@@ -36,9 +36,14 @@ BEGIN_HEADER
 
 /* There is some strange errors with using SIGWINCH when */
 /* _XOPEN_SOURCE is defined. So, if your module needs */
-/* SIGWINCH you need define NEED_SIGWINCH before includeing */
+/* SIGWINCH you need define NO_XOPEN_SOURCE before includeing */
 /* this header file. */
-#ifndef NEED_SIGWINCH
+
+/* P.S. There is an error with scandir() when _XOPEN_SOURCE is defined */
+/*      Need to learn this problem more hardly. */
+/*      Now we can continue using this sucky dirty hack. */
+
+#ifndef NO_XOPEN_SOURCE
 #  define _XOPEN_SOURCE 500
 #endif
 

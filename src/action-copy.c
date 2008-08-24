@@ -1121,6 +1121,10 @@ make_copy (const wchar_t *__base_dir, const file_panel_item_t **__src_list,
   /* Get customized settings from user */
   res = action_copy_show_dialog (__src_list, __count, &dst);
 
+  /*
+   * TODO: Should we normalize destination?
+   */
+
   /* User canceled copying */
   if (res == MR_CANCEL)
     {

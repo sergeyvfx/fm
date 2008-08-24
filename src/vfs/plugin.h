@@ -105,6 +105,8 @@ typedef struct
   vfs_readlink_proc readlink;
 
   vfs_mknod_proc mknod;
+
+  vfs_move_strategy_proc move_strategy;
 } vfs_plugin_info_t;
 
 struct _vfs_plugin_t

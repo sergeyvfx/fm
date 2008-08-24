@@ -7,13 +7,16 @@ include ${top_builddir}/mk/init.mk
 
 OBJECTIVE_BINS = vfs-test
 
-LIBADD = -L${top_builddir}/src/vfs -lvfs -ldl
+LIBADD = -L${top_builddir}/src/vfs -lvfs -ldl -lm 
 
 SOURCES = \
 	main.c \
 	${top_builddir}/src/hashmap.c \
 	${top_builddir}/src/util.c \
-	${top_builddir}/src/i18n.c
+	${top_builddir}/src/i18n.c \
+	${top_builddir}/src/deque.c \
+	${top_builddir}/src/dir.c \
+	${top_builddir}/src/file.c
 
 OBJECTS = ${SOURCES:.c=.o}
 

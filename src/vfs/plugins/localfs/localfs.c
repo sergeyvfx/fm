@@ -10,6 +10,10 @@
  * See the file COPYING.
  */
 
+#define NO_XOPEN_SOURCE /* For use dirent() */
+
+#include "mountlist.h"
+
 #include <dirent.h>
 #include <vfs/plugin.c>
 #include <fcntl.h>
@@ -67,6 +71,46 @@
 #define SET_ERROR(_errno) \
   if (__error) \
     (*__error)=(_errno);
+
+/********
+ * Helpers
+ */
+
+/**
+ * Check is specified prefix is a prefix of path
+ *
+ * NOTE: Path is not a prefix of itself
+ * NOTE: / is a prefix of any path
+ *
+ * @param __prefix - prefix to check
+ * @param __path - in this path prefix will be checked
+ * @return non-zero if __prefix is a prefix of __path and
+ * zero otherwise
+ */
+static BOOL
+localfs_is_prefix (const wchar_t *__prefix, const wchar_t *__path)
+{
+  size_t len;
+
+  if (wcsstr (__path, __prefix) != __path)
+    {
+      /* __prefix is not a prefix of string __path */
+      /* We can return FALSE */
+
+      return FALSE;
+    }
+
+  len = wcslen (__prefix);
+
+  /* It should be a directory delimeter afger substring __prefix */
+  /* to make it a path prefix */
+  if ((__path[len] && __path[len] == '/') || !wcscmp (__prefix, L"/"))
+    {
+      return TRUE;
+    }
+
+  return FALSE;
+}
 
 /********
  *
@@ -531,6 +575,80 @@ localfs_mknod (const wchar_t *__fn, vfs_mode_t __mode, vfs_dev_t __dev)
   _FILEOP (mknod, __mode, __dev);
 }
 
+/**
+ * Get strategy for 'move' operation
+ *
+ * NOTE: Paths should be normalized
+ *
+ * @param __src_path - path to source
+ * @param __dst_path - path to destination
+ * @return VFS_RS_RENAME in case of vfs_rename() will be optimal way for
+ * moving. VFS_RS_COPY if we should use stupid copy+unlink for moving.
+ * And a value less than zero in case of error.
+ */
+static int
+localfs_move_strategy (const wchar_t *__src_path, const wchar_t *__dst_path)
+{
+
+  /*
+   * Algorithm: Get list of mounted file systems. Sort it by mount
+   *            directory field in reverse mode. Review this list and check:
+   *            if source and destination has current directory from list
+   *            as a path prefix, then we can say, that source and destination
+   *            are on the the same filesystem and we can use vfs_rename().
+   *            If only one path from source and destination has current
+   *            directory from list as a parent, then source and destination
+   *            are on different filesystems. If neither source nor destination
+   *            has current path from list as a parent, we should start
+   *            reviewing of next path from list
+   */
+
+  mountpoint_t **list;
+  int i, count, res = VFS_MS_COPY;
+  BOOL is_src_prefix, is_dst_prefix;
+
+  /* Comparator for sorter */
+  int cmp(const void *__a, const void *__b)
+  {
+    mountpoint_t *a = *(mountpoint_t**)__a,
+                 *b = *(mountpoint_t**)__b;
+    return (int)wcslen(b->dir) - (int)wcslen(a->dir);
+  }
+
+  /* Get list of mounted filesystems */
+  if ((count = vfs_localfs_get_mountlist (&list))<0)
+    {
+      /* Error occured while getting list of mounted file systems */
+      return -1;
+    }
+
+  /* Sort list of file systems */
+  qsort (list, count, sizeof (mountpoint_t*), cmp);
+
+  /* Re-view list of mounted file systems */
+  for (i = 0; i < count; ++i)
+    {
+      is_src_prefix = localfs_is_prefix (list[i]->dir, __src_path);
+      is_dst_prefix = localfs_is_prefix (list[i]->dir, __dst_path);
+
+      if (is_src_prefix && is_dst_prefix)
+        {
+          res = VFS_MS_RENAME;
+          break;
+        }
+
+      if (is_src_prefix || is_dst_prefix)
+        {
+          res = VFS_MS_COPY;
+          break;
+        }
+    }
+
+  vfs_localfs_free_mountlist (list);
+
+  return res;
+}
+
 /********
  *
  */
@@ -572,7 +690,9 @@ static vfs_plugin_info_t plugin_info = {
   localfs_link,
   localfs_readlink,
 
-  localfs_mknod
+  localfs_mknod,
+
+  localfs_move_strategy
 };
 
 /* Initialize plugin */

@@ -14,6 +14,8 @@
 #include "url.h"
 #include "context.h"
 
+#include <wchar.h>
+
 /********
  * Macroses
  */
@@ -519,4 +521,69 @@ int
 vfs_mknod (const wchar_t *__url, vfs_mode_t __mode, vfs_dev_t __dev)
 {
   _FILEOP (mknod, __mode, __dev);
+}
+
+/**
+ * Get strategy for 'move' operation
+ *
+ * @param __src_url - URL of source
+ * @param __dst_url - URL of destination
+ * @return VFS_RS_RENAME in case of vfs_rename() will be optimal way for
+ * moving. VFS_RS_COPY if we should use stupid copy+unlink for moving.
+ * And a value less than zero in case of error.
+ */
+int
+vfs_move_strategy (const wchar_t *__src_url, const wchar_t *__dst_url)
+{
+  int res;
+  wchar_t *n_src, *n_dst;
+  vfs_plugin_t *src_plugin, *dst_plugin;
+  wchar_t *src_path, *dst_path;
+
+  if (!__src_url || !__dst_url)
+    {
+      return VFS_ERR_INVLAID_ARGUMENT;
+    }
+
+  n_src = vfs_normalize (__src_url);
+  n_dst = vfs_normalize (__dst_url);
+
+  /* Parse URL-s */
+  if ((res = vfs_url_parse (n_src, &src_plugin, &src_path)))
+    {
+      free (n_src);
+      free (n_dst);
+      return res;
+    }
+
+  if ((res = vfs_url_parse (n_dst, &dst_plugin, &dst_path)))
+    {
+      free (src_path);
+      free (n_src);
+      free (n_dst);
+      return res;
+    }
+
+  /* Compare names of plugins */
+  if (wcscmp (src_plugin->info.name, dst_plugin->info.name) != 0)
+    {
+      /* We can use vfs_rename() only when source and destination */
+      /* are inside the same vfs plugin */
+
+      /* Free memory */
+      free (src_path);
+      free (dst_path);
+
+      return VFS_MS_COPY;
+    }
+
+  res = VFS_CALL_POSIX (src_plugin, move_strategy, src_path, dst_path);
+
+  /* Free memory */
+  free (src_path);
+  free (dst_path);
+  free (n_src);
+  free (n_dst);
+
+  return res;
 }

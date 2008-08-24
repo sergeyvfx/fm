@@ -48,6 +48,9 @@ typedef struct
   wchar_t name[VFS_MAX_FILENAME_LEN];
 } vfs_dirent_t;
 
+/* Move strategies */
+enum {VFS_MS_COPY = 0, VFS_MS_RENAME};
+
 /********
  * Plugins
  */
@@ -153,6 +156,8 @@ vfs_readlink (const wchar_t *__url, wchar_t *__buf, size_t __bufsize);
 int
 vfs_mknod (const wchar_t *__url, vfs_mode_t __mode, vfs_dev_t __dev);
 
+int
+vfs_move_strategy (const wchar_t *__src_url, const wchar_t *__dst_url);
 
 /********
  * Different utilities

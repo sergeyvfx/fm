@@ -8,7 +8,7 @@
  * See the file COPYING.
  */
 
-#define NEED_SIGWINCH
+#define NO_XOPEN_SOURCE /* For use SIGWINCH */
 
 #include "iface.h"
 #include "screen.h"

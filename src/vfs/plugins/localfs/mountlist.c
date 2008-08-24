@@ -12,8 +12,6 @@
 
 #include "mountlist.h"
 
-#include <deque.h>
-
 #include <stdio.h>
 #include <paths.h>
 #include <strings.h>
