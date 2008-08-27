@@ -44,6 +44,10 @@ BEGIN_HEADER
 int
 action_copy (file_panel_t *__panel);
 
+/* Move/rename list of files from specified panel */
+int
+action_move (file_panel_t *__panel);
+
 /* Create directory on specified panel */
 int
 action_mkdir (file_panel_t *__panel);

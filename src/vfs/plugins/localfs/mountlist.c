@@ -145,6 +145,8 @@ unmangle (const char *__s)
         }
     }
 
+  res[ptr] = 0;
+
   return res;
 }
 

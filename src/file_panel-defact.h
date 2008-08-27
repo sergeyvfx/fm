@@ -38,6 +38,9 @@ typedef struct
     unsigned long count;
     wchar_t **names;
     wchar_t *current_name;
+
+    unsigned long caret_pos;
+    unsigned long scroll_top;
   } selection_context;
 } fpd_data_t;
 

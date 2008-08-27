@@ -1,7 +1,7 @@
 /**
  * ${project-name} - a GNU/Linux console-based file manager
  *
- * Implementation of action 'Copy'
+ * Implementation of action 'Move/Rename'
  *
  * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
  * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
@@ -14,7 +14,7 @@
 #include "action-copymove.h"
 
 /**
- * Copy list of files from specified panel
+ * Move/rename list of files from specified panel
  *
  * @param __panel - from which panel files will be copied
  * @param __move - if FALSE, then make copying of files,
@@ -22,7 +22,7 @@
  * @return zero on success, non-zero otherwise
  */
 int
-action_copy (file_panel_t *__panel)
+action_move (file_panel_t *__panel)
 {
-  return action_copymove (__panel, FALSE);
+  return action_copymove (__panel, TRUE);
 }

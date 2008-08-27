@@ -256,6 +256,9 @@ msgstr "Невозможно получить свойства целевого 
 msgid "Cannot stat source directory \"%ls\":\n%ls"
 msgstr "Невозможно получить свойства исходного каталога \"%ls\":\n%ls"
 
+msgid "Cannot stat target directory \"%ls\":\n%ls"
+msgstr "Невозможно получить свойства целевого каталога \"%ls\":\n%ls"
+
 msgid "Cannot create target directory \"%ls\":\n%ls"
 msgstr "Невозможно создать целевой каталог \"%ls\":\n%ls"
 
@@ -274,11 +277,41 @@ msgstr "Введите имя директории:"
 msgid "Error creating directory:\n%ls"
 msgstr "Ошибка создания директории:\n%ls"
 
+msgid "Cannot unlink source file \"%ls\":\n%ls"
+msgstr "Невозможно удалить исходный файл \"%ls\":\n%ls"
+
+msgid "Cannot unlink source directory \"%ls\":\n%ls"
+msgstr "Невозможно удалить исходную директорию \"%ls\":\n%ls"
+
 msgid "Cannot unlink target file \"%ls\":\n%ls"
 msgstr "Невозможно удалить целевой файл \"%ls\":\n%ls"
 
 msgid "Cannot create special file \"%ls\":\n%ls"
 msgstr "Невозможно создать специальный файл \"%ls\":\n%ls"
+
+msgid "Move"
+msgstr "Перемещение"
+
+msgid "Move file \"%ls\" to:"
+msgstr "Переместить файл \"%ls\" в:"
+
+msgid "Move directory \"%ls\" to:"
+msgstr "Переместить директорию \"%ls\" в:"
+
+msgid "Move %lu files to:"
+msgstr "Переместить эти файлы (%lu шт.) в:"
+
+msgid "Move %lu directories to:"
+msgstr "Переместить эти директории (%lu шт.) в:"
+
+msgid "Move %lu files/directories to:"
+msgstr "Переместить эти файлы и директории (%lu шт.) в:"
+
+msgid "Cannot move \"%ls\":\n%ls"
+msgstr "Невозможно переместить \"%ls\":\n%ls"
+
+msgid "Deleting:"
+msgstr "Удаляется:"
 
 ##
 # POSIX errors

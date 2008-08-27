@@ -1,7 +1,7 @@
 /**
  * ${project-name} - a GNU/Linux console-based file manager
  *
- * Interface part of copy operation
+ * Interface part of copy/move operations
  *
  * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
  * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
@@ -10,7 +10,7 @@
  * See the file COPYING.
  */
 
-#include "action-copy-iface.h"
+#include "action-copymove-iface.h"
 #include "i18n.h"
 #include "util.h"
 #include "dir.h"
@@ -189,13 +189,14 @@ format_exists_file_data (BOOL __use_lstat, wchar_t *__buf,
 /**
  * Get caption for field 'To' on file copy dialog
  *
+ * @param __move - are files will be moved?
  * @param __src_list - list of source items
  * @param __count - count of items to be copied
  * @param __buf - buffer where result will be stored
  * @param __buf_size - size of buffer
  */
 static void
-get_to_field_caption (const file_panel_item_t **__src_list,
+get_to_field_caption (BOOL __move, const file_panel_item_t **__src_list,
                       unsigned long __count,
                       wchar_t *__buf, size_t __buf_size)
 {
@@ -213,11 +214,25 @@ get_to_field_caption (const file_panel_item_t **__src_list,
 
       if (S_ISDIR (item->file->lstat.st_mode))
         {
-          format = _(L"Copy directory \"%ls\" to:");
+          if (__move)
+            {
+              format = _(L"Move directory \"%ls\" to:");
+            }
+          else
+            {
+              format = _(L"Copy directory \"%ls\" to:");
+            }
         }
       else
         {
-          format = _(L"Copy file \"%ls\" to:");
+          if (__move)
+            {
+              format = _(L"Move file \"%ls\" to:");
+            }
+          else
+            {
+              format = _(L"Copy file \"%ls\" to:");
+            }
         }
 
       fit_filename (src, BUF_LEN (fit_fn), fit_fn);
@@ -257,16 +272,37 @@ get_to_field_caption (const file_panel_item_t **__src_list,
       /* Determine format string */
       if (only_files)
         {
-          format = _(L"Copy %lu files to:");
+          if (__move)
+            {
+              format = _(L"Move %lu files to:");
+            }
+          else
+            {
+              format = _(L"Copy %lu files to:");
+            }
         }
       else
         if (only_dirs)
           {
-            format = _(L"Copy %lu directories to:");
+            if (__move)
+              {
+                format = _(L"Move %lu directories to:");
+              }
+            else
+              {
+                format = _(L"Copy %lu directories to:");
+              }
           }
         else
           {
-            format = _(L"Copy %lu files/directories to:");
+            if (__move)
+              {
+                format = _(L"Move %lu files/directories to:");
+              }
+            else
+              {
+                format = _(L"Copy %lu files/directories to:");
+              }
           }
 
       swprintf (__buf, __buf_size, format, __count);
@@ -280,12 +316,13 @@ get_to_field_caption (const file_panel_item_t **__src_list,
 /**
  * Create file copy process window
  *
+ * @param __move - are files will be moved?
  * @param __total_progress - is total progress information avaliable
  * @param __listing - listing to get summary information
  * @return created window
  */
 copy_process_window_t*
-action_copy_create_proc_wnd (BOOL __total_progress,
+action_copy_create_proc_wnd (BOOL __move, BOOL __total_progress,
                              const action_listing_t *__listing)
 {
   copy_process_window_t *res;
@@ -305,7 +342,7 @@ action_copy_create_proc_wnd (BOOL __total_progress,
       height = 10;
     }
 
-  res->window = widget_create_window (_(L"Copy"), 0, 0,
+  res->window = widget_create_window (__move?_(L"Move"):_(L"Copy"), 0, 0,
                                       59, height, WMS_CENTERED);
   cnt = WIDGET_CONTAINER (res->window);
 
@@ -372,11 +409,17 @@ action_copy_create_proc_wnd (BOOL __total_progress,
   btn = widget_create_button (cnt, _(L"_Abort"), left,
                               cnt->position.height - 2, 0);
 
-  res->prev_timestamp = res->speed_timestamp = res->timestamp = now ();
-
   WIDGET_USER_DATA (btn) = res;
   WIDGET_USER_CALLBACK (btn, clicked) = (widget_action)abort_button_clicked;
   WIDGET_USER_CALLBACK (btn, keydown) = (widget_keydown_proc)button_keydown;
+
+  res->prev_timestamp = res->speed_timestamp = res->timestamp = now ();
+  res->move = __move;
+  res->move_strategy = MOVE_STRATEGY_UNDEFINED;
+  if (__move)
+    {
+      res->unlink_list = deque_create ();
+    }
 
   return res;
 }
@@ -395,6 +438,18 @@ action_destroy_proc_wnd (copy_process_window_t *__window)
     }
 
   widget_destroy (WIDGET (__window->window));
+
+  /* Free list of items to unlink */
+  if (__window->unlink_list)
+    {
+      void deleter (void *__data)
+      {
+        free (__data);
+      }
+
+      deque_destroy (__window->unlink_list, deleter);
+    }
+
   free (__window);
 }
 
@@ -563,13 +618,14 @@ action_copy_exists_dialog (const wchar_t *__src, const wchar_t *__dst,
  * Show copy dialog to confirm destination file name
  * and other additional information
  *
+ * @param __move - are files will be moved?
  * @param __src_list - list of source items
  * @param __count - count of items to be copied
  * @param __dst - default destination
  * @return MR_CANCEL if user canceled copying, MR_OK otherwise
  */
 int
-action_copy_show_dialog (const file_panel_item_t **__src_list,
+action_copy_show_dialog (BOOL __move, const file_panel_item_t **__src_list,
                          unsigned long __count, wchar_t **__dst)
 {
   int res, left, dummy;
@@ -579,11 +635,12 @@ action_copy_show_dialog (const file_panel_item_t **__src_list,
   w_container_t *cnt;
   wchar_t msg[1024];
 
-  wnd = widget_create_window (_(L"Copy"), 0, 0, 50, 6, WMS_CENTERED);
+  wnd = widget_create_window (__move?_(L"Move"):_(L"Copy"),
+                              0, 0, 50, 6, WMS_CENTERED);
   cnt = WIDGET_CONTAINER (wnd);
 
   /* Create caption for 'To' field */
-  get_to_field_caption (__src_list, __count, msg, BUF_LEN (msg));
+  get_to_field_caption (__move, __src_list, __count, msg, BUF_LEN (msg));
   widget_create_text (cnt, msg, 1, 1);
 
   /* Create 'To' field */
@@ -612,4 +669,50 @@ action_copy_show_dialog (const file_panel_item_t **__src_list,
   widget_destroy (WIDGET (wnd));
 
   return res;
+}
+
+/**
+ * Create a post-move information window
+ * In this window will be displayed information about unlinking files
+ *
+ * @return descriptor of a post-move window
+ */
+post_move_window_t*
+action_post_move_create_window (void)
+{
+  post_move_window_t *res;
+  wchar_t *s;
+
+  MALLOC_ZERO (res, sizeof (post_move_window_t));
+  res->window = widget_create_window (_(L"Move"), 0, 0, 60, 6, WMS_CENTERED);
+
+  s = _(L"Deleting:");
+  widget_create_text (WIDGET_CONTAINER (res->window), s, 1, 1);
+
+  res->file = widget_create_text (WIDGET_CONTAINER (res->window), L"",
+                                  wcswidth (s, wcslen (s)) + 2, 1);
+
+  res->progress = widget_create_progress (WIDGET_CONTAINER (res->window),
+                                          100, 1, 3,
+                                          res->window->position.width - 2,
+                                          WPBS_NOPERCENT);
+
+  return res;
+}
+
+/**
+ * Destroy a post-move information window
+ *
+ * @param __window - window to be destroyed
+ */
+void
+action_post_move_desstroy_window (post_move_window_t *__window)
+{
+  if (!__window)
+    {
+      return;
+    }
+
+  widget_destroy (WIDGET (__window->window));
+  free (__window);
 }

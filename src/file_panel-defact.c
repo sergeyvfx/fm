@@ -1185,6 +1185,9 @@ fpd_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
     case KEY_F (5):
       action_copy (__panel);
       break;
+    case KEY_F (6):
+      action_move (__panel);
+      break;
     case KEY_F (7):
       action_mkdir (__panel);
       break;
@@ -1758,6 +1761,9 @@ fpd_save_selection (file_panel_t *__panel)
       data->selection_context.current_name = wcsdup (current_name);
     }
 
+  data->selection_context.caret_pos = __panel->items.current;
+  data->selection_context.scroll_top = __panel->widget->scroll_top;
+
   return 0;
 }
 
@@ -1804,7 +1810,7 @@ int
 fpd_restore_selection (file_panel_t *__panel)
 {
   fpd_data_t *data;
-  unsigned long i, n, index, count, prev_current;
+  unsigned long i, n, index, count;
   file_panel_item_t *item;
   BOOL found;
   wchar_t **names;
@@ -1836,9 +1842,7 @@ fpd_restore_selection (file_panel_t *__panel)
 
   __panel->items.selected_count = count;
 
-  /* Restored currently selected item */
-  prev_current = __panel->items.current;
-
+  /* Restore currently selected item */
   __panel->items.current =
           file_panel_item_index_by_name (__panel,
                                          data->selection_context.current_name,
@@ -1846,7 +1850,10 @@ fpd_restore_selection (file_panel_t *__panel)
 
   if (!found)
     {
-      __panel->items.current = prev_current;
+      /* If there is no item to select, try to */
+      /* keep cursor at the same place on the panel */
+      __panel->items.current = data->selection_context.caret_pos;
+      __panel->widget->scroll_top = data->selection_context.scroll_top;
     }
 
   return 0;
