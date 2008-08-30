@@ -28,6 +28,9 @@ BEGIN_HEADER
 #define IS_PSEUDODIR(_dir) \
   (wcscmp (_dir, L".") == 0 || wcscmp (_dir, L"..") == 0)
 
+#define IS_MBPSEUDODIR(_dir) \
+  (strcmp (_dir, ".") == 0 || strcmp (_dir, "..") == 0)
+
 /********
  * Type definitions
  */

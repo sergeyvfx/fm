@@ -45,6 +45,9 @@
 /* Directory of i18n files */
 #undef LOCALEDIR
 
+/* Debugging in source tree only */
+#undef NOINST_DEBUG
+
 /* Name of package */
 #undef PACKAGE
 
@@ -77,3 +80,9 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Directory of data files */
+#undef WC_DATA_DIR
+
+/* Directory of data files */
+#undef WC_PACKAGE

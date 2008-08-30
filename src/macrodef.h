@@ -19,6 +19,7 @@ BEGIN_HEADER
 #include <stdarg.h>
 #include <string.h>
 #include <malloc.h>
+#include <stdlib.h>
 
 #define SAFE_FREE(__a) \
   if (__a) { free (__a); __a=0; }

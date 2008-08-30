@@ -1,4 +1,4 @@
 #!/bin/sh
 
 ./!clean.sh
-./autogen.sh  --enable-debug
+./autogen.sh  --enable-noinst-debug

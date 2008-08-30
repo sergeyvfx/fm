@@ -17,6 +17,25 @@
 
 #include <wchar.h>
 
+/********
+ * Type definitions
+ */
+
+typedef struct
+{
+  wchar_t *name; /* user name */
+  wchar_t *passwd; /* user password */
+  uid_t uid; /* user ID */
+  gid_t gid; /* group ID */
+  wchar_t *gecos; /* real name */
+  wchar_t *home; /* home directory */
+  wchar_t *shell; /* shell program */
+} passwd_t;
+
+/********
+ *
+ */
+
 /* Fit string to specified width */
 wchar_t*
 wcsfit (const wchar_t *__str, size_t __width, const wchar_t *__suffix);
@@ -41,5 +60,12 @@ tv_usec_cmp (timeval_t __tv, __u64_t __usec);
 /* Get difference between two timevals */
 timeval_t
 timedist (timeval_t __from, timeval_t __to);
+
+/* Get user information */
+passwd_t*
+get_user_info (void);
+
+void
+free_user_info (passwd_t *__self);
 
 #endif

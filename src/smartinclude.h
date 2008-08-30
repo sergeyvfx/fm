@@ -31,7 +31,6 @@ BEGIN_HEADER
 #include <config.h>
 
 #include "build-stamp.h"
-#include "package.h"
 #include "version.h"
 
 /* There is some strange errors with using SIGWINCH when */

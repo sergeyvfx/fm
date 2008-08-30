@@ -11,6 +11,11 @@
  */
 
 #include "util.h"
+#include "dir.h"
+
+#include <vfs/vfs.h>
+#include <unistd.h>
+#include <pwd.h>
 
 /**
  * Fit string to specified width.
@@ -280,4 +285,43 @@ timedist (timeval_t __from, timeval_t __to)
     }
 
   return res;
+}
+
+/**
+ * Get user information
+ *
+ * @return passwd strcuture describing user
+ */
+passwd_t*
+get_user_info (void)
+{
+  struct passwd *pw;
+  passwd_t *result = malloc (sizeof (passwd_t));
+  uid_t userid;
+
+  userid = getuid ();
+  pw = getpwuid (userid);
+
+  MBS2WCS (result->name, pw->pw_name);
+  MBS2WCS (result->passwd, pw->pw_passwd);
+  MBS2WCS (result->gecos, pw->pw_gecos);
+  MBS2WCS (result->home, pw->pw_dir);
+  MBS2WCS (result->shell, pw->pw_shell);
+
+  result->uid = pw->pw_uid;
+  result->gid = pw->pw_gid;
+
+  return result;
+}
+
+void
+free_user_info (passwd_t *__self)
+{
+  free (__self->name);
+  free (__self->passwd);
+  free (__self->gecos);
+  free (__self->home);
+  free (__self->shell);
+
+  free (__self);
 }

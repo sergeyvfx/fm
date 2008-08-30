@@ -1,6 +1,8 @@
 /**
  * ${project-name} - a GNU/Linux console-based file manager
  *
+ * Working with shared directories and other data
+ *
  * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
  * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
  *
@@ -8,9 +10,19 @@
  * See the file COPYING.
  */
 
-#ifndef _package_h_
-#define _package_h_
+#ifndef _shared_h_
+#define _shared_h_
 
-#define CORE_PACKAGE_NAME "fm"
+#include "smartinclude.h"
+
+#include <pwd.h>
+
+BEGIN_HEADER
+
+/* Get list of files in shared directory */
+long
+get_shared_files (wchar_t *__dir, wchar_t ***__list);
+
+END_HEADER
 
 #endif

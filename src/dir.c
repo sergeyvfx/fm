@@ -322,15 +322,35 @@ wcscandir_alphasort_sep (const void *__a, const void *__b)
 BOOL
 isdir (const wchar_t *__url)
 {
-  vfs_stat_t stat;
+  int res;
+  vfs_stat_t st;
 
-  if (vfs_lstat (__url, &stat))
+  if ((res = vfs_lstat (__url, &st)))
     {
-      /*
-       * TODO: Add error handling here
-       */
+      if (res == VFS_ERR_PLUGIN_NOT_FOUND && __url[0]=='/')
+        {
+          /* We need this to use this function in stuff which works */
+          /* before VFS initializing */
+
+          struct stat st;
+          size_t len = wcslen (__url);
+          char *path = malloc ((len + 1) * MB_CUR_MAX);
+
+          if (wcstombs (path, __url, (len + 1) * MB_CUR_MAX) == -1)
+            {
+              free (path);
+              return -1;
+            }
+
+          stat (path, &st);
+
+          free (path);
+
+          return S_ISDIR (st.st_mode);
+        }
+
       return FALSE;
     }
 
-  return S_ISDIR (stat.st_mode);
+  return S_ISDIR (st.st_mode);
 }

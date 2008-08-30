@@ -16,6 +16,7 @@
 #include "file_panel.h"
 #include "messages.h"
 #include "i18n.h"
+#include "shared.h"
 
 #include <signal.h>
 
@@ -136,15 +137,21 @@ static int
 init_vfs (void)
 {
   int res;
+  wchar_t **list;
+  long i, count;
+
   _INIT_ITERATOR (vfs_init);
 
-#ifdef DEBUG
-  _INIT_ITERATOR (load_vfs_plugin, L"vfs/plugins/localfs/liblocalfs.so");
-#endif
+  count = get_shared_files (L"vfs-plugins", &list);
 
-  /*
-   * TODO: Add loading VFS plugins here
-   */
+  /* Load VFS plugins */
+  for (i = 0; i < count; ++i)
+    {
+      _INIT_ITERATOR (load_vfs_plugin, list[i]);
+      free (list[i]);
+    }
+
+  free (list);
 
   return 0;
 }

@@ -102,7 +102,8 @@ i18n_list_push_back (i18n_list *__list,
 
   ++__list->size;
   __list->strings = (i18n_string *) realloc (__list->strings,
-                                          sizeof (i18n_string) * __list->size);
+                                             sizeof (i18n_string) *
+                                                 __list->size);
 
   if (i != __list->size - 1)
     {
@@ -168,15 +169,15 @@ void
 i18n_init (void)
 {
 
-#ifdef DEBUG
-#undef LOCALEDIR
-#define LOCALEDIR "../po/locale/"
+#ifdef NOINST_DEBUG
+#  undef LOCALEDIR
+#  define LOCALEDIR "../po/locale/"
 #endif
 
   /* init gettext */
   setlocale (LC_ALL, "");
-  bindtextdomain ("fm", LOCALEDIR);
-  textdomain ("fm");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
 
   i18n_list_alloc (&localization);
 }

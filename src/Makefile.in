@@ -37,7 +37,8 @@ SOURCES = \
 	action-copymove-iface.c \
 	action-copy.c \
 	action-move.c \
-	action-mkdir.c
+	action-mkdir.c \
+	shared.c
 
 OBJECTS = ${SOURCES:.c=.o}
 
