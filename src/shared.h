@@ -21,7 +21,7 @@ BEGIN_HEADER
 
 /* Get list of files in shared directory */
 long
-get_shared_files (wchar_t *__dir, wchar_t ***__list);
+get_shared_files (wchar_t *__dir, wchar_t *__home_replacer, wchar_t ***__list);
 
 END_HEADER
 

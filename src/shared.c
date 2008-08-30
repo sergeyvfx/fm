@@ -82,39 +82,21 @@ get_shared_files_iter (wchar_t *__path, long *__count, wchar_t ***__list)
   return 0;
 }
 
-/********
- * Use's backend
- */
-
 /**
- * Get list of files in shared directory
+ * Get listing of directory inside user's home
  *
  * @param __dir - name of shared directory
- * @param __list - list of files (with absolutely pathes)
- * @return count of files or value less than zero if failed
+ * @param __count - count of elements in list
+ * @param __list - list of files
+ * @return zero on success, non-zero otherwise
  */
-long
-get_shared_files (wchar_t *__dir, wchar_t ***__list)
+static int
+listing_of_user_home (wchar_t *__dir, long *__count, wchar_t ***__list)
 {
-  long count = 0;
-
-  (*__list) = NULL;
-
-#ifndef NOINST_DEBUG
-  /* We need to get file listing from ${data_dir} first */
-  /* and after this from ~/.{$packacge} */
-
-  /* NOTE: If "${PACKAGE}_HOME" environment variable is set */
-  /*       we whould use it instead of ~ */
-
-  long i;
+  size_t i, len;
   passwd_t *user_info;
-  wchar_t *dir, *home = NULL;
   char env_home_name[64];
-  size_t len;
-
-  /* Get listing of ${data_dir} */
-  get_shared_files_iter (WC_DATA_DIR, &count, __list);
+  wchar_t *home, *dir;
 
   /* Get name of environment variable */
   snprintf (env_home_name, BUF_LEN (env_home_name), "%s_HOME", PACKAGE);
@@ -170,12 +152,109 @@ get_shared_files (wchar_t *__dir, wchar_t ***__list)
       swprintf (dir, len + 1, L"%ls/%ls", home, __dir);
 
       /* Get listing */
-      get_shared_files_iter (dir, &count, __list);
+      get_shared_files_iter (dir, __count, __list);
 
       /* Free used info */
       free (dir);
       free (home);
+
+      return 0;
     }
+
+  return -1;
+}
+
+/**
+ * Get listing of directory from environment variable
+ *
+ * @param __env - name of environment variable to get path from
+ * @param __dir - name of shared directory
+ * @param __count - count of elements in list
+ * @param __list - list of files
+ * @return zero on success, non-zero otherwise
+ */
+static int
+listing_of_env_path (char *__env, wchar_t *__dir,
+                     long *__count, wchar_t ***__list)
+{
+  int res;
+  wchar_t *full_dir;
+
+  if (!getenv (__env))
+    {
+      /* Environment variable is not set */
+      return 0;
+    }
+
+  /* Get full directory name to be scanned */
+  MBS2WCS (full_dir, getenv (__env));
+
+  res = get_shared_files_iter (full_dir, __count, __list);
+
+  free (full_dir);
+
+  return res;
+}
+
+/********
+ * Use's backend
+ */
+
+/**
+ * Get list of files in shared directory
+ *
+ * @param __dir - name of shared directory
+ * @param __home_replacer - replacer for directory inside HOME
+ * @param __list - list of files (with absolutely pathes)
+ * @return count of files or value less than zero if failed
+ */
+long
+get_shared_files (wchar_t *__dir, wchar_t *__home_replacer, wchar_t ***__list)
+{
+  long count = 0;
+  char *mbreplacer = NULL, *varname = NULL;
+
+  (*__list) = NULL;
+
+#ifndef NOINST_DEBUG
+  /* We need to get file listing from ${data_dir} first */
+  /* and after this from ~/.{$packacge} */
+
+  /* NOTE: If "${PACKAGE}_HOME" environment variable is set */
+  /*       we whould use it instead of ~ */
+
+  /* Get listing of ${data_dir} */
+  get_shared_files_iter (WC_DATA_DIR, &count, __list);
+
+  /* Get variable name for replacer */
+  if (__home_replacer)
+    {
+      size_t i, len;
+      WCS2MBS (mbreplacer, __home_replacer);
+      len = strlen (mbreplacer) + strlen (PACKAGE) + 1;
+      varname = malloc (len + 1);
+      snprintf (varname, len + 1, "%s_%s", PACKAGE, mbreplacer);
+
+      /* Convert ot upper case */
+      for (i = 0; varname[i]; i++)
+        {
+          varname[i] = toupper (varname[i]);
+        }
+    }
+
+  if (!varname || !getenv (varname))
+    {
+      listing_of_user_home (__dir, &count, __list);
+    }
+  else
+    {
+      /* We should get listing of directory from getenv(__home_replacer) */
+      listing_of_env_path (varname, __dir, &count, __list);
+    }
+
+  SAFE_FREE (mbreplacer);
+  SAFE_FREE (varname);
+
 #else
   /* If NOINST_DEBUG is defined, we should get listing */
   /* only of fake home */

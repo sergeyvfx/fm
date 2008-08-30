@@ -58,6 +58,13 @@ BEGIN_HEADER
     mbstowcs (_res, _src, len+1); \
   }
 
+#define WCS2MBS(_res,_src) \
+  { \
+    size_t len = wcslen (_src); \
+    _res = malloc ((len + 1) * MB_CUR_MAX); \
+    wcstombs (_res, _src, (len + 1) * MB_CUR_MAX); \
+  }
+
 /* Length of static wide-string buffer */
 #define BUF_LEN(_buf) \
   sizeof (_buf)/sizeof (wchar_t)
