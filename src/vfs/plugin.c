@@ -283,3 +283,16 @@ vfs_plugin_by_name (const wchar_t *__plugin_name)
 
   return hashmap_get (plugins, __plugin_name);
 }
+
+/**
+ * Check is plugin with specified name has been loaded
+ *
+ * @param __plugin_name - name of plugin to check
+ * @return non-zero if plugin with specified name has been loaded,
+ * and zero otherwise
+ */
+BOOL
+vfs_plugin_loaded (const wchar_t *__plugin_name)
+{
+  return vfs_plugin_by_name (__plugin_name) != NULL;
+}

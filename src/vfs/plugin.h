@@ -129,20 +129,29 @@ struct _vfs_plugin_t
  * Function prototypes
  */
 
+/* Initialize plugins stuff */
 int
 vfs_plugins_init (void);
 
+/* Uninitialize plugins stuff */
 void
 vfs_plugins_done (void);
 
+/* Load VFS plugin */
 int
 vfs_plugin_load (const wchar_t *__file_name);
 
+/* Unload plugin with specified name */
 int
 vfs_plugin_unload (const wchar_t *__plugin_name);
 
+/* Return descriptor of plugin with specified name */
 vfs_plugin_t*
 vfs_plugin_by_name (const wchar_t *__plugin_name);
+
+/* Check is plugin with specified name has been loaded */
+BOOL
+vfs_plugin_loaded (const wchar_t *__plugin_name);
 
 /* For in-plugin usage */
 #define VFS_PLUGIN_INIT(_info) \

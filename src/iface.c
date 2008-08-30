@@ -153,6 +153,15 @@ init_vfs (void)
 
   SAFE_FREE (list);
 
+  /* We can not work without support of local file systems in VFS */
+  /* So, we should display an error and exit */
+  if (!vfs_plugin_loaded (VFS_LOCALFS_PLUGIN))
+    {
+      MESSAGE_ERROR (_(L"Can not work without localfs VFS plugin!\n"
+                       L"The program will now exit. Sorry."));
+      return -1;
+    }
+
   return 0;
 }
 

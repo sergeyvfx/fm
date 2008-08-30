@@ -151,6 +151,11 @@ msgstr "Ошибка загрузки плагина: ${dl-error}"
 msgid "Cannot operate on \"%ls\""
 msgstr "Эта операция не может быть применена к \"%ls\""
 
+msgid "Can not work without localfs VFS plugin!\n"
+"The program will now exit. Sorry."
+msgstr "Невозможно работать без поддержки локальной ФС.\n"
+"Программа сейчас завершит исполнение. Извините."
+
 ##
 # File actions
 
