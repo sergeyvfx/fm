@@ -109,7 +109,7 @@ get_shared_files (wchar_t *__dir, wchar_t ***__list)
 
   long i;
   passwd_t *user_info;
-  wchar_t *dir, *home;
+  wchar_t *dir, *home = NULL;
   char env_home_name[64];
   size_t len;
 
@@ -130,10 +130,31 @@ get_shared_files (wchar_t *__dir, wchar_t ***__list)
   if (getenv (env_home_name) == NULL)
     {
       user_info = get_user_info ();
-      len = wcslen (user_info->home) + wcslen (WC_PACKAGE) + 2;
-      home = malloc ((len + 1) * sizeof (wchar_t));
-      swprintf (home, len + 1, L"%ls/.%ls", user_info->home, WC_PACKAGE);
-      free_user_info (user_info);
+
+      if (user_info)
+        {
+          len = wcslen (user_info->home) + wcslen (WC_PACKAGE) + 2;
+          home = malloc ((len + 1) * sizeof (wchar_t));
+          swprintf (home, len + 1, L"%ls/.%ls", user_info->home, WC_PACKAGE);
+          free_user_info (user_info);
+        }
+      else
+        {
+          /* Try to use HOME environment variable */
+          if (getenv ("HOME") != NULL)
+            {
+              wchar_t *dummy;
+              MBS2WCS (dummy, getenv ("HOME"));
+              len = wcslen (dummy) + wcslen (WC_PACKAGE) + 2;
+              home = malloc ((len + 1) * sizeof (wchar_t));
+              swprintf (home, len + 1, L"%ls/.%ls", dummy, WC_PACKAGE);
+              free (dummy);
+            }
+          else
+            {
+              home = NULL;
+            }
+        }
     }
   else
     {
@@ -141,17 +162,20 @@ get_shared_files (wchar_t *__dir, wchar_t ***__list)
       MBS2WCS (home, getenv (env_home_name));
     }
 
-  /* Get listing of ~/.${package} */
-  len = wcslen (home) + wcslen (__dir) + 2;
-  dir = malloc ((len + 1) * sizeof (wchar_t));
-  swprintf (dir, len + 1, L"%ls/%ls", home, __dir);
+  if (home)
+    {
+      /* Get listing of ~/.${package} */
+      len = wcslen (home) + wcslen (__dir) + 2;
+      dir = malloc ((len + 1) * sizeof (wchar_t));
+      swprintf (dir, len + 1, L"%ls/%ls", home, __dir);
 
-  /* Get listing */
-  get_shared_files_iter (dir, &count, __list);
+      /* Get listing */
+      get_shared_files_iter (dir, &count, __list);
 
-  /* Free used info */
-  free (dir);
-  free (home);
+      /* Free used info */
+      free (dir);
+      free (home);
+    }
 #else
   /* If NOINST_DEBUG is defined, we should get listing */
   /* only of fake home */

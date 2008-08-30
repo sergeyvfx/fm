@@ -290,17 +290,24 @@ timedist (timeval_t __from, timeval_t __to)
 /**
  * Get user information
  *
- * @return passwd strcuture describing user
+ * @return passwd strcuture describing user or NULL if failed
  */
 passwd_t*
 get_user_info (void)
 {
   struct passwd *pw;
-  passwd_t *result = malloc (sizeof (passwd_t));
+  passwd_t *result;
   uid_t userid;
 
   userid = getuid ();
   pw = getpwuid (userid);
+
+  if (pw == NULL)
+    {
+      return NULL;
+    }
+
+  result = malloc (sizeof (passwd_t));
 
   MBS2WCS (result->name, pw->pw_name);
   MBS2WCS (result->passwd, pw->pw_passwd);
