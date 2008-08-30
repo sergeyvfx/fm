@@ -46,7 +46,8 @@ typedef struct {
 int
 action_get_listing (const wchar_t *__base_dir,
                     const file_panel_item_t **__list,
-                    unsigned long __count, action_listing_t *__res);
+                    unsigned long __count, action_listing_t *__res,
+                    BOOL __ignore_errors);
 
 void
 action_free_listing (action_listing_t *__self);

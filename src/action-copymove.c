@@ -84,38 +84,12 @@
     w_text_set (__proc_wnd->_dst, msg); \
   }
 
-/**
- * Make action and if it failed asks to retry this action
- */
-#define REP(_act, _error_proc, _error_act, _error, _error_args...) \
-  do { \
-    _act; \
-    /* Error while making action */ \
-    if (res) \
-      { \
-        res=_error_proc (_error, ##_error_args); \
-        /* Review user's decision */ \
-        if (res==MR_IGNORE) \
-          { \
-            /* User ignored error */ \
-            break; \
-          } \
-        if (res!=MR_RETRY) \
-          { \
-            /* User doen't want to continue trying */ \
-            _error_act; \
-            break; \
-          } \
-      } else { \
-        break; \
-      } \
-  } while (TRUE);
-
 #define COPY_FILE_REP(_act, _error_proc, _error, _error_args...) \
-  REP (_act, _error_proc, COPY_RETERR (res), _error, ##_error_args)
+  ACTION_REPEAT (_act, _error_proc, COPY_RETERR (__dlg_res_), \
+  _error, ##_error_args)
 
 #define COPY_DIR_REP(_act, _error_proc, _error, _error_args...) \
-  REP (_act, _error_proc, return CANCEL_TO_ABORT (res), \
+  ACTION_REPEAT (_act, _error_proc, return CANCEL_TO_ABORT (__dlg_res_), \
        _error, ##_error_args)
 
 /**
@@ -151,7 +125,8 @@
  * Unlink target file
  */
 #define UNLINK_TARGET() \
-  REP (res=vfs_unlink (__dst), error, return CANCEL_TO_ABORT (res), \
+  ACTION_REPEAT (res = vfs_unlink (__dst), error, \
+  return CANCEL_TO_ABORT (__dlg_res_), \
    _(L"Cannot unlink target file \"%ls\":\n%ls"), __dst, \
   vfs_get_error (res))
 
@@ -159,8 +134,9 @@
  * Unlink source file
  */
 #define UNLINK_SOURCE() \
-  REP (res=vfs_unlink (__src), error, return CANCEL_TO_ABORT (res), \
-   _(L"Cannot unlink source file \"%ls\":\n%ls"), __src, \
+  ACTION_REPEAT (res=vfs_unlink (__src), error, \
+  return CANCEL_TO_ABORT (__dlg_res_), \
+  _(L"Cannot unlink source file \"%ls\":\n%ls"), __src, \
   vfs_get_error (res))
 
 /*
@@ -345,7 +321,11 @@ error (const wchar_t *__text, ...)
 }
 
 /**
- * Display an error message with buttons Retry, Ignore and cancel
+ * Display an error message with buttons Retry, Skip and cancel,
+ * but modal resule for MR_SKIP will be replaced with MR_IGNORE.
+ *
+ * Need this to make to make error messages equal but with different semantic
+ * of Ignore/Skip actions.
  *
  * @param __text - text to display on message
  * @return result of message_box()
@@ -353,9 +333,15 @@ error (const wchar_t *__text, ...)
 static int
 error2 (const wchar_t *__text, ...)
 {
+  int res;
   wchar_t buf[4096];
   PACK_ARGS (__text, buf, BUF_LEN (buf));
-  return message_box (_(L"Error"), buf, MB_CRITICAL | MB_RETRYIGNCANCEL);
+  res = error (L"%ls", buf);
+  if (res == MR_SKIP)
+    {
+      return MR_IGNORE;
+    }
+  return res;
 }
 
 /**
@@ -458,11 +444,17 @@ make_rename (const wchar_t *__src, const wchar_t *__dst,
 {
   int res;
 
-  REP (res = vfs_rename (__src, __dst), error, return CANCEL_TO_ABORT (res),
-     _(L"Cannot move \"%ls\":\n%ls"), __src, vfs_get_error (res));
+  ACTION_REPEAT (res = vfs_rename (__src, __dst), error2,
+                 return CANCEL_TO_ABORT (__dlg_res_),
+                 _(L"Cannot move \"%ls\":\n%ls"), __src, vfs_get_error (res));
 
   /* Process accamulated queue of characters */
   widget_process_queue ();;
+
+  if (res)
+    {
+      return ACTION_IGNORE;
+    }
 
   return ACTION_OK;
 }
@@ -498,7 +490,7 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
       switch (res)
         {
         case MR_NO:
-          return ACTION_OK;
+          return ACTION_SKIP;
           break;
         case MR_COPY_APPEND:
           append = TRUE;
@@ -512,18 +504,18 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
           SAVE_OWR_ALL_RULE (MR_COPY_UPDATE);
           if (!is_newer (__src, __dst))
             {
-              return ACTION_OK;
+              return ACTION_SKIP;
             }
           break;
         case MR_COPY_NONE:
           SAVE_OWR_ALL_RULE (MR_COPY_NONE);
-          return ACTION_OK;
+          return ACTION_SKIP;
           break;
         case MR_COPY_SIZE_DIFFERS:
           SAVE_OWR_ALL_RULE (MR_COPY_SIZE_DIFFERS);
           if (!is_size_differs (__src, __dst))
             {
-              return ACTION_OK;
+              return ACTION_SKIP;
             }
           break;
 
@@ -728,7 +720,7 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
               break;
 
             case MR_NO:
-              return ACTION_OK;
+              return ACTION_SKIP;
 
             case MR_COPY_REPLACE_ALL:
               SAVE_OWR_ALL_RULE (MR_COPY_REPLACE_ALL);
@@ -739,20 +731,20 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
               SAVE_OWR_ALL_RULE (MR_COPY_UPDATE);
               if (!is_newer (__src, __dst))
                 {
-                  return ACTION_OK;
+                  return ACTION_SKIP;
                 }
               UNLINK_TARGET ();
               break;
 
             case MR_COPY_NONE:
               SAVE_OWR_ALL_RULE (MR_COPY_NONE);
-              return ACTION_OK;
+              return ACTION_SKIP;
 
             case MR_COPY_SIZE_DIFFERS:
               SAVE_OWR_ALL_RULE (MR_COPY_SIZE_DIFFERS);
               if (!is_size_differs (__src, __dst))
                 {
-                  return ACTION_OK;
+                  return ACTION_SKIP;
                 }
               UNLINK_TARGET ();
               break;
@@ -799,10 +791,10 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
   else
     {
       /* Create symlink */
-      REP (res = vfs_symlink (content, __dst), error,
-           return CANCEL_TO_ABORT (res),
-           _(L"Cannot create symbolic link \"%ls\":\n%ls"), __src,
-           vfs_get_error (res));
+      ACTION_REPEAT (res = vfs_symlink (content, __dst), error,
+                     return CANCEL_TO_ABORT (__dlg_res_),
+                     _(L"Cannot create symbolic link \"%ls\":\n%ls"), __src,
+                     vfs_get_error (res));
 
       if (__proc_wnd->move)
         {
@@ -833,9 +825,10 @@ copy_special_file (const wchar_t *__src, const wchar_t *__dst,
   int res;
 
   /* Stat source file */
-  REP (res = vfs_stat (__src, &stat), error, return (res),
-       _(L"Cannot stat source file \"%ls\":\n%ls"), __src,
-       vfs_get_error (res));
+  ACTION_REPEAT (res = vfs_stat (__src, &stat), error,
+                 return CANCEL_TO_ABORT (__dlg_res_),
+                 _(L"Cannot stat source file \"%ls\":\n%ls"), __src,
+                 vfs_get_error (res));
 
   if (S_ISCHR (stat.st_mode) || S_ISBLK (stat.st_mode) ||
       S_ISFIFO (stat.st_mode) || S_ISSOCK (stat.st_mode))
@@ -860,7 +853,7 @@ copy_special_file (const wchar_t *__src, const wchar_t *__dst,
                   break;
 
                 case MR_NO:
-                  return ACTION_OK;
+                  return ACTION_SKIP;
 
                 case MR_COPY_REPLACE_ALL:
                   SAVE_OWR_ALL_RULE (MR_COPY_REPLACE_ALL);
@@ -871,14 +864,14 @@ copy_special_file (const wchar_t *__src, const wchar_t *__dst,
                   SAVE_OWR_ALL_RULE (MR_COPY_UPDATE);
                   if (!is_newer (__src, __dst))
                     {
-                      return ACTION_OK;
+                      return ACTION_SKIP;
                     }
                   UNLINK_TARGET ();
                   break;
 
                 case MR_COPY_NONE:
                   SAVE_OWR_ALL_RULE (MR_COPY_NONE);
-                  return ACTION_OK;
+                  return ACTION_SKIP;
 
                 case MR_COPY_SIZE_DIFFERS:
                   SAVE_OWR_ALL_RULE (MR_COPY_SIZE_DIFFERS);
@@ -887,7 +880,7 @@ copy_special_file (const wchar_t *__src, const wchar_t *__dst,
                    */
                   if (!is_size_differs (__src, __dst))
                     {
-                      return ACTION_OK;
+                      return ACTION_SKIP;
                     }
                   UNLINK_TARGET ();
                   break;
@@ -916,7 +909,7 @@ copy_special_file (const wchar_t *__src, const wchar_t *__dst,
                       return ACTION_ABORT;
 
                     case MR_SKIP:
-                      return ACTION_OK;
+                      return ACTION_SKIP;
                     }
                 }
             }
@@ -935,10 +928,10 @@ copy_special_file (const wchar_t *__src, const wchar_t *__dst,
       else
         {
           /* Create special file */
-          REP (res = vfs_mknod (__dst, stat.st_mode, stat.st_rdev), error,
-               return CANCEL_TO_ABORT (res),
-               _(L"Cannot create special file \"%ls\":\n%ls"), __src,
-               vfs_get_error (res));
+          ACTION_REPEAT (res = vfs_mknod (__dst, stat.st_mode, stat.st_rdev),
+                         error, return CANCEL_TO_ABORT (__dlg_res_),
+                         _(L"Cannot create special file \"%ls\":\n%ls"), __src,
+                         vfs_get_error (res));
 
           if (__proc_wnd->move)
             {
@@ -995,10 +988,10 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
   CHECK_THE_SAME ();
 
   /* Stat source file to determine it's type */
-  REP (res = vfs_lstat (__src, &stat), error,
-       return CANCEL_TO_ABORT (res),
-       _(L"Cannot stat source file \"%ls\":\n%ls"),
-       __src, vfs_get_error (res));
+  ACTION_REPEAT (res = vfs_lstat (__src, &stat), error,
+                 return CANCEL_TO_ABORT (__dlg_res_),
+                 _(L"Cannot stat source file \"%ls\":\n%ls"),
+                 __src, vfs_get_error (res));
 
   if (S_ISREG (stat.st_mode))
     {
@@ -1044,12 +1037,12 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
 {
   vfs_dirent_t **eps = NULL;
   vfs_stat_t stat;
-  int count, i, res = ACTION_OK;
+  int count, i, res, global_res;
   wchar_t *full_name, *full_dst;
   size_t fn_len, dst_len;
-  BOOL prescanned = FALSE, can_rename, renamed = FALSE;
+  BOOL prescanned = FALSE;
   int move_strategy = MOVE_STRATEGY_UNDEFINED;
-  short state = 1;
+  unsigned long ignored_items = 0;
 
   /* Check is file copying to itself */
   CHECK_THE_SAME ();
@@ -1060,17 +1053,8 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
       move_strategy = vfs_move_strategy (__src, __dst);
       if (move_strategy == VFS_MS_RENAME)
         {
-          /* Renaming is allowed. Now we need to ensure */
-          /* that there is no subdirs and cast vfs_rename */
-          /* onto this directory */
+          BOOL can_rename;
 
-          /*
-           * NOTE: We need to enshure that there is no subdirs because they
-           *       may be moved to other file system.
-           */
-
-          /* Just set here flag. Checking will be made after */
-          /* source directpry will be listed  */
           can_rename = TRUE;
 
           /* Stat target directory */
@@ -1090,11 +1074,13 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
                        error,
                         _(L"Cannot stat target directory \"%ls\":\n%ls"),
                         __src, vfs_get_error (res));
+
+          if (can_rename)
+            {
+              res = make_rename (__src, __dst, __proc_wnd);
+              return res;
+            }
         }
-    }
-  else
-    {
-      can_rename = FALSE;
     }
 
   /* Stat source directory */
@@ -1148,134 +1134,103 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
   ALLOC_FN (full_name, fn_len, __src);
   ALLOC_FN (full_dst, dst_len, __dst);
 
-  /*
-   * state = 1 - checking for subdirs while moving/renaming directory
-   * stage = 2 - copying/moving children
-   */
-  if (!can_rename)
-    {
-      state = 2;
-    }
-
   move_strategy = MOVE_STRATEGY_UNDEFINED;
 
   /* Review contents of source directory */
-  while (state <= 2)
+  global_res = ACTION_OK;
+  for (i = 0; i < count; i++)
     {
-      for (i = 0; i < count; i++)
+      if (!IS_PSEUDODIR (eps[i]->name))
         {
-          if (!IS_PSEUDODIR (eps[i]->name))
+          /* Get full filename of current file or directory and */
+          /* it's destination */
+          swprintf (full_name, fn_len, L"%ls/%ls", __src, eps[i]->name);
+
+          swprintf (full_dst, dst_len, L"%ls/%ls", __dst,
+                    eps[i]->name);
+
+          /* Make copying/moving */
+          if (!isdir (full_name))
             {
-              /* Get full filename of current file or directory and */
-              /* it's destination */
-              swprintf (full_name, fn_len, L"%ls/%ls", __src, eps[i]->name);
+              int s_strategy;
 
-              if (state == 2)
+              /* We need this because local move_strategy may be */
+              /* truth, when move_strategy from window's descriptor */
+              /* may be false. */
+              if (__proc_wnd->move)
                 {
-                  swprintf (full_dst, dst_len, L"%ls/%ls", __dst,
-                            eps[i]->name);
+                  s_strategy = __proc_wnd->move_strategy;
 
-                  /* Make copying/moving */
-                  if (!isdir (full_name))
+                  /* We need this because previously move_strategy */
+                  /* was calclated for parent directory, not */
+                  /* for child. It is not the same. Because parent */
+                  /* may be a mount-point */
+                  if (move_strategy == MOVE_STRATEGY_UNDEFINED)
                     {
-                      int s_strategy;
-
-                      /* We need this because local move_strategy may be */
-                      /* truth, when move_strategy from window's descriptor */
-                      /* may be false. */
-                      if (__proc_wnd->move)
-                        {
-                          s_strategy = __proc_wnd->move_strategy;
-
-                          /* We need this because previously move_strategy */
-                          /* was calclated for parent directory, not */
-                          /* for child. It is not the same. Because parent */
-                          /* may be a mount-point */
-                          if (move_strategy == MOVE_STRATEGY_UNDEFINED)
-                            {
-                              move_strategy = vfs_move_strategy (full_name,
-                                                                 full_dst);
-                            }
-                          __proc_wnd->move_strategy = move_strategy;
-                        }
-
-                      res = copy_file (full_name, full_dst,
-                                       __owr_all_rule, __proc_wnd);
-
-                      if (__proc_wnd->move)
-                        {
-                          __proc_wnd->move_strategy = s_strategy;
-                        }
+                      move_strategy = vfs_move_strategy (full_name,
+                                                         full_dst);
                     }
-                  else
-                    {
-                      res = copy_dir (full_name, full_dst, __owr_all_rule,
-                                     __proc_wnd,
-                                     prescanned ? __tree->items[i] : NULL);
-                    }
-
-                  /* Copying has been aborted */
-                  if (res == ACTION_ABORT)
-                    {
-                      /* Free allocated memory */
-                      FREE_REMAIN_DIRENT ();
-                      break;
-                    }
+                  __proc_wnd->move_strategy = move_strategy;
                 }
-              else
+
+              res = copy_file (full_name, full_dst,
+                               __owr_all_rule, __proc_wnd);
+
+              if (__proc_wnd->move)
                 {
-                  if (isdir (full_name))
-                    {
-                      /* There is subdir and we can't use vfs_rename */
-                      can_rename = FALSE;
-                    }
+                  __proc_wnd->move_strategy = s_strategy;
                 }
             }
+          else
+            {
+              res = copy_dir (full_name, full_dst, __owr_all_rule,
+                             __proc_wnd,
+                             prescanned ? __tree->items[i] : NULL);
 
-          /* Process accamulated queue of characters */
-          if (PROCESS_ABORTED ())
+            }
+
+          if (res == ACTION_IGNORE || res == ACTION_SKIP)
+            {
+              ++ignored_items;
+              res = 0;
+            }
+
+          /* Copying has been aborted */
+          if (res == ACTION_ABORT)
             {
               /* Free allocated memory */
               FREE_REMAIN_DIRENT ();
-
-              if (__proc_wnd->abort)
-                {
-                  res = ACTION_ABORT;
-                }
-
+              global_res = ACTION_ABORT;
               break;
-            }
-
-          if (state == 2 && !prescanned)
-            {
-              vfs_free_dirent (eps[i]);
             }
         }
 
-      if (state == 1 && can_rename)
+      /* Process accamulated queue of characters */
+      if (PROCESS_ABORTED ())
         {
-          /* Now we can call renaming stuff */
-          res = make_rename (__src, __dst, __proc_wnd);
+          /* Free allocated memory */
+          FREE_REMAIN_DIRENT ();
 
-          renamed = TRUE;
-
-          /* Free memory for list */
-          for (i = 0; i < count; ++i)
+          if (__proc_wnd->abort)
             {
-              vfs_free_dirent (eps[i]);
+              global_res = ACTION_ABORT;
             }
+
           break;
         }
 
-      ++state;
+      if (prescanned)
+        {
+          vfs_free_dirent (eps[i]);
+        }
     }
 
-  if (__proc_wnd->move && !renamed)
+  if (__proc_wnd->move)
     {
       /* If all it's content has been successfully moved, */
       /* we should unlink source directory */
 
-      if (res == ACTION_OK)
+      if (global_res == ACTION_OK && ignored_items == 0)
         {
           deque_push_back (__proc_wnd->unlink_list, wcsdup (__src));
           ++__proc_wnd->unlink_count;
@@ -1291,7 +1246,7 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
   free (full_name);
   free (full_dst);
 
-  return res;
+  return global_res;
 }
 
 /**
@@ -1418,13 +1373,13 @@ make_unlink (copy_process_window_t *__proc_wnd)
         proc = vfs_unlink;
       }
 
-    REP (res = proc (path), error2,
-         action_post_move_desstroy_window (wnd);
-         if (CANCEL_TO_ABORT (res) == ACTION_ABORT)
-           {
-             return ACTION_ABORT;
-           },
-         format, path, vfs_get_error (res))
+    ACTION_REPEAT (res = proc (path), error2,
+                   action_post_move_desstroy_window (wnd);
+                   if (CANCEL_TO_ABORT (__dlg_res_) == ACTION_ABORT)
+                     {
+                       return ACTION_ABORT;
+                     },
+                   format, path, vfs_get_error (res))
 
     w_progress_set_pos (wnd->progress, ++count);
   deque_foreach_done
@@ -1453,13 +1408,13 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
 {
   copy_process_window_t *wnd;
   int res, owr_all_rule = 0;
-  wchar_t *dst, *src, *dummy = (wchar_t*) __dst;
-  unsigned long i, count = 0;
+  wchar_t *dst, *src, *dummy = (wchar_t*) __dst, *item_name;
+  unsigned long i, count = 0, source_count;
   file_panel_item_t *item;
   BOOL scan_allowed;
   action_listing_t listing;
 
-  if (!__base_dir || !*__src_list || !dst)
+  if (!__base_dir || !*__src_list || !__dst)
     {
       return 0;
     }
@@ -1468,6 +1423,9 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
 
   /* Get customized settings from user */
   res = action_copy_show_dialog (__move, __src_list, __count, &dummy);
+
+  /* Count of source items */
+  source_count = __count;
 
   /*
    * TODO: Should we normalize destination?
@@ -1478,6 +1436,41 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
     {
       SAFE_FREE (dummy);
       return 0;
+    }
+
+  scan_allowed = total_progress_avaliable (__src_list, __count);
+
+  /* Get listing of items */
+  if (scan_allowed)
+    {
+      ACTION_REPEAT (res = action_get_listing (__base_dir, __src_list,
+                                     __count, &listing, __move);
+                     if (res == ACTION_ABORT)
+                       {
+                         return 0;
+                       },
+                     error2,
+                     /* There was an error getting full listing of items */
+                     /* If user will answer Cancel to error dialog, none */
+                     /* of files will be copied/moved */
+                     /* But if user will answer Ignore prescanning will be */
+                     /* disabled and some items will be copied/moved */
+                     return 0,
+                     _(L"Cannot get listing of items:\n%ls"),
+                     vfs_get_error (res));
+
+      if (res)
+        {
+          /* res may be non-zero here only in case */
+          /* user hit an Ignore button */
+          scan_allowed = FALSE;
+        }
+      else
+        {
+          /* User can ignore some subtrees, so we need */
+          /* get count of source elements from prescanned data */
+          source_count = listing.tree->count;
+        }
     }
 
   /* Get absolute destination path */
@@ -1491,38 +1484,26 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
       free (dummy);
     }
 
-  scan_allowed = total_progress_avaliable (__src_list, __count);
-
-  /* Get listing of items */
-  if (scan_allowed)
-    {
-      if ((res = action_get_listing (__base_dir, __src_list,
-                                   __count, &listing)) != ACTION_OK)
-        {
-          /* There was an error listing items */
-          if (res == ACTION_ABORT)
-            {
-              /* User just aborted scanning */
-              scan_allowed = FALSE;
-            }
-          else
-            {
-              return res;
-            }
-        }
-    }
-
   wnd = action_copy_create_proc_wnd (__move, scan_allowed, &listing);
 
   wnd->abs_path_prefix = (wchar_t*)__base_dir;
   w_window_show (wnd->window);
 
-  for (i = 0; i < __count; ++i)
+  item = NULL;
+  for (i = 0; i < source_count; ++i)
     {
-      item = (file_panel_item_t*)__src_list[i];
+      if (scan_allowed)
+        {
+          item_name = listing.tree->dirent[i]->name;
+        }
+      else
+        {
+          item = (file_panel_item_t*)__src_list[i];
+          item_name = item->file->name;
+        }
 
       /* Make copy iteration */
-      src = wcdircatsubdir (__base_dir, item->file->name);
+      src = wcdircatsubdir (__base_dir, item_name);
       res = make_copy_iter (src, dst, &owr_all_rule, wnd,
                             scan_allowed ? listing.tree->items[i] : NULL);
       free (src);
@@ -1531,8 +1512,12 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
         {
           /* In case of successfull copying */
           /* we need free selection from copied item */
-          item->selected = FALSE;
-          count++;
+          if (item != NULL)
+            {
+              /* item may be NULL only in case prescanning is disabled */
+              item->selected = FALSE;
+              count++;
+            }
         }
       else
         {

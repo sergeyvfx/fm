@@ -29,12 +29,50 @@ BEGIN_HEADER
 #define ACTION_OK     0
 #define ACTION_ERR   -1
 #define ACTION_ABORT  1
+#define ACTION_IGNORE 2
+#define ACTION_SKIP   3
 
 /********
- *
+ * Macro definitions
  */
 
 #include <action-listing.h>
+
+
+/**
+ * Make action and if it failed asks to retry this action
+ *
+ * NOTE: You need to have defined integer variable res.
+ *       This variable will be used to control _act's exit status
+ *
+ * @param _act - action to make
+ * @param _error_proc - procedure which displays an error message
+ * @param _error_act - action, which will be made made in case of error
+ * @param _error_args - arguments, which will be passed to _error_proc
+ */
+#define ACTION_REPEAT(_act, _error_proc, _error_act, _error, _error_args...) \
+  do { \
+    _act; \
+    /* Error while making action */ \
+    if (res) \
+      { \
+        int __dlg_res_ = _error_proc (_error, ##_error_args); \
+        /* Review user's decision */ \
+        if (__dlg_res_ == MR_IGNORE) \
+          { \
+            /* User ignored error */ \
+            break; \
+          } \
+        if (__dlg_res_ != MR_RETRY) \
+          { \
+            /* User doen't want to continue trying */ \
+            _error_act; \
+            break; \
+          } \
+      } else { \
+        break; \
+      } \
+  } while (TRUE);
 
 /********
  *

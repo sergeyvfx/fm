@@ -254,19 +254,19 @@ msgid "Cannot stat target file \"%ls\":\n%ls"
 msgstr "Невозможно получить свойства целевого файла \"%ls\":\n%ls"
 
 msgid "Cannot stat source directory \"%ls\":\n%ls"
-msgstr "Невозможно получить свойства исходного каталога \"%ls\":\n%ls"
+msgstr "Невозможно получить свойства исходной директории \"%ls\":\n%ls"
 
 msgid "Cannot stat target directory \"%ls\":\n%ls"
-msgstr "Невозможно получить свойства целевого каталога \"%ls\":\n%ls"
+msgstr "Невозможно получить свойства целевой директории \"%ls\":\n%ls"
 
 msgid "Cannot create target directory \"%ls\":\n%ls"
-msgstr "Невозможно создать целевой каталог \"%ls\":\n%ls"
+msgstr "Невозможно создать целевую директори/ \"%ls\":\n%ls"
 
 msgid "Cannot chmod target directory \"%ls\":\n%ls"
-msgstr "Невозможно сменить права целевого кталога \"%ls\":\n%ls"
+msgstr "Невозможно сменить права целевой директории \"%ls\":\n%ls"
 
 msgid "Cannot listing source directory \"%ls\":\n%ls"
-msgstr "Невозможно получить листинг каталога \"%ls\":\n%ls"
+msgstr "Невозможно получить листинг исходной директории \"%ls\":\n%ls"
 
 msgid "Create a new directory"
 msgstr "Создать новую директорию"
@@ -313,6 +313,12 @@ msgstr "Невозможно переместить \"%ls\":\n%ls"
 msgid "Deleting:"
 msgstr "Удаляется:"
 
+msgid "Cannot get listing of items:\n%ls"
+msgstr "Невозможно получить листинг выделенных элементов:\n%ls"
+
+msgid "Cannot get listing of directory \"%ls\":\n%ls"
+msgstr "Невозможно получить листинг директории \"%ls\":\n%ls"
+
 ##
 # POSIX errors
 
@@ -323,7 +329,10 @@ msgid "Is a directory"
 msgstr "Это директория"
 
 msgid "No such file or directory"
-msgstr "Файл или каталог не найден"
+msgstr "Файл или директория не найдены"
 
 msgid "Operation not permitted"
 msgstr "Операция не поддерживается"
+
+msgid "Directory not empty"
+msgstr "Директория не пуста"
