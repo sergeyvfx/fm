@@ -82,6 +82,8 @@ get_shared_files_iter (wchar_t *__path, long *__count, wchar_t ***__list)
   return 0;
 }
 
+#ifndef NOINST_DEBUG
+
 /**
  * Get listing of directory inside user's home
  *
@@ -196,6 +198,8 @@ listing_of_env_path (char *__env, wchar_t *__dir,
   return res;
 }
 
+#endif
+
 /********
  * Use's backend
  */
@@ -212,11 +216,12 @@ long
 get_shared_files (wchar_t *__dir, wchar_t *__home_replacer, wchar_t ***__list)
 {
   long count = 0;
-  char *mbreplacer = NULL, *varname = NULL;
 
   (*__list) = NULL;
 
 #ifndef NOINST_DEBUG
+  char *mbreplacer = NULL, *varname = NULL;
+
   /* We need to get file listing from ${data_dir} first */
   /* and after this from ~/.{$packacge} */
 
