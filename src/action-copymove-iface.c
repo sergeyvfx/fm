@@ -257,7 +257,7 @@ action_copy_create_proc_wnd (BOOL __move, BOOL __total_progress,
 
   /* Progress bar for current file */
   widget_create_text (cnt, _(L"File"), 1, 4);
-  res->file_progress = widget_create_progress (cnt, 100, 10, 4, 53, 0);
+  res->file_progress = widget_create_progress (cnt, 100, 10, 4, 48, 0);
 
   /* Speed */
   pchar = _(L"Speed:");
