@@ -156,6 +156,12 @@ msgid "Can not work without localfs VFS plugin!\n"
 msgstr "Невозможно работать без поддержки локальной ФС.\n"
 "Программа сейчас завершит исполнение. Извините."
 
+msgid "Cannot unlink file \"%ls\":\n%ls"
+msgstr "Невозможно удалить файл \"%ls\":\n%ls"
+
+msgid "Cannot unlink directory \"%ls\":\n%ls"
+msgstr "Невозможно удалить директорию \"%ls\":\n%ls"
+
 ##
 # File actions
 
@@ -323,6 +329,24 @@ msgstr "Невозможно получить листинг выделенны�
 
 msgid "Cannot get listing of directory \"%ls\":\n%ls"
 msgstr "Невозможно получить листинг директории \"%ls\":\n%ls"
+
+msgid "Delete"
+msgstr "Удаление"
+
+msgid "Delete file \"%ls\"?"
+msgstr "Удалить файл \"%ls\"?"
+
+msgid "Delete directory \"%ls\"?"
+msgstr "Удалить директорию \"%ls\"?"
+
+msgid "Delete %lu files?"
+msgstr "Удалить эти файлы (%lu шт.)?"
+
+msgid "Delete %lu directories?"
+msgstr "Удалить эти директории (%lu шт.)?"
+
+msgid "Delete %lu files/directories?"
+msgstr "Удалить эти файлы и директории (%lu шт.)?"
 
 ##
 # POSIX errors

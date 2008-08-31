@@ -123,7 +123,7 @@ action_copy_create_proc_wnd (BOOL __move, BOOL __total_progress,
 
 /* Destroy file copy process window */
 void
-action_destroy_proc_wnd (copy_process_window_t *__window);
+action_copy_destroy_proc_wnd (copy_process_window_t *__window);
 
 /* Evalute and set speed of copying and ETA */
 void

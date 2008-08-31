@@ -112,7 +112,7 @@ progress_drawer (w_progress_t *__progress)
   /* Draw percents */
   if (!(__progress->style & WPBS_NOPERCENT))
     {
-      scr_wnd_move_caret (layout, __progress->position.x + width - 5,
+      scr_wnd_move_caret (layout, __progress->position.x + width,
                           __progress->position.y);
       scr_wnd_printf (layout, " %3d%%", perc);
     }

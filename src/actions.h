@@ -1,7 +1,7 @@
 /**
  * ${project-name} - a GNU/Linux console-based file manager
  *
- * Prototypes of file actions
+ * Prototypes of different actions
  *
  * Copyright 2008 Sergey I. Sharybin <nazgul@school9.perm.ru>
  * Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
@@ -78,6 +78,25 @@ BEGIN_HEADER
  *
  */
 
+/**
+ * Helpers
+ */
+
+/* Format message for action */
+void
+action_message_formatting (const file_panel_item_t **__list,
+                           unsigned long __count, const wchar_t *__stencil,
+                           wchar_t *__buf, size_t __buf_size);
+
+/* Enshure that pseydodirs are not selected */
+BOOL
+action_check_no_pseydodir (const file_panel_item_t **__list,
+                           unsigned long __count);
+
+/**
+ *
+ */
+
 /* Copy list of files from specified panel */
 int
 action_copy (file_panel_t *__panel);
@@ -89,6 +108,10 @@ action_move (file_panel_t *__panel);
 /* Create directory on specified panel */
 int
 action_mkdir (file_panel_t *__panel);
+
+/* Delete list of files from specified panel */
+int
+action_delete (file_panel_t *__panel);
 
 /* Chooses file panel for action */
 file_panel_t*

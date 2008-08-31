@@ -1037,12 +1037,11 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
 {
   vfs_dirent_t **eps = NULL;
   vfs_stat_t stat;
-  int count, i, res, global_res;
+  int count, i, res, global_res, ignored_items = 0;
   wchar_t *full_name, *full_dst;
   size_t fn_len, dst_len;
   BOOL prescanned = FALSE;
   int move_strategy = MOVE_STRATEGY_UNDEFINED;
-  unsigned long ignored_items = 0;
 
   /* Check is file copying to itself */
   CHECK_THE_SAME ();
@@ -1206,6 +1205,7 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
         }
 
       /* Process accamulated queue of characters */
+      widget_process_queue ();
       if (PROCESS_ABORTED ())
         {
           /* Free allocated memory */
@@ -1276,6 +1276,9 @@ make_copy_iter (const wchar_t *__src, const wchar_t *__dst,
       __proc_wnd->move_strategy = vfs_move_strategy (__src, __dst);
     }
 
+  /*
+   * TODO: Nay be we should use ACTION_REPEAT(...) instead of stupid isdir?
+   */
   if (isdir (__src))
     {
       vfs_stat_t stat;
@@ -1526,6 +1529,13 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
               break;
             }
         }
+
+      /* Maybe this will help to grow up interactvity */
+      widget_process_queue ();
+      if (wnd->abort)
+        {
+          break;
+        }
     }
 
   if (__move)
@@ -1533,7 +1543,7 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
       make_unlink (wnd);
     }
 
-  action_destroy_proc_wnd (wnd);
+  action_copy_destroy_proc_wnd (wnd);
 
   /* Free listing information */
   if (scan_allowed)
@@ -1582,14 +1592,7 @@ action_copymove (file_panel_t *__panel, BOOL __move)
   /* Get list of items to be copied */
   count = file_panel_get_selected_items (__panel, &list);
 
-  /*
-   * NOTE: I hope that file panel cannot give access to select
-   *       pseudo-directories. So, only item under cursor may be
-   *       a pseudo-directory.
-   *       Lets check it.
-   */
-  if (count == 1 && IS_PSEUDODIR (list[0]->file->name))
-
+  if (!action_check_no_pseydodir ((const file_panel_item_t**)list, count))
     {
       wchar_t msg[1024];
       swprintf (msg, BUF_LEN (msg), _(L"Cannot operate on \"%ls\""),

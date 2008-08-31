@@ -1191,6 +1191,9 @@ fpd_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
     case KEY_F (7):
       action_mkdir (__panel);
       break;
+    case KEY_F (8):
+      action_delete (__panel);
+      break;
     /*
      *
      ********/

@@ -200,113 +200,18 @@ get_to_field_caption (BOOL __move, const file_panel_item_t **__src_list,
                       unsigned long __count,
                       wchar_t *__buf, size_t __buf_size)
 {
-  wchar_t *format;
+  wchar_t *stencil;
 
-  if (__count == 1)
+  if (__move)
     {
-      /* Single file is copying */
-      wchar_t *src;
-      wchar_t fit_fn[20];
-      file_panel_item_t *item;
-
-      item = (file_panel_item_t*)__src_list[0];
-      src = item->file->name;
-
-      if (S_ISDIR (item->file->lstat.st_mode))
-        {
-          if (__move)
-            {
-              format = _(L"Move directory \"%ls\" to:");
-            }
-          else
-            {
-              format = _(L"Copy directory \"%ls\" to:");
-            }
-        }
-      else
-        {
-          if (__move)
-            {
-              format = _(L"Move file \"%ls\" to:");
-            }
-          else
-            {
-              format = _(L"Copy file \"%ls\" to:");
-            }
-        }
-
-      fit_filename (src, BUF_LEN (fit_fn), fit_fn);
-      swprintf (__buf, __buf_size, format, fit_fn);
+      stencil = L"Move %ls to:";
     }
   else
     {
-      /* Coping list of file */
-
-      BOOL only_files = TRUE, only_dirs = TRUE;
-      unsigned long i;
-
-      /* Need to determine only files, only directories or both */
-      /* of files and directories are to be copied */
-      for (i = 0; i < __count; i++)
-        {
-          if (S_ISDIR (__src_list[i]->file->lstat.st_mode))
-            {
-              only_files = FALSE;
-
-              if (!only_dirs)
-                {
-                  break;
-                }
-            }
-          else
-            {
-              only_dirs = FALSE;
-
-              if (!only_files)
-                {
-                  break;
-                }
-            }
-        }
-
-      /* Determine format string */
-      if (only_files)
-        {
-          if (__move)
-            {
-              format = _(L"Move %lu files to:");
-            }
-          else
-            {
-              format = _(L"Copy %lu files to:");
-            }
-        }
-      else
-        if (only_dirs)
-          {
-            if (__move)
-              {
-                format = _(L"Move %lu directories to:");
-              }
-            else
-              {
-                format = _(L"Copy %lu directories to:");
-              }
-          }
-        else
-          {
-            if (__move)
-              {
-                format = _(L"Move %lu files/directories to:");
-              }
-            else
-              {
-                format = _(L"Copy %lu files/directories to:");
-              }
-          }
-
-      swprintf (__buf, __buf_size, format, __count);
+      stencil = L"Copy %ls to:";
     }
+
+  action_message_formatting (__src_list, __count, stencil, __buf, __buf_size);
 }
 
 /********
@@ -430,7 +335,7 @@ action_copy_create_proc_wnd (BOOL __move, BOOL __total_progress,
  * @param __window - window to be destroyed
  */
 void
-action_destroy_proc_wnd (copy_process_window_t *__window)
+action_copy_destroy_proc_wnd (copy_process_window_t *__window)
 {
   if (!__window)
     {
