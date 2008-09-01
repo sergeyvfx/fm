@@ -274,6 +274,13 @@ unlink_dir (wchar_t *__path, delete_process_window_t *__proc_wnd,
 
   if (global_res == ACTION_OK && ignored_items == 0)
     {
+      if (prescanned && __tree->ignored_flag)
+        {
+          /* There are some ignored children */
+          /* we can't unlink this directory */
+          return ACTION_IGNORE;
+        }
+
       set_deleting_item (__path, __proc_wnd);
 
       ACTION_REPEAT (res = vfs_rmdir (__path),

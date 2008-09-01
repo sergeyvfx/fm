@@ -65,10 +65,7 @@ static action_listing_tree_t*
 allocate_listing_tree ()
 {
   action_listing_tree_t *res;
-  res = malloc (sizeof (action_listing_tree_t));
-  res->count = 0;
-  res->dirent = NULL;
-  res->items = NULL;
+  MALLOC_ZERO (res, sizeof (action_listing_tree_t));
   return res;
 }
 
@@ -227,6 +224,9 @@ get_listing_iter (const wchar_t *__path, action_listing_tree_t **__res,
 
                   (*__res)->items = realloc ((*__res)->items, (count - 1) *
                           sizeof (action_listing_tree_t*));
+
+                  /* Set ignore flag */
+                  (*__res)->ignored_flag = TRUE;
 
                   /* Update informtion about items count */
                   --count;

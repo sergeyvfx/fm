@@ -21,6 +21,9 @@ typedef struct action_tree_node {
   /* Count of items in node */
   long count;
 
+  /* Will be TRUE when there are any ignored children */
+  BOOL ignored_flag;
+
   /* Directory entries */
   vfs_dirent_t **dirent;
 
