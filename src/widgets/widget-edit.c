@@ -59,7 +59,15 @@ edit_drawer (w_edit_t *__edit)
   scr_wnd_attr_backup (layout);
 
   scr_wnd_move_caret (layout, __edit->position.x, __edit->position.y);
-  scr_wnd_font (layout, *__edit->font);
+
+  if (__edit->shaded)
+    {
+      scr_wnd_font (layout, *__edit->shaded_font);
+    }
+  else
+    {
+      scr_wnd_font (layout, *__edit->font);
+    }
 
   /* Calculate length of text which has to be printed */
   scrolled = __edit->scrolled;
@@ -89,6 +97,11 @@ edit_drawer (w_edit_t *__edit)
     }
 
   /* Print spaces to make edit needed width */
+
+  /* Need this to make caret be drawing with */
+  /* default text font */
+  scr_wnd_font (layout, *__edit->font);
+
   for (i = printed_width; i < __edit->position.width; i++)
     {
       scr_wnd_putch (layout, ' ');
@@ -244,11 +257,17 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
       /* Navigation */
     case KEY_LEFT:
       if (__edit->caret_pos > 0)
-        --__edit->caret_pos;
+        {
+          --__edit->caret_pos;
+        }
+      __edit->shaded = FALSE;
       break;
     case KEY_RIGHT:
       if (__edit->caret_pos < wcslen (__edit->text.data))
-        ++__edit->caret_pos;
+        {
+          ++__edit->caret_pos;
+        }
+      __edit->shaded = FALSE;
       break;
     case KEY_HOME:
       /*
@@ -262,6 +281,7 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
           __edit->caret_pos--;
           edit_validate_scrolling (__edit);
         }
+      __edit->shaded = FALSE;
       break;
     case KEY_END:
       while (__edit->caret_pos < wcslen (__edit->text.data))
@@ -269,6 +289,7 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
           __edit->caret_pos++;
           edit_validate_scrolling (__edit);
         }
+      __edit->shaded = FALSE;
       break;
 
     case KEY_DELETE:
@@ -329,6 +350,8 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
 
         /* Set new null-terminator */
         __edit->text.data[n - 1] = 0;
+
+        __edit->shaded = FALSE;
       }
 
       break;
@@ -351,7 +374,22 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
           /* Character is printable, so we have to handle this */
           /* callback ourselves */
 
-          size_t i, len = wcslen (__edit->text.data);
+          size_t i, len;
+
+          /* Is edit in shaded state? */
+          if (__edit->shaded)
+            {
+              /* If edit is in shaded state, we should clear text */
+              /* and move caret to the beginning. */
+              /* We should also reset count of scrolled characters */
+              /* and finaly, exit edit from shaded state. */
+
+              wcscpy (__edit->text.data, L"");
+              __edit->caret_pos = __edit->scrolled = 0;
+              __edit->shaded = FALSE;
+            }
+
+          len = wcslen (__edit->text.data);
 
           /* Synchronize buffer to make sure that there is */
           /* enough memory to append character */
@@ -416,6 +454,7 @@ widget_create_edit (w_container_t *__parent,
   WIDGET_CALLBACK (res, blured) = (widget_action) edit_blured;
 
   res->font = &FONT (CID_BLACK, CID_CYAN);
+  res->shaded_font = &FONT (CID_BLUE, CID_CYAN);
 
   w_edit_set_text (res, L"");
 
@@ -480,9 +519,11 @@ w_edit_get_text (w_edit_t* __edit)
  *
  * @param __edit - for which edit fonts are to be set
  * @param __font - font of default text in normal state
+ * @param __shaded_font - font of text when edit is in shaded state
  */
 void
-w_edit_set_fonts (w_edit_t *__edit, scr_font_t *__font)
+w_edit_set_fonts (w_edit_t *__edit, scr_font_t *__font,
+                  scr_font_t *__shaded_font)
 {
   if (!__edit)
     {
@@ -490,6 +531,20 @@ w_edit_set_fonts (w_edit_t *__edit, scr_font_t *__font)
     }
 
   WIDGET_SAFE_SET_FONT (__edit, font, __font);
+  WIDGET_SAFE_SET_FONT (__edit, shaded_font, __shaded_font);
 
+  widget_redraw (WIDGET (__edit));
+}
+
+/**
+ * Set shaded state of specified edit widget
+ *
+ * @param __edit - edit widget where shade state will be changed
+ * @param __shaded - new state of shading
+ */
+void
+w_edit_set_shaded (w_edit_t *__edit, BOOL __shaded)
+{
+  __edit->shaded = __shaded;
   widget_redraw (WIDGET (__edit));
 }

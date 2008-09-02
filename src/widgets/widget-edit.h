@@ -42,6 +42,12 @@ typedef struct
 
   /* Font for normal style */
   scr_font_t *font;
+
+  /* Font of shaded style */
+  scr_font_t *shaded_font;
+
+  /* Is edit in shaded state? */
+  BOOL shaded;
 } w_edit_t;
 
 /********
@@ -58,6 +64,10 @@ wchar_t*
 w_edit_get_text (w_edit_t* __edit);
 
 void
-w_edit_set_fonts (w_edit_t *__edit, scr_font_t *__font);
+w_edit_set_fonts (w_edit_t *__edit, scr_font_t *__font,
+                  scr_font_t *__shaded_font);
+
+void
+w_edit_set_shaded (w_edit_t *__edit, BOOL __shaded);
 
 #endif

@@ -551,6 +551,7 @@ action_copy_show_dialog (BOOL __move, const file_panel_item_t **__src_list,
   /* Create 'To' field */
   to = widget_create_edit (cnt, 1, 2, wnd->position.width - 2);
   w_edit_set_text (to, *__dst);
+  w_edit_set_shaded (to, TRUE);
 
   /* Create buttons */
   dummy = widget_shortcut_length (_(L"_Ok"));
