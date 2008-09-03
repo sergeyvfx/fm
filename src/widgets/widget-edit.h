@@ -58,7 +58,7 @@ w_edit_t*
 widget_create_edit (w_container_t *__parent, int __x, int __y, int __width);
 
 void
-w_edit_set_text (w_edit_t* __exit, wchar_t *__text);
+w_edit_set_text (w_edit_t* __exit, const wchar_t *__text);
 
 wchar_t*
 w_edit_get_text (w_edit_t* __edit);

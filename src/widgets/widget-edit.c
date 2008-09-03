@@ -470,7 +470,7 @@ widget_create_edit (w_container_t *__parent,
  * @param __text - text to be set
  */
 void
-w_edit_set_text (w_edit_t* __edit, wchar_t *__text)
+w_edit_set_text (w_edit_t* __edit, const wchar_t *__text)
 {
   if (!__edit || !__text)
     {

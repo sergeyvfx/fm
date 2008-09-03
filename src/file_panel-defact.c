@@ -1194,6 +1194,9 @@ fpd_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
     case KEY_F (8):
       action_delete (__panel);
       break;
+    case 's':
+      action_symlink (__panel);
+      break;
     /*
      *
      ********/

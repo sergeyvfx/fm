@@ -113,6 +113,10 @@ action_mkdir (file_panel_t *__panel);
 int
 action_delete (file_panel_t *__panel);
 
+/* Make a symlink to file from specified panel */
+int
+action_symlink (file_panel_t *__panel);
+
 /* Chooses file panel for action */
 file_panel_t*
 action_choose_file_panel (const wchar_t *__caption,

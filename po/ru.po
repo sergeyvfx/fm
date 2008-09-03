@@ -162,6 +162,23 @@ msgstr "Невозможно удалить файл \"%ls\":\n%ls"
 msgid "Cannot unlink directory \"%ls\":\n%ls"
 msgstr "Невозможно удалить директорию \"%ls\":\n%ls"
 
+msgid "Smymbolic link may be made at least with two file panels"
+msgstr "Для создания символических ссылок необходимо\n"
+"по меньшей мере две файловые панели"
+
+msgid "Symbolic link"
+msgstr "Символическая ссылка"
+
+msgid "Existing filename (filename symlink will point to):"
+msgstr "Имя существующего файла (ссылка будет указывать на него):"
+
+msgid "Symbolic link filename:"
+msgstr "Имя файла символической ссылки:"
+
+msgid "Cannot create symbolic link \"%ls\" with content \"%ls\":\n%ls"
+msgstr "Невозможно создать символическую ссылку \"%ls\""
+" с содержимым \"%ls\":\n%ls"
+
 ##
 # File actions
 

@@ -41,6 +41,7 @@ SOURCES = \
 	action-delete-iface.c \
 	action-move.c \
 	action-mkdir.c \
+	action-symlink.c \
 	shared.c
 
 OBJECTS = ${SOURCES:.c=.o}
