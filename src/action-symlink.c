@@ -95,7 +95,12 @@ show_dialog (const wchar_t **__content, const wchar_t **__fn)
 
   widget_destroy (WIDGET (wnd));
 
-  return ACTION_OK;
+  if (res == MR_OK)
+    {
+      return ACTION_OK;
+    }
+
+  return ACTION_ABORT;
 }
 
 /**
