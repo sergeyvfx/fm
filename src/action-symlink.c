@@ -14,8 +14,10 @@
 #include "i18n.h"
 #include "messages.h"
 #include "dir.h"
+#include "i18n.h"
 
 #include <widgets/widget.h>
+#include <vfs/vfs.h>
 
 #define CANCEL_TO_ABORT(_a) \
   ((_a) == MR_CANCEL ? ACTION_ABORT : (_a))
@@ -44,7 +46,7 @@ error (const wchar_t *__text, ...)
  * @return zero on success, non-zero otherwise
  */
 static int
-show_dialog (const wchar_t **__content, const wchar_t **__fn)
+show_dialog (wchar_t **__content, wchar_t **__fn)
 {
   int res, left, dummy;
   w_window_t *wnd;
@@ -117,11 +119,11 @@ do_make_symlink (const wchar_t *__content, const wchar_t *__filename)
   int res;
 
   ACTION_REPEAT (res = vfs_symlink (__content, __filename),
-                error,
-                return CANCEL_TO_ABORT (__dlg_res_),
-                _(L"Cannot create symbolic link \"%ls\" "
-                  L"with content \"%ls\":\n%ls"),
-                __filename, __content, vfs_get_error (res));
+                 error,
+                 return CANCEL_TO_ABORT (__dlg_res_),
+                 _(L"Cannot create symbolic link \"%ls\" "
+                   L"with content \"%ls\":\n%ls"),
+                 __filename, __content, vfs_get_error (res));
 
   return ACTION_OK;
 }
@@ -143,9 +145,9 @@ make_symlink (const wchar_t *__item, const wchar_t *__base_dir,
 
   /* Get default content and filename of link */
   content = wcdircatsubdir (__base_dir, __item);
-  filename = wcdircatsubdir (__base_dir, __item);
+  filename = wcdircatsubdir (__oppsite_dir, __item);
 
-  res = show_dialog ((const wchar_t**)&content, (const wchar_t**)&filename);
+  res = show_dialog (&content, &filename);
 
   if (res)
     {
@@ -154,6 +156,11 @@ make_symlink (const wchar_t *__item, const wchar_t *__base_dir,
       free (filename);
       return res;
     }
+
+  /*
+   * TODO: Add appending base directory if filename is
+   *       relative here.
+   */
 
   res = do_make_symlink (content, filename);
 

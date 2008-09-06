@@ -365,6 +365,18 @@ msgstr "Удалить эти директории (%lu шт.)?"
 msgid "Delete %lu files/directories?"
 msgstr "Удалить эти файлы и директории (%lu шт.)?"
 
+msgid "\"%ls\" is not a symbolic link"
+msgstr "\"%ls\" не является символической ссылкой"
+
+msgid "Edit symlink"
+msgstr "Редактирование символической ссылки"
+
+msgid "Symlink \"%ls\" pints to:"
+msgstr "Символическая ссылка \"%ls\" указывает на:"
+
+msgid "Cannot unlink symbolic link \"%ls\":\n%ls"
+msgstr "Невозможно удалить символическую ссылку: \"%ls\":\n%ls"
+
 ##
 # POSIX errors
 

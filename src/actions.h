@@ -117,6 +117,10 @@ action_delete (file_panel_t *__panel);
 int
 action_symlink (file_panel_t *__panel);
 
+/* Edit content of existing symbolic link */
+int
+action_editsymlink (file_panel_t *__panel);
+
 /* Chooses file panel for action */
 file_panel_t*
 action_choose_file_panel (const wchar_t *__caption,

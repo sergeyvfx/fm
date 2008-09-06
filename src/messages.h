@@ -19,6 +19,7 @@
 BEGIN_HEADER
 
 #include <wchar.h>
+#include "i18n.h"
 
 /********
  * Constants
