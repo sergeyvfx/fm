@@ -95,7 +95,8 @@ hook_destroy (void *__h)
  *
  * @param __name is a hook's name
  * @param __data is a internal data, the parameters of handles
- * @return 0 if successful, otherwise -1
+ * @return HOOK_SUCCESS if successful, HOOK_BREAK if hook callback has stopped
+ * call process, and HOOK_FAILURE otherwise
  */
 int
 hook_call (const wchar_t *__name, void *__data)
@@ -134,7 +135,7 @@ hook_call (const wchar_t *__name, void *__data)
  * @param __name is a hook's name
  * @param __callback is the function-handler
  * @param __priority is the priority of the function-handler
- * @return 0 if successful, otherwise -1
+ * @return HOOK_SUCCESS if successful, otherwise HOOK_FAILURE
  */
 int
 hook_register (const wchar_t *__name, hook_callback_proc __callback,
@@ -142,14 +143,14 @@ hook_register (const wchar_t *__name, hook_callback_proc __callback,
 {
   iterator_t *iter;
 
-  if (!hooks)
+  if (hooks == NULL)
     {
       hooks = deque_create ();
     }
 
-  if (!__name)
+  if (__name == NULL)
     {
-      return -1;
+      return HOOK_FAILURE;
     }
 
   hook_action_t *new_action =
@@ -161,8 +162,7 @@ hook_register (const wchar_t *__name, hook_callback_proc __callback,
   iter = deque_find (hooks, __name, hook_name_cmp);
   if (iter)
     {
-      deque_sorted_insert (
-                           HOOK (iter->data)->actions_list,
+      deque_sorted_insert (HOOK (iter->data)->actions_list,
                            new_action, hook_action_cmp);
     }
   else
@@ -175,7 +175,7 @@ hook_register (const wchar_t *__name, hook_callback_proc __callback,
       deque_push_back (hooks, new_hook);
     }
 
-  return 0;
+  return HOOK_SUCCESS;
 }
 
 /**
@@ -183,56 +183,53 @@ hook_register (const wchar_t *__name, hook_callback_proc __callback,
  *
  * @param __name is a hook's name
  * @param __callback is the function-handler
- * @return 0 if successful, otherwise -1
+ * @return HOOK_SUCCESS if successful, otherwise HOOK_FAILURE
  */
 int
 hook_unhook (const wchar_t *__name, hook_callback_proc __callback)
 {
   iterator_t *iter;
-  if (!__name || !__callback)
+  if (__name == NULL|| __callback == NULL)
     {
-      return -1;
+      return HOOK_FAILURE;
     }
 
   iter = deque_find (hooks, __name, hook_name_cmp);
   if (iter)
     {
-      iterator_t *iter2 =
-              deque_find (
-                          HOOK (iter->data)->actions_list,
-                          __callback, hook_callback_cmp);
-
+      iterator_t *iter2 = deque_find (HOOK (iter->data)->actions_list,
+                                      __callback, hook_callback_cmp);
       if (iter)
         {
           deque_remove (HOOK (iter->data)->actions_list, iter2, NULL);
         }
       else
         {
-          return -1;
+          return HOOK_FAILURE;
         }
 
     }
   else
     {
-      return -1;
+      return HOOK_FAILURE;
     }
 
-  return 0;
+  return HOOK_SUCCESS;
 }
 
 /**
  * Remove the hook
  *
  * @param __name is a hook's name
- * @return 0 if successful, otherwise -1
+ * @return HOOK_SUCCESS if successful, otherwise HOOK_FAILURE
  */
 int
 hook_unregister (const wchar_t *__name)
 {
   iterator_t *iter;
-  if (!__name)
+  if (__name == NULL)
     {
-      return -1;
+      return HOOK_FAILURE;
     }
 
   iter = deque_find (hooks, __name, hook_name_cmp);
@@ -242,25 +239,25 @@ hook_unregister (const wchar_t *__name)
     }
   else
     {
-      return -1;
+      return HOOK_FAILURE;
     }
 
-  return 0;
+  return HOOK_SUCCESS;
 }
 
 /**
  * Remove all the hooks
  *
- * @return 0 if successful, otherwise -1
+ * @return HOOK_SUCCESS if successful, otherwise HOOK_FAILURE
  */
 int
 hooks_destroy (void)
 {
-  if (!hooks)
+  if (hooks == NULL)
     {
-      return -1;
+      return HOOK_FAILURE;
     }
 
   deque_destroy (hooks, hook_destroy);
-  return 0;
+  return HOOK_SUCCESS;
 }

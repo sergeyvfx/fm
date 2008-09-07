@@ -10,8 +10,8 @@
  * See the file COPYING.
  */
 
-#ifndef _hook_h_
-#define _hook_h_
+#ifndef _HOOK_H_
+#define _HOOK_H_
 
 #include "smartinclude.h"
 
