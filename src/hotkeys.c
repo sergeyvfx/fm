@@ -12,25 +12,24 @@
 
 #include "hotkeys.h"
 #include "screen.h"
+#include "deque.h"
 
 /*******
  *
  */
 
 /* Length of maximum sequence for hotkey */
-#define MAX_SEQUENCE_LENGTH  3
+#define MAX_SEQUENCE_LENGTH  16
 
 /* Queue of incoming characters */
 static wchar_t queue[MAX_SEQUENCE_LENGTH] = {0};
 static short queue_ptr = 0;
 
-/* List of all registered hot-keys */
-
 /*
  * TODO: We'd better use some type of hashing to make finding a hotkey faster.
  */
 
-static struct
+typedef struct
 {
   wchar_t *sequence;
 
@@ -38,9 +37,22 @@ static struct
   short length;
 
   hotkey_callback callback;
-} *hotkeys = 0;
+} hotkey_t;
 
-static short hotkey_count = 0;
+struct hotkey_context
+{
+  /* List of hotkeys' descriptors */
+  hotkey_t *hotkeys;
+
+  /* Count of hotkeys */
+  int count;
+
+  /* Different flags of context */
+  unsigned int flags;
+};
+
+/* Stack of contexts */
+static deque_t *contexts = NULL;
 
 /********
  *
@@ -79,18 +91,28 @@ check_iterator (const wchar_t *__sequence, short __len)
 static short
 check (void)
 {
-  short i;
+  int i;
+  hotkey_context_t *context;
 
-  /* Go through all registered hot-keys and check if any is in queue */
-  for (i = 0; i < hotkey_count; i++)
-    {
-      if (check_iterator (hotkeys[i].sequence, hotkeys[i].length))
-        {
-          /* Hot-key sequence is in queue. */
-          hotkeys[i].callback ();
-          return 1;
-        }
-    }
+  deque_foreach (contexts, context);
+    /* Go through all registered hot-keys and check if any is in queue */
+    for (i = 0; i < context->count; i++)
+      {
+        if (check_iterator (context->hotkeys[i].sequence,
+                            context->hotkeys[i].length))
+          {
+            /* Hot-key sequence is in queue. */
+            context->hotkeys[i].callback ();
+            return 1;
+          }
+      }
+
+    if (context->flags & HKCF_OPAQUE)
+      {
+        /* We shouldn't ovweview parent contexts */
+        deque_foreach_break;
+      }
+  deque_foreach_done
 
   return 0;
 }
@@ -205,31 +227,138 @@ parse_sequence (const wchar_t *__sequence, wchar_t *__res)
  */
 
 /**
- * Register a hotkey
+ * Initialize hotkeys' stuff
  *
+ * @return zero on success, non-zero otherwise
+ */
+int
+hotkeys_init (void)
+{
+  /* Create stack of contexts */
+  contexts = deque_create ();
+
+  /* Create global context */
+  hotkey_create_context (HKCF_ACTIVE);
+
+  return 0;
+}
+
+/**
+ * Uninitialize hotkeys' stuff
+ */
+void
+hotkeys_done (void)
+{
+  /* Destroy contexts */
+  deque_destroy (contexts, (destroyer)hotkey_destroy_context);
+}
+
+/**
+ * Create context of hotkeys
+ *
+ * @param __flags - flags of context
+ * @return descriptor of new context
+ */
+hotkey_context_t*
+hotkey_create_context (unsigned int __flags)
+{
+  hotkey_context_t *result;
+
+  MALLOC_ZERO (result, sizeof (hotkey_context_t));
+
+  result->flags = __flags;
+
+  if (__flags & HKCF_ACTIVE)
+    {
+      /* If context is active, we should */
+      /* push it into stack */
+      hotkey_push_context (result);
+    }
+
+  return result;
+}
+
+/**
+ * Destroy context of hotkeys
+ *
+ * @param __context - context to be destroyed
+ */
+void
+hotkey_destroy_context (hotkey_context_t *__context)
+{
+  int i;
+
+  if (!__context)
+    {
+      return;
+    }
+
+  /* Destroy list of hotkeys */
+  for (i = 0; i < __context->count; ++i)
+    {
+      free (__context->hotkeys[i].sequence);
+    }
+  free (__context->hotkeys);
+
+  /* Free momory used by context descriptor */
+  free (__context);
+}
+
+/**
+ * Push hotkeys context to stack of contexts
+ *
+ * @param __context - context to push
+ */
+void
+hotkey_push_context (hotkey_context_t *__context)
+{
+  if (!__context)
+    {
+      return;
+    }
+
+  deque_push_front (contexts, __context);
+}
+
+/**
+ * Register a hot-key at specified context
+ *
+ * @param __context - descriptor of context where hotkey will be registered
  * @param __sequence - hot-key sequence
  * @param __callback - callback to be called when hot-key sequence is pressed
- * @return zero on success
+ * @return zero on success, non-zero otherwise
  */
-short
-hotkey_register (const wchar_t *__sequence, hotkey_callback __callback)
+int
+hotkey_register_at_context (hotkey_context_t *__context,
+                            const wchar_t *__sequence,
+                            hotkey_callback __callback)
 {
   wchar_t dummy[MAX_SEQUENCE_LENGTH];
   short len;
 
+  if (!__context || !__sequence)
+    {
+      return -1;
+    }
+
   /* Prepare sequence */
   if ((len = parse_sequence (__sequence, dummy)) > 0)
     {
+      hotkey_t *hotkey;
+
       /* Sequence is good, so we can allocate new hot-key descriptor */
       /* and fill it in. */
-      hotkeys = realloc (hotkeys, sizeof (*hotkeys)*(hotkey_count + 1));
+      __context->hotkeys = realloc (__context->hotkeys,
+                                    sizeof (hotkey_t) *
+                                      (__context->count + 1));
 
-      hotkeys[hotkey_count].sequence = malloc (sizeof (wchar_t) * len);
-      memcpy (hotkeys[hotkey_count].sequence, dummy, len * sizeof (wchar_t));
-      hotkeys[hotkey_count].length = len;
-      hotkeys[hotkey_count].callback = __callback;
+      hotkey = &__context->hotkeys[__context->count];
+      hotkey->sequence = malloc (sizeof (wchar_t) * len);
+      memcpy (hotkey->sequence, dummy, len * sizeof (wchar_t));
+      hotkey->length = len;
+      hotkey->callback = __callback;
 
-      hotkey_count++;
+      ++__context->count;
       return 0;
     }
 
@@ -237,15 +366,44 @@ hotkey_register (const wchar_t *__sequence, hotkey_callback __callback)
 }
 
 /**
- * Release a hot-key.
+ * Register a hotkey at context from head of stack
  *
+ * @param __sequence - hot-key sequence
+ * @param __callback - callback to be called when hot-key sequence is pressed
+ * @return zero on success, non-zero otherwise
+ */
+int
+hotkey_register (const wchar_t *__sequence, hotkey_callback __callback)
+{
+  hotkey_context_t *context;
+
+  if (!contexts)
+    {
+      return -1;
+    }
+
+  context = (hotkey_context_t*)deque_data (deque_head (contexts));
+  return hotkey_register_at_context (context, __sequence, __callback);
+}
+
+/**
+ * Release registered hot-key from specified context
+ *
+ * @param __context - descriptor of context from where hotkey
+ * will be unregistered
  * @param __sequence - hot-key sequence to realise
  */
 void
-hotkey_release (const wchar_t *__sequence)
+hotkey_release_from_context (hotkey_context_t *__context,
+                             const wchar_t *__sequence)
 {
   wchar_t dummy[MAX_SEQUENCE_LENGTH];
   short len;
+
+  if (!__context || !__sequence)
+    {
+      return;
+    }
 
   if ((len = parse_sequence (__sequence, dummy)) > 0)
     {
@@ -254,13 +412,13 @@ hotkey_release (const wchar_t *__sequence)
 
       /* Go through all registered hot-keys and */
       /* compare with sequence to realise. */
-      for (i = 0; i < hotkey_count; i++)
+      for (i = 0; i < __context->count; i++)
         {
           /* Check is sequences are equal */
           eq = TRUE;
           for (j = 0; j < len; j++)
             {
-              if (hotkeys[i].sequence[j] != dummy[j])
+              if (__context->hotkeys[i].sequence[j] != dummy[j])
                 {
                   eq = FALSE;
                   break;
@@ -270,21 +428,42 @@ hotkey_release (const wchar_t *__sequence)
           if (eq)
             {
               /* Sequences are equal, so just destroy it. */
-              free (hotkeys[i].sequence);
+              free (__context->hotkeys[i].sequence);
 
               /* Shift registered hotkeys */
-              for (j = i; j < hotkey_count; j++)
+              for (j = i; j < __context->count; j++)
                 {
-                  hotkeys[i] = hotkeys[i + 1];
+                  __context->hotkeys[i] = __context->hotkeys[i + 1];
                 }
 
-              hotkey_count--;
-              hotkeys = realloc (hotkeys, hotkey_count * sizeof (*hotkeys));
+              --__context->count;
+              __context->hotkeys = realloc (__context->hotkeys,
+                                            __context->count *
+                                              sizeof (hotkey_t));
 
               break;
             }
         }
     }
+}
+
+/**
+ * Release a hot-key from context at head of stack
+ *
+ * @param __sequence - hot-key sequence to realise
+ */
+void
+hotkey_release (const wchar_t *__sequence)
+{
+  hotkey_context_t *context;
+
+  if (!contexts)
+    {
+      return;
+    }
+
+  context = (hotkey_context_t*)deque_data (deque_head (contexts));
+  hotkey_release_from_context (context, __sequence);
 }
 
 /**

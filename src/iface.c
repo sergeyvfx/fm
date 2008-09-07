@@ -198,6 +198,9 @@ iface_init (void)
   /* Create all widgets */
   _INIT_ITERATOR (create_widgets);
 
+  /* Initialize hotkeys' stuff */
+  _INIT_ITERATOR (hotkeys_init);
+
   file_panels_init (WIDGET (w_box_item (main_box, 1)));
 
   /* Create menu */
@@ -221,7 +224,9 @@ void
 iface_done (void)
 {
   file_panels_done ();
+  hotkeys_done ();
   widgets_done ();
+  vfs_done ();
 
   /* We don't need screen now! */
   screen_done ();

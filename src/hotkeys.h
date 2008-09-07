@@ -19,13 +19,65 @@ BEGIN_HEADER
 
 #include <wchar.h>
 
+/********
+ *
+ */
+
+/* Context will be pushed to stack of contexts */
+#define HKCF_ACTIVE 0x0001
+
+/* Context is 'opaque'. it means that while registered hotkey is searching */
+/* it will be the last reviewing context */
+#define HKCF_OPAQUE 0x0002
+
+/********
+ * Type definitions
+ */
 typedef void (*hotkey_callback) (void);
 
-/* Register a hot-key */
-short
+struct hotkey_context;
+typedef struct hotkey_context hotkey_context_t;
+
+/********
+ *
+ */
+
+/* Initialize hotkeys' stuff */
+int
+hotkeys_init (void);
+
+/* Uninitialize hotkeys' stuff */
+void
+hotkeys_done (void);
+
+/* Create context of hotkeys */
+hotkey_context_t*
+hotkey_create_context (unsigned int __flags);
+
+/* Destroy context of hotkeys */
+void
+hotkey_destroy_context (hotkey_context_t *__context);
+
+/* Push hotkeys context to stack of contexts */
+void
+hotkey_push_context (hotkey_context_t *__context);
+
+/* Register a hot-key at specified context */
+int
+hotkey_register_at_context (hotkey_context_t *__context,
+                            const wchar_t *__sequence,
+                            hotkey_callback __callback);
+
+/* Register a hotkey at context from head of stack */
+int
 hotkey_register (const wchar_t *__sequence, hotkey_callback __callback);
 
-/* Release registered hot-key */
+/* Release registered hot-key from specified context */
+void
+hotkey_release_from_context (hotkey_context_t *__context,
+                             const wchar_t *__sequence);
+
+/* Release registered hot-key from context at head of stack */
 void
 hotkey_release (const wchar_t *__sequence);
 
