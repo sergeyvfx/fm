@@ -1077,7 +1077,7 @@ panel_focused (file_panel_widget_t *__widget)
       return FALSE;
     }
 
-  hotkey_push_context (data->hotkey_context);
+  hotkey_set_current_context (data->hotkey_context);
 
   return data->s_widget_callbacks.focused (__widget);
 }
@@ -1109,7 +1109,7 @@ panel_blured (file_panel_widget_t *__widget)
       return FALSE;
     }
 
-  hotkey_pop_context (FALSE);
+  hotkey_drop_context (data->hotkey_context, FALSE);
 
   return data->s_widget_callbacks.blured (__widget);
 }
@@ -1228,6 +1228,7 @@ fpd_destroy (file_panel_t *__panel)
 
   data = __panel->user_data;
 
+  hotkey_drop_context (data->hotkey_context, FALSE);
   hotkey_destroy_context (data->hotkey_context);
 
   free (data);

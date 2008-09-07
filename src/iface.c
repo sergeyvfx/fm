@@ -204,6 +204,14 @@ iface_init (void)
   /* Initialize hotkeys' stuff */
   _INIT_ITERATOR (hotkeys_init);
 
+  /*
+   * NOTE: We should initialize hotkeys here, because this hotkeys
+   *       should be implemented in base context.
+   *       But after file panels are initialized, new hotkey context
+   *       may be present.
+   */
+  hotkey_register (L"F10", exit_hotkey);
+
   file_panels_init (WIDGET (w_box_item (main_box, 1)));
 
   /* Create menu */
@@ -214,8 +222,6 @@ iface_init (void)
    *        menu has been created.
    */
   widget_redraw (WIDGET (w_box_item (main_box, 1)));
-
-  hotkey_register (L"F10", exit_hotkey);
 
   return 0;
 }

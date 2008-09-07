@@ -34,6 +34,7 @@
 /* Queue of incoming characters */
 static wchar_t queue[MAX_SEQUENCE_LENGTH] = {0};
 static short queue_ptr = 0;
+hotkey_context_t *hotkey_root_context;
 
 /*
  * TODO: We'd better use some type of hashing to make finding a hotkey faster.
@@ -251,7 +252,7 @@ hotkeys_init (void)
   contexts = deque_create ();
 
   /* Create global context */
-  hotkey_create_context (HKCF_ACTIVE);
+  hotkey_root_context = hotkey_create_context (HKCF_ACTIVE);
 
   return 0;
 }
@@ -353,6 +354,46 @@ hotkey_pop_context (BOOL __destroy)
     }
 
   return NULL;
+}
+
+/**
+ * Drop specified by descriptor context from stack
+ *
+ * @param __context - descriptor of context to drop
+ * @param __destroy - destroy after dropping
+ */
+void
+hotkey_drop_context (hotkey_context_t *__context, BOOL __destroy)
+{
+  hotkey_context_t *context;
+  if (!__context)
+    {
+      return;
+    }
+
+  deque_foreach (contexts, context)
+    if (context == __context)
+      {
+        deque_remove (contexts, deque_foreach_iterator,
+                      __destroy ? (destroyer)hotkey_destroy_context : 0);
+        deque_foreach_break;
+      }
+  deque_foreach_done
+}
+
+/**
+ * Set current context (context at the head of stack)
+ *
+ * @param __context - new current context descriptor
+ */
+void
+hotkey_set_current_context (hotkey_context_t *__context)
+{
+  /* We should enshure that there is no */
+  /* such context in stack */
+  hotkey_drop_context (__context, FALSE);
+
+  hotkey_push_context (__context);
 }
 
 /**

@@ -42,6 +42,12 @@ typedef struct hotkey_context hotkey_context_t;
  *
  */
 
+extern hotkey_context_t *hotkey_root_context;
+
+/********
+ *
+ */
+
 /* Initialize hotkeys' stuff */
 int
 hotkeys_init (void);
@@ -65,6 +71,14 @@ hotkey_push_context (hotkey_context_t *__context);
 /* Pop hotkeys context from stack of contexts */
 hotkey_context_t*
 hotkey_pop_context (BOOL __destroy);
+
+/* Drop context from stack */
+void
+hotkey_drop_context (hotkey_context_t *__context, BOOL __destroy);
+
+/* Set current context (context at the head of stack) */
+void
+hotkey_set_current_context (hotkey_context_t *__context);
 
 /* Register a hot-key at specified context */
 int

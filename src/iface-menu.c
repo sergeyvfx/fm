@@ -128,7 +128,8 @@ iface_create_menu (void)
   fill_menu_items ();
 
   /* Register callback to show the menu */
-  hotkey_register (L"F9", menu_hotkey_callback);
+  hotkey_register_at_context (hotkey_root_context,  L"F9",
+                              menu_hotkey_callback);
 
   return 0;
 }
