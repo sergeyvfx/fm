@@ -33,7 +33,7 @@ BEGIN_HEADER
 /********
  * Type definitions
  */
-typedef void (*hotkey_callback) (void);
+typedef int (*hotkey_callback) (void *__reg_data);
 
 struct hotkey_context;
 typedef struct hotkey_context hotkey_context_t;
@@ -62,15 +62,31 @@ hotkey_destroy_context (hotkey_context_t *__context);
 void
 hotkey_push_context (hotkey_context_t *__context);
 
+/* Pop hotkeys context from stack of contexts */
+hotkey_context_t*
+hotkey_pop_context (BOOL __destroy);
+
 /* Register a hot-key at specified context */
 int
 hotkey_register_at_context (hotkey_context_t *__context,
                             const wchar_t *__sequence,
                             hotkey_callback __callback);
 
+/* Register a hot-key at specified context */
+int
+hotkey_register_at_context_full (hotkey_context_t *__context,
+                                 const wchar_t *__sequence,
+                                 hotkey_callback __callback,
+                                 void *__reg_data);
+
 /* Register a hotkey at context from head of stack */
 int
 hotkey_register (const wchar_t *__sequence, hotkey_callback __callback);
+
+/* Register a hotkey at context from head of stack */
+int
+hotkey_register_full (const wchar_t *__sequence, hotkey_callback __callback,
+                      void *__reg_data);
 
 /* Release registered hot-key from specified context */
 void

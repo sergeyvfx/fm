@@ -91,11 +91,14 @@ sig_winch (int sig ATTR_UNUSED)
 
 /**
  * Handler for global hotkey for action Exit
+ *
+ * @return zero on success, non-zero otherwise
  */
-static void
-exit_hotkey (void)
+static int
+exit_hotkey (void *__reg_data ATTR_UNUSED)
 {
   iface_act_exit ();
+  return 0;
 }
 
 /**

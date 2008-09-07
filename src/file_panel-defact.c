@@ -58,6 +58,10 @@
       return _ch; \
     }
 
+#define _REGISTER_HOTKEY(_sequence, _callback) \
+  hotkey_register_at_context_full (data->hotkey_context, _sequence, \
+                                   (hotkey_callback)_callback, __panel);
+
 /********
  *
  */
@@ -1046,6 +1050,83 @@ open_action (file_panel_t *__panel)
   return 0;
 }
 
+/**
+ * Handler of `focused` callback (system-based)
+ *
+ * @param __widget - widget which catched this signal
+ * @return zero if callback hasn't handled callback
+ */
+static int
+panel_focused (file_panel_widget_t *__widget)
+{
+  file_panel_t *panel;
+  fpd_data_t *data;
+
+  if (!__widget)
+    {
+      return FALSE;
+    }
+
+  if (!(panel = WIDGET_USER_DATA (__widget)))
+    {
+      return FALSE;
+    }
+
+  if (!(data = panel->user_data))
+    {
+      return FALSE;
+    }
+
+  hotkey_push_context (data->hotkey_context);
+
+  return data->s_widget_callbacks.focused (__widget);
+}
+
+/**
+ * Handler of `blured` callback
+ *
+ * @param __widget - widget which catched this signal
+ * @return zero if callback hasn't handled callback
+ */
+static int
+panel_blured (file_panel_widget_t *__widget)
+{
+  file_panel_t *panel;
+  fpd_data_t *data;
+
+  if (!__widget)
+    {
+      return FALSE;
+    }
+
+  if (!(panel = WIDGET_USER_DATA (__widget)))
+    {
+      return FALSE;
+    }
+
+  if (!(data = panel->user_data))
+    {
+      return FALSE;
+    }
+
+  hotkey_pop_context (FALSE);
+
+  return data->s_widget_callbacks.blured (__widget);
+}
+
+/**
+ * Handler for hotkey 'change listing mode'
+ *
+ * @param __panel - panel, associated with hoykey
+ * @return zero on success, non-zero otherwise
+ */
+static int
+hotkey_listing (file_panel_t *__panel)
+{
+  file_panel_set_listing_mode (__panel, (__panel->listing_mode + 1) % 3);
+  return 0;
+}
+
 /********
  *
  */
@@ -1084,6 +1165,8 @@ fpd_done (void)
 int
 fpd_create (file_panel_t *__panel)
 {
+  fpd_data_t * data;
+
   if (!__panel)
     {
       return -1;
@@ -1091,6 +1174,38 @@ fpd_create (file_panel_t *__panel)
 
   MALLOC_ZERO (__panel->user_data, sizeof (fpd_data_t));
   set_default_userdata (__panel);
+  data = __panel->user_data;
+
+  /* Save previous widget's callbacks */
+  data->s_widget_callbacks.focused =
+          WIDGET_CALLBACK (__panel->widget, focused);
+  data->s_widget_callbacks.blured =
+          WIDGET_CALLBACK (__panel->widget, blured);
+
+  /* Set our own widget's callbacks */
+  WIDGET_CALLBACK (__panel->widget, focused) = (widget_action) panel_focused;
+  WIDGET_CALLBACK (__panel->widget, blured) = (widget_action) panel_blured;
+
+  /* Create hotkeys context and register hotkeys */
+  data->hotkey_context = hotkey_create_context (0);
+
+  /*
+   * Small hack: action_* is not a native hotkey's callbacks,
+   *             they simply have the same format as hotkey_callback
+   */
+
+  /*
+   * TODO: Replace this static string with something from config file
+   */
+
+  _REGISTER_HOTKEY (L"C-r",     file_panel_rescan);
+  _REGISTER_HOTKEY (L"C-l",     hotkey_listing);
+  _REGISTER_HOTKEY (L"F5",      action_copy);
+  _REGISTER_HOTKEY (L"F6",      action_move);
+  _REGISTER_HOTKEY (L"F7",      action_mkdir);
+  _REGISTER_HOTKEY (L"F8",      action_delete);
+  _REGISTER_HOTKEY (L"C-x s",   action_symlink);
+  _REGISTER_HOTKEY (L"C-x C-s", action_editsymlink);
 
   return 0;
 }
@@ -1104,12 +1219,18 @@ fpd_create (file_panel_t *__panel)
 int
 fpd_destroy (file_panel_t *__panel)
 {
+  fpd_data_t * data;
+
   if (!__panel || !__panel->user_data)
     {
       return -1;
     }
 
-  free (__panel->user_data);
+  data = __panel->user_data;
+
+  hotkey_destroy_context (data->hotkey_context);
+
+  free (data);
 
   return 0;
 }
@@ -1172,38 +1293,6 @@ fpd_keydown_handler (file_panel_t *__panel, wchar_t *__ch)
 
   switch (*__ch)
     {
-
-    /********
-     * DEBUG code
-     */
-    case 'r':
-      file_panel_rescan (__panel);
-      break;
-    case 'l':
-      file_panel_set_listing_mode (__panel, (__panel->listing_mode + 1) % 3);
-      break;
-    case KEY_F (5):
-      action_copy (__panel);
-      break;
-    case KEY_F (6):
-      action_move (__panel);
-      break;
-    case KEY_F (7):
-      action_mkdir (__panel);
-      break;
-    case KEY_F (8):
-      action_delete (__panel);
-      break;
-    case 's':
-      action_symlink (__panel);
-      break;
-    case 'e':
-      action_editsymlink (__panel);
-      break;
-    /*
-     *
-     ********/
-
     case KEY_RETURN:
       open_action (__panel);
       break;
@@ -1735,10 +1824,13 @@ fpd_save_selection (file_panel_t *__panel)
       return -1;
     }
 
+  if (!(data = __panel->user_data))
+    {
+      return -1;
+    }
+
   /* Forget previous context */
   FILE_PANEL_ACTION_CALL (__panel, free_saved_selection);
-
-  data = __panel->user_data;
 
   /* Save list of selected items */
   if (__panel->items.selected_count)
@@ -1793,7 +1885,10 @@ fpd_free_saved_selection (file_panel_t *__panel)
       return -1;
     }
 
-  data = __panel->user_data;
+  if (!(data = __panel->user_data))
+    {
+      return -1;
+    }
 
   n = data->selection_context.count;
 

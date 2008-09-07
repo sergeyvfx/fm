@@ -914,7 +914,6 @@ file_panel_create (int __width, unsigned int __params)
 
   /* Fill up the actions */
   set_default_actions (res);
-  FILE_PANEL_ACTION_CALL (res, create);
 
   /* Set file panel number */
   res->number = panels_count;
@@ -947,6 +946,9 @@ file_panel_create (int __width, unsigned int __params)
           (widget_action) file_panel_focused;
 
   WIDGET_POST_INIT (res->widget);
+
+  /* Call file panel specified constructor */
+  FILE_PANEL_ACTION_CALL (res, create);
 
   set_default_params (res);
 

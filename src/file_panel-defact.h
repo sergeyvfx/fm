@@ -19,6 +19,7 @@
 BEGIN_HEADER
 
 #include "file_panel.h"
+#include "hotkeys.h"
 
 /*
  * NOTE: To reduce lengths of symbols from this module,
@@ -32,6 +33,15 @@ typedef struct
     vfs_cmp_proc comparator;
     vfs_filter_proc filter;
   } dir;
+
+  /* Saved widget's callbacks */
+  struct
+  {
+    widget_action focused;
+    widget_action blured;
+  } s_widget_callbacks;
+
+  hotkey_context_t *hotkey_context;
 
   struct
   {

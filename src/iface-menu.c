@@ -29,11 +29,14 @@ static w_menu_t *menu;
 
 /**
  * Callback for hotkey to show the menu
+ *
+ * @return zero on success, non-zero otherwise
  */
-static void
-menu_hotkey_callback (void)
+static int
+menu_hotkey_callback (void *__reg_data ATTR_UNUSED)
 {
   widget_set_focus (WIDGET (menu));
+  return 0;
 }
 
 /**

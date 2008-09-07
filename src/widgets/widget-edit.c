@@ -118,7 +118,7 @@ edit_drawer (w_edit_t *__edit)
 /**
  * Handler of `focused` callback (system-based)
  *
- * @param __edit - edit which caucghted this callback
+ * @param __edit - edit which catched this callback
  * @return zero if callback hasn't handled callback
  */
 static int
@@ -135,7 +135,7 @@ edit_focused (w_edit_t *__edit)
 /**
  * Handler of `blured` callback (system-based)
  *
- * @param __edit - edit which caucghted this callback
+ * @param __edit - edit which catched this callback
  * @return zero if callback hasn't handled callback
  */
 static int

@@ -14,12 +14,22 @@
 #include "screen.h"
 #include "deque.h"
 
+#include <stdarg.h>
+
 /*******
  *
  */
 
 /* Length of maximum sequence for hotkey */
 #define MAX_SEQUENCE_LENGTH  16
+
+#define GET_REGISTRATION(_data) \
+  { \
+    va_list args; \
+    va_start (args, __callback); \
+    (_data)=va_arg (args, void*); \
+    va_end (args); \
+  }
 
 /* Queue of incoming characters */
 static wchar_t queue[MAX_SEQUENCE_LENGTH] = {0};
@@ -35,6 +45,9 @@ typedef struct
 
   /* Length of sequence*/
   short length;
+
+  /* Data passed to hotkey registration function */
+  void *reg_data;
 
   hotkey_callback callback;
 } hotkey_t;
@@ -102,7 +115,7 @@ check (void)
                             context->hotkeys[i].length))
           {
             /* Hot-key sequence is in queue. */
-            context->hotkeys[i].callback ();
+            context->hotkeys[i].callback (context->hotkeys[i].reg_data);
             return 1;
           }
       }
@@ -321,17 +334,40 @@ hotkey_push_context (hotkey_context_t *__context)
 }
 
 /**
+ * Pop hotkeys context from stack of contexts
+ *
+ * @param __destroy - if TRUE, context will be destroyed
+ * @return pop-ed context if not destroyed, NULL otherwise
+ */
+hotkey_context_t*
+hotkey_pop_context (BOOL __destroy)
+{
+  hotkey_context_t *context;
+
+  context = deque_pop_front (contexts);
+
+  if (__destroy)
+    {
+      hotkey_destroy_context (context);
+      context = NULL;
+    }
+
+  return NULL;
+}
+
+/**
  * Register a hot-key at specified context
  *
  * @param __context - descriptor of context where hotkey will be registered
  * @param __sequence - hot-key sequence
  * @param __callback - callback to be called when hot-key sequence is pressed
+ * @param __reg_data - registration data
  * @return zero on success, non-zero otherwise
  */
 int
-hotkey_register_at_context (hotkey_context_t *__context,
-                            const wchar_t *__sequence,
-                            hotkey_callback __callback)
+hotkey_register_at_context_full (hotkey_context_t *__context,
+                                 const wchar_t *__sequence,
+                                 hotkey_callback __callback, void *__reg_data)
 {
   wchar_t dummy[MAX_SEQUENCE_LENGTH];
   short len;
@@ -356,6 +392,7 @@ hotkey_register_at_context (hotkey_context_t *__context,
       hotkey->sequence = malloc (sizeof (wchar_t) * len);
       memcpy (hotkey->sequence, dummy, len * sizeof (wchar_t));
       hotkey->length = len;
+      hotkey->reg_data = __reg_data;
       hotkey->callback = __callback;
 
       ++__context->count;
@@ -363,6 +400,47 @@ hotkey_register_at_context (hotkey_context_t *__context,
     }
 
   return -1;
+}
+
+/**
+ * Register a hot-key at specified context
+ *
+ * @param __context - descriptor of context where hotkey will be registered
+ * @param __sequence - hot-key sequence
+ * @param __callback - callback to be called when hot-key sequence is pressed
+ * @return zero on success, non-zero otherwise
+ */
+int
+hotkey_register_at_context (hotkey_context_t *__context,
+                            const wchar_t *__sequence,
+                            hotkey_callback __callback)
+{
+  return hotkey_register_at_context_full (__context, __sequence,
+                                          __callback, NULL);
+}
+
+/**
+ * Register a hotkey at context from head of stack
+ *
+ * @param __sequence - hot-key sequence
+ * @param __callback - callback to be called when hot-key sequence is pressed
+ * @param __reg_data - registration data
+ * @return zero on success, non-zero otherwise
+ */
+int
+hotkey_register_full (const wchar_t *__sequence, hotkey_callback __callback,
+                      void *__reg_data)
+{
+  hotkey_context_t *context;
+
+  if (!contexts)
+    {
+      return -1;
+    }
+
+  context = (hotkey_context_t*)deque_data (deque_head (contexts));
+  return hotkey_register_at_context_full (context, __sequence,
+                                          __callback, __reg_data);
 }
 
 /**
@@ -375,15 +453,7 @@ hotkey_register_at_context (hotkey_context_t *__context,
 int
 hotkey_register (const wchar_t *__sequence, hotkey_callback __callback)
 {
-  hotkey_context_t *context;
-
-  if (!contexts)
-    {
-      return -1;
-    }
-
-  context = (hotkey_context_t*)deque_data (deque_head (contexts));
-  return hotkey_register_at_context (context, __sequence, __callback);
+  return hotkey_register_full (__sequence, __callback, NULL);
 }
 
 /**
