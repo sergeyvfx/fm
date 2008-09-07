@@ -31,6 +31,7 @@ SOURCES = \
 	deque.c \
 	hashmap.c \
 	hook.c \
+	dynstruct.c \
 	actions.c \
 	action-choose_panel.c \
 	action-listing.c \
