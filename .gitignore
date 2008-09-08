@@ -14,6 +14,7 @@ config.status
 configure
 libtool
 mk/rules.mk
+mk/init.mk
 po/Makefile
 src/Makefile
 src/fm

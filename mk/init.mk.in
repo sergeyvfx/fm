@@ -1,0 +1,24 @@
+# Shut up GNU make
+.SILENT:
+
+OBJECTIVE_DIRECTORIES = 
+OBJECTIVE_LIBS = 
+OBJECTIVE_LIBS_NOINST = 
+OBJECTIVE_BINS = 
+OBJECTIVE_DATA = 
+SUBDIRS = 
+HEADERS = 
+LIBADD = 
+V = @verbose_compilation@
+VERBOSE ?= $(V)
+VERBOSITY = 0
+SHOW_CFLAGS ?= $(VERBOSE)
+
+LIBDIR = $(libdir)
+BINDIR = $(bindir)
+INCLUDEDIR = $(pkgincludedir)
+
+srcdir=$(top_builddir)/src
+
+CFLAGS += -Wall -I$(srcdir) -I.
+CXXFLAGS += -Wall -I$(srcdir) -I.
