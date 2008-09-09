@@ -14,14 +14,16 @@
 
 #include "mountlist.h"
 
+#include <vfs/vfs.h>
+
 #include <dirent.h>
-#include <vfs/plugin.c>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <wchar.h>
 
 /*******
  * Macroses
