@@ -150,7 +150,7 @@ hashmap_create (hashmap_hash_func __hash_func,
   /* Allocate memory for hash map */
   MALLOC_ZERO (res, sizeof (hashmap_t));
 
-  res->data = malloc (sizeof (hashmap_entry_t*) * __data_length);
+  MALLOC_ZERO (res->data, sizeof (hashmap_entry_t*) * __data_length);
 
   res->data_length = __data_length;
 
