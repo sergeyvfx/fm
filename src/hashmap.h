@@ -137,7 +137,7 @@ hashmap_get (const hashmap_t *__hashmap, const void *__key);
 BOOL
 hashmap_isset (const hashmap_t *__hashmap, const void *__key);
 
-void
+int
 hashmap_unset (hashmap_t *__hashmap, const void *__key);
 
 void

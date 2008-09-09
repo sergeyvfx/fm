@@ -12,6 +12,7 @@
 
 #include "file_panel.h"
 #include "file_panel-defact.h"
+#include "dynstruct.h"
 #include "hook.h"
 
 #include <vfs/vfs.h>
@@ -1006,8 +1007,8 @@ file_panel_set_vfs (file_panel_t *__panel, const wchar_t *__vfs)
  * Set the panel's CWD
  *
  * @param __panel - panel where set the CWD
- * @param __cwn - CWD to set
- * @return zro on success, non-zero otherwise
+ * @param __cwd - CWD to set
+ * @return zero on successful, non-zero otherwise
  */
 int
 file_panel_set_cwd (file_panel_t *__panel, const wchar_t *__cwd)
@@ -1032,7 +1033,12 @@ file_panel_set_cwd (file_panel_t *__panel, const wchar_t *__cwd)
 
   if (__panel == current_panel)
     {
-      hook_call (L"cwd.changed", (void*) __cwd);
+      dynstruct_t *cwd_hook_struct =
+        dynstruct_create (L"cwd.changed.struct",
+                          L"cwd", __cwd,
+                          sizeof (wchar_t) * (wcslen(__cwd) + 1), NULL);
+      hook_call (L"cwd.changed", cwd_hook_struct);
+      dynstruct_destroy (&cwd_hook_struct);
     }
 
   return file_panel_refresh (__panel);

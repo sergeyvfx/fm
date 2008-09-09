@@ -324,16 +324,18 @@ hashmap_isset (const hashmap_t *__hashmap, const void *__key)
  *
  * @param __hashmap - from which hasm map unset element
  * @param __key - key of element to unset
+ * @return 0 if successful, otherwise -1
  */
-void
+int
 hashmap_unset (hashmap_t *__hashmap, const void *__key)
 {
   if (!__hashmap)
     {
-      return;
+      return -1;
     }
 
   hashmap_unset_full (__hashmap, __key, __hashmap->deleter);
+  return 0;
 }
 
 /**

@@ -13,6 +13,7 @@
 #include "hook.h"
 #include "types.h"
 #include "deque.h"
+#include "dynstruct.h"
 
 #include <malloc.h>
 #include <wchar.h>
@@ -99,7 +100,7 @@ hook_destroy (void *__h)
  * call process, and HOOK_FAILURE otherwise
  */
 int
-hook_call (const wchar_t *__name, void *__data)
+hook_call (const wchar_t *__name, dynstruct_t *__data)
 {
   iterator_t *hook;
   if (!__name || !__data)
@@ -108,7 +109,7 @@ hook_call (const wchar_t *__name, void *__data)
     }
 
   hook = deque_find (hooks, __name, hook_name_cmp);
-  if (hook)
+  if (hook != NULL)
     {
       hook_t *h = HOOK (hook->data);
       hook_action_t *ha;
@@ -124,7 +125,6 @@ hook_call (const wchar_t *__name, void *__data)
     {
       return HOOK_FAILURE;
     }
-
 
   return HOOK_SUCCESS;
 }

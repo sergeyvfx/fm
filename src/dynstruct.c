@@ -10,13 +10,15 @@
  * See the file COPYING.
  */
 
+#include "smartinclude.h"
+
 #include <wchar.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 
-#include "hashmap.h"
 #include "dynstruct.h"
+#include "hashmap.h"
 
 typedef struct field_t field_t;
 struct field_t {
@@ -56,6 +58,7 @@ dynstruct_create (const wchar_t *__struct_name, ...)
 {
   dynstruct_t *dstruct;
   field_t     *field;
+  wchar_t     *name;
   void        *value;
   va_list     argv;
 
@@ -69,12 +72,13 @@ dynstruct_create (const wchar_t *__struct_name, ...)
       {
         field = (field_t *) malloc (sizeof (field_t));
 
-        field->name = va_arg(argv, wchar_t *);
-        if (field->name == NULL)
+        name = va_arg(argv, wchar_t *);
+        if (name == NULL)
           {
             free(field);
             break;
           }
+        field->name = wcsdup (name);
         value = va_arg(argv, void *);
         field->size = va_arg(argv, size_t);
 

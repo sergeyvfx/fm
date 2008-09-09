@@ -17,6 +17,8 @@
 
 BEGIN_HEADER
 
+struct dynstruct_t;
+
 enum
 {
   HOOK_FAILURE = -1,
@@ -24,7 +26,7 @@ enum
   HOOK_BREAK
 };
 
-typedef int (*hook_callback_proc) (void *__callData);
+typedef int (*hook_callback_proc) (struct dynstruct_t *__callData);
 
 int
 hook_register (const wchar_t *__name, hook_callback_proc __callback,
@@ -34,7 +36,7 @@ int
 hook_unregister (const wchar_t *__name);
 
 int
-hook_call (const wchar_t *__name, void *__data);
+hook_call (const wchar_t *__name, struct dynstruct_t *__data);
 
 int
 hook_unhook (const wchar_t *__name, hook_callback_proc __callback);

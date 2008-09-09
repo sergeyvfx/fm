@@ -13,8 +13,6 @@
 #ifndef _DYNSTRUCT_H_
 #define _DYNSTRUCT_H_
 
-#include "smartinclude.h"
-
 BEGIN_HEADER
 
 typedef struct dynstruct_t dynstruct_t;
