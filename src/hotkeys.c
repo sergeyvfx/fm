@@ -20,6 +20,10 @@
  *
  */
 
+/* Deny dropping of root context */
+/* may be useful? */
+#define DENY_DROP_ROOT_CONTEXT
+
 /* Length of maximum sequence for hotkey */
 #define MAX_SEQUENCE_LENGTH  16
 
@@ -345,6 +349,16 @@ hotkey_pop_context (BOOL __destroy)
 {
   hotkey_context_t *context;
 
+#ifdef DENY_DROP_ROOT_CONTEXT
+  if (deque_head (contexts) == deque_tail (contexts))
+    {
+      /* Head is equals to tail only in case */
+      /* of there is only one element in stack */
+      /* so, we are trying to drop root context */
+      return NULL;
+    }
+#endif
+
   context = deque_pop_front (contexts);
 
   if (__destroy)
@@ -370,6 +384,15 @@ hotkey_drop_context (hotkey_context_t *__context, BOOL __destroy)
     {
       return;
     }
+
+#ifdef DENY_DROP_ROOT_CONTEXT
+  if (deque_tail (contexts) &&
+      deque_data (deque_tail (contexts)) == __context)
+    {
+      /* Try to drop root context */
+      return;
+    }
+#endif
 
   deque_foreach (contexts, context)
     if (context == __context)

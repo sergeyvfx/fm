@@ -28,3 +28,4 @@ t/vfs/vfs-test
 t/.tests-passed
 autom4te.cache/
 Makefile
+\#*#
