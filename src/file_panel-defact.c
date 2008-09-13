@@ -895,6 +895,13 @@ open_file (file_panel_t *__panel, file_panel_item_t *__item)
    *       3. Grep default mime database
    */
 
+  /*
+   * NOTE: Before running command, call iface_screen_disable() to
+   *       disable file manager's screen handlers.
+   *       After command is finished run iface_screen_enable() to
+   *       resume screen handling.
+   */
+
   return -1;
 }
 

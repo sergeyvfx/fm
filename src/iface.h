@@ -40,6 +40,22 @@ iface_create_menu (void);
 void
 iface_act_exit (void);
 
+/***
+ * Screen
+ */
+
+/* Pause console screen handler stuff */
+void
+iface_screen_disable (void);
+
+/* Resume console screen handler stuff */
+void
+iface_screen_enable (void);
+
+/* Chec if screen is paused */
+BOOL
+iface_screen_disabled (void);
+
 END_HEADER
 
 #endif

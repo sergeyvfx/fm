@@ -19,6 +19,7 @@ SOURCES = \
 	iface.c \
 	iface-act.c \
 	iface-menu.c \
+	iface-screen.c \
 	messages.c \
 	hotkeys.c \
 	i18n.c \

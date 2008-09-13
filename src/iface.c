@@ -80,8 +80,13 @@ create_widgets (void)
 static void
 sig_winch (int sig ATTR_UNUSED)
 {
-  screen_on_resize ();
-  widget_on_scr_resize ();
+  if (!iface_screen_disabled ())
+    {
+      /* We should call this function only if screen is not paused */
+      /* Otherwise it will be unpaused */
+      screen_on_resize ();
+      widget_on_scr_resize ();
+    }
 }
 #endif
 
