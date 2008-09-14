@@ -39,7 +39,7 @@ iface_screen_enable (void)
 }
 
 /**
- * Chec if screen is paused
+ * Check if screen is disabled
  */
 BOOL
 iface_screen_disabled (void)
