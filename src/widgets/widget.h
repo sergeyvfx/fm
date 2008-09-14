@@ -102,6 +102,10 @@
 #define WIDGET_CALL_CALLBACK(_w,_cb,_args...) \
   (WIDGET_CALLBACK (_w, _cb)?WIDGET_CALLBACK (_w, _cb) (_args):0)
 
+/* Safe calling of user callback */
+#define WIDGET_CALL_USER_CALLBACK(_w,_cb,_args...) \
+  (WIDGET_USER_CALLBACK (_w, _cb)?WIDGET_USER_CALLBACK (_w, _cb) (_args):0)
+
 /* Call user-defined callback in deep-core callbacks */
 #define _WIDGET_CALL_USER_CALLBACK(_w,_cb,_args...) \
   { \
@@ -222,8 +226,14 @@
  * Type definitions
  */
 
+/* Default action callback */
 typedef int (*widget_action) (void *__widget);
+
+/* Callback for keyboard input */
 typedef int (*widget_keydown_proc) (void *__widget, wint_t __ch);
+
+/* Callback for property changed event */
+typedef int (*widget_propchanged_proc) (int __prop);
 
 /* Position of widget */
 typedef struct
@@ -250,6 +260,10 @@ typedef struct
   widget_action focused;
   widget_action blured;
   widget_action onresize;
+
+  /*
+   * TODO: But maybe we need property_changed callback here?
+   */
 } widget_callbacks_t;
 
 /* Callbacks' structure for user's bindings */
@@ -261,6 +275,7 @@ typedef struct
   widget_action focused;
   widget_action blured;
   widget_action onresize;
+  widget_propchanged_proc property_changed;
 } widget_user_callbacks_t;
 
 /* Basic widget's members */

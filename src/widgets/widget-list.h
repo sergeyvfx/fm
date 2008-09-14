@@ -18,6 +18,12 @@
 #endif
 
 /********
+ * Constants
+ */
+
+#define W_LIST_ITEMINDEX_PROP 0x0001
+
+/********
  * Type defenitions
  */
 

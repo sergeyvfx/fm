@@ -138,7 +138,13 @@ list_drawer (w_list_t *__list)
 static int
 list_keydown (w_list_t *__list, wint_t __ch)
 {
+  int sindex;
+
   _WIDGET_CALL_USER_CALLBACK (__list, keydown, __list, __ch);
+
+  /* Save currently selected item index to determine */
+  /* is it needed to call property_changed callback */
+  sindex = __list->items.current;
 
   switch (__ch)
     {
@@ -211,6 +217,13 @@ list_keydown (w_list_t *__list, wint_t __ch)
                         __list->items.current);
 
   widget_redraw (WIDGET (__list));
+
+  if (sindex != __list->items.current)
+    {
+      /* Item index has been changed */
+      WIDGET_CALL_USER_CALLBACK (__list, property_changed,
+                                 W_LIST_ITEMINDEX_PROP);
+    }
 
   return TRUE;
 }
