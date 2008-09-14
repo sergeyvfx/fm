@@ -233,7 +233,7 @@ typedef int (*widget_action) (void *__widget);
 typedef int (*widget_keydown_proc) (void *__widget, wint_t __ch);
 
 /* Callback for property changed event */
-typedef int (*widget_propchanged_proc) (int __prop);
+typedef int (*widget_propchanged_proc) (void *__widget, int __prop);
 
 /* Position of widget */
 typedef struct

@@ -222,7 +222,7 @@ list_keydown (w_list_t *__list, wint_t __ch)
     {
       /* Item index has been changed */
       WIDGET_CALL_USER_CALLBACK (__list, property_changed,
-                                 W_LIST_ITEMINDEX_PROP);
+                                 __list, W_LIST_ITEMINDEX_PROP);
     }
 
   return TRUE;
