@@ -29,3 +29,8 @@ t/.tests-passed
 autom4te.cache/
 Makefile
 \#*#
+*.patch
+.dotest
+TAGS
+tags
+*.tar.gz

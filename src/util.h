@@ -68,4 +68,7 @@ get_user_info (void);
 void
 free_user_info (passwd_t *__self);
 
+int
+run_shell_command (const wchar_t *__command);
+
 #endif

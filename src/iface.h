@@ -46,15 +46,15 @@ iface_act_exit (void);
 
 /* Pause console screen handler stuff */
 void
-iface_screen_disable (void);
+iface_screen_lock (void);
 
 /* Resume console screen handler stuff */
 void
-iface_screen_enable (void);
+iface_screen_unlock (void);
 
-/* Chec if screen is paused */
+/* Check if screen is paused */
 BOOL
-iface_screen_disabled (void);
+iface_screen_locked (void);
 
 END_HEADER
 

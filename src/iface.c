@@ -80,7 +80,7 @@ create_widgets (void)
 static void
 sig_winch (int sig ATTR_UNUSED)
 {
-  if (!iface_screen_disabled ())
+  if (!iface_screen_locked ())
     {
       /* We should call this function only if screen is not paused */
       /* Otherwise it will be unpaused */

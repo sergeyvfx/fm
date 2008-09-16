@@ -12,7 +12,10 @@
 
 #include "util.h"
 #include "dir.h"
+#include "iface.h"
 
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <vfs/vfs.h>
 #include <unistd.h>
 #include <pwd.h>
@@ -121,6 +124,37 @@ wcsndup (const wchar_t *__s, size_t __n)
     {
       return NULL;
     }
+}
+
+/**
+ * Convert a wide character string to a multibyte string
+ *
+ * @param __dest - string to convertion
+ * @param __source - string from convertion
+ * @return number of bytes convertion string,
+ *         not including the terminating null byte
+ */
+size_t
+wcs2mbs (char **__dest, const wchar_t *__source)
+{
+  size_t len = (wcslen (__source) + 1) * MB_CUR_MAX;
+  *__dest = malloc (len);
+  return wcstombs (*__dest, __source, len);
+}
+
+
+/**
+ * Convert a multibyte string to a wide character string
+ *
+ * @see wcs2mbs
+ */
+size_t
+mbs2wcs (wchar_t **__dest, const char *__source)
+{
+  size_t len = strlen (__source);
+
+  *__dest = malloc (sizeof (wchar_t) * (len + 2));
+  return mbstowcs (*__dest, __source, len + 1);
 }
 
 /**
@@ -331,4 +365,39 @@ free_user_info (passwd_t *__self)
   free (__self->shell);
 
   free (__self);
+}
+
+/**
+ * Run the specified shell command
+ *
+ * @param __command - a name executed command
+ * @return see man execl(3) and man fork(2)
+ */
+int
+run_shell_command (const wchar_t *__command)
+{
+  char  *command;
+  int   result, status;
+  pid_t pid;
+
+  wcs2mbs (&command, __command);
+
+  iface_screen_lock();
+    if ((pid = fork()) == 0)
+      {
+        result = execl(getenv("SHELL"), "sh", "-c", command, NULL);
+      }
+
+    if (pid != -1)
+      {
+        waitpid (pid, &status, WUNTRACED | WCONTINUED);
+      }
+    else
+      {
+        result = -1;
+      }
+  iface_screen_unlock();
+
+  free(command);
+  return result;
 }

@@ -13,7 +13,7 @@
 
 #include <widgets/widget.h>
 
-static BOOL disabled = FALSE;
+static BOOL locked = FALSE;
 
 /**
  * Pause console screen handler stuff
@@ -21,9 +21,9 @@ static BOOL disabled = FALSE;
  * May be useful for stuff like process launching
  */
 void
-iface_screen_disable (void)
+iface_screen_lock (void)
 {
-  disabled = TRUE;
+  locked = TRUE;
   endwin ();
 }
 
@@ -31,18 +31,18 @@ iface_screen_disable (void)
  * Resume console screen handler stuff
  */
 void
-iface_screen_enable (void)
+iface_screen_unlock (void)
 {
   screen_on_resize ();
   widget_on_scr_resize ();
-  disabled = FALSE;
+  locked = FALSE;
 }
 
 /**
- * Check if screen is disabled
+ * Check if screen is locked
  */
 BOOL
-iface_screen_disabled (void)
+iface_screen_locked (void)
 {
-  return disabled;
+  return locked;
 }
