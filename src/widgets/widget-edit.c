@@ -15,6 +15,10 @@
 
 #define BUFFER_REALLOC_DELTA  16
 
+#define CALL_CHECKVALIDNESS(_edit) \
+  (WIDGET_CALL_USER_CALLBACK (_edit, property_changed, \
+                              _edit, W_EDIT_CHECKVALIDNESS_PROP))
+
 /**
  * Destroy an edit widget
  *
@@ -252,6 +256,21 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
 {
   _WIDGET_CALL_USER_CALLBACK (__edit, keydown, __edit, __ch);
 
+  size_t spos, sscrolled;
+  wchar_t *sbuffer = NULL;
+  BOOL rollback_changes = FALSE, sshaded;
+
+  /* Save data for rollback if validation failed */
+  spos      = __edit->caret_pos;
+  sscrolled = __edit->scrolled;
+  sshaded   = __edit->shaded;
+
+  /* Buffer may be unallocated, so we need this checking */
+  if (__edit->text.data)
+    {
+      sbuffer = wcsdup (__edit->text.data);
+    }
+
   switch (__ch)
     {
       /* Navigation */
@@ -335,11 +354,13 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
             --__edit->caret_pos;
           }
         else
-          /* There are no chars at the right side from cursor */
-          /* so, there are no chars to delete */
-          if (__edit->caret_pos == n)
           {
-            break;
+            /* There are no chars at the right side from cursor */
+            /* so, there are no chars to delete */
+            if (__edit->caret_pos == n)
+            {
+              break;
+            }
           }
 
         /* Shift text */
@@ -350,6 +371,13 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
 
         /* Set new null-terminator */
         __edit->text.data[n - 1] = 0;
+
+        /* Send validating message */
+        if (CALL_CHECKVALIDNESS (__edit))
+          {
+            /* We need rollback changes */
+            rollback_changes = TRUE;
+          }
 
         __edit->shaded = FALSE;
       }
@@ -382,7 +410,7 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
               /* If edit is in shaded state, we should clear text */
               /* and move caret to the beginning. */
               /* We should also reset count of scrolled characters */
-              /* and finaly, exit edit from shaded state. */
+              /* and finally, exit edit from shaded state. */
 
               wcscpy (__edit->text.data, L"");
               __edit->caret_pos = __edit->scrolled = 0;
@@ -407,12 +435,45 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
 
           /* Move caret to new position */
           __edit->caret_pos++;
+
+          /* Send validating message */
+          if (CALL_CHECKVALIDNESS (__edit))
+            {
+              /* We need rollback changes */
+              rollback_changes = TRUE;
+            }
         }
       else
         {
           return FALSE;
         }
     }
+
+  /* If validator rejected buffer.. */
+  if (rollback_changes)
+    {
+      /* ..roll-back changes */
+      __edit->caret_pos = spos;
+      __edit->scrolled  = sscrolled;
+      __edit->shaded    = sshaded;
+
+      /* Reject renewed buffer */
+      SAFE_FREE (__edit->text.data);
+      if (sbuffer)
+        {
+          __edit->text.data = sbuffer;
+          __edit->text.allocated = wcslen (sbuffer) + 1;
+
+          /* Need this to prevent freeing buffer later */
+          sbuffer = NULL;
+        }
+      else
+        {
+          __edit->text.allocated = 0;
+        }
+    }
+
+  SAFE_FREE (sbuffer);
 
   edit_validate_scrolling (__edit);
   widget_redraw (WIDGET (__edit));

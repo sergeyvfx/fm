@@ -407,3 +407,80 @@ w_list_get_current_item (w_list_t *__list)
 
   return &__list->items.data[__list->items.current];
 }
+
+/**
+ * Get count of items
+ *
+ * @param __list - descriptor of list from which
+ * count of items will be gotten
+ * @return count of items in list
+ */
+__u32_t
+w_list_items_count (w_list_t *__list)
+{
+  if (__list == NULL)
+    {
+      return 0;
+    }
+
+  return __list->items.count;
+}
+
+/**
+ * Get item with specified index
+ *
+ * @param __list - from which list item will be gotten
+ * @param __index - index of item to get
+ * @return item with specified index
+ */
+w_list_item_t*
+w_list_get_item (w_list_t *__list, __u32_t __index)
+{
+  if (__list == NULL || __list->items.count == 0 ||
+      __index >= __list->items.count)
+    {
+      return NULL;
+    }
+
+  return &__list->items.data[__index];
+}
+
+/**
+ * Set currently selected item
+ *
+ * @param __list - list where selection will be changed
+ * @param __index - index of item to select
+ * @return zero on succes, non-zero otherwise
+ */
+int
+w_list_set_selected (w_list_t *__list, __u32_t __index)
+{
+  if (__list == NULL || __list->items.count == 0 ||
+      __index >= __list->items.count)
+    {
+      return -1;
+    }
+
+  __list->items.current = __index;
+
+  /* Check scrolling data */
+  if (__list->items.current < __list->scroll_top)
+    {
+      __list->scroll_top = __list->items.current;
+    }
+
+  if (__list->items.current > __list->scroll_top + ITEMS_PER_PAGE (__list) - 1)
+
+    {
+      __list->scroll_top += __list->items.current - __list->scroll_top  -
+                            ITEMS_PER_PAGE (__list) + 1;
+    }
+
+  /* Update position of scrollbar */
+  w_scrollbar_set_pos ((w_scrollbar_t*)__list->scrollbar,
+                        __list->items.current);
+
+  widget_redraw (WIDGET (__list));
+
+  return 0;
+}

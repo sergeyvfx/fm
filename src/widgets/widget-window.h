@@ -39,6 +39,8 @@
 
 #define MR_CUSTOM 0x0100
 
+#define W_WINDOW_CONFIRMHIDE_PROP 0x0001
+
 /********
  * Type defenitions
  */

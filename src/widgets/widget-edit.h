@@ -16,7 +16,13 @@
 #endif
 
 /********
- * Type defenitions
+ * Constants
+ */
+
+#define W_EDIT_CHECKVALIDNESS_PROP 0x0001
+
+/********
+ * Type definitions
  */
 
 typedef struct

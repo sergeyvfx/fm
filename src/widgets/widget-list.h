@@ -87,4 +87,16 @@ w_list_set_fonts (w_list_t *__list, scr_font_t *__font,
 w_list_item_t*
 w_list_get_current_item (w_list_t *__list);
 
+/* Get count of items */
+__u32_t
+w_list_items_count (w_list_t *__list);
+
+/* Get item with specified index */
+w_list_item_t*
+w_list_get_item (w_list_t *__list, __u32_t __index);
+
+/* Set currently selected item */
+int
+w_list_set_selected (w_list_t *__list, __u32_t __index);
+
 #endif

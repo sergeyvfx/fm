@@ -227,7 +227,16 @@ window_proc (w_window_t *__window)
 
       if (finito)
         {
-          break;
+          if (WIDGET_CALL_USER_CALLBACK (__window, property_changed,
+                                         __window, W_WINDOW_CONFIRMHIDE_PROP))
+            {
+              finito = FALSE;
+              __window->modal_result = 0;
+            }
+          else
+            {
+              break;
+            }
         }
     }
 
@@ -455,6 +464,18 @@ w_window_hide (w_window_t *__window)
   if (!__window || !WIDGET_LAYOUT (__window))
     {
       return;
+    }
+
+  if (__window->show_mode != WSM_MODAL)
+    {
+      /* For modal windows closing confirmation is in window_proc */
+
+      if (WIDGET_CALL_USER_CALLBACK (__window, property_changed,
+                                     __window, W_WINDOW_CONFIRMHIDE_PROP))
+        {
+          /* User's handler denied window closing */
+          return;
+        }
     }
 
   widget_delete_root (WIDGET (__window));
