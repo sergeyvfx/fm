@@ -15,6 +15,7 @@
 #include "shared.h"
 #include "util.h"
 #include "dir.h"
+#include "usergroup.h"
 
 #include <dirent.h>
 #include <stdlib.h>

@@ -45,7 +45,8 @@ SOURCES = \
 	action-move.c \
 	action-mkdir.c \
 	action-symlink.c \
-	shared.c
+	shared.c \
+	usergroup.c
 
 OBJECTS = ${SOURCES:.c=.o}
 

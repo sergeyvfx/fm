@@ -18,7 +18,6 @@
 #include <sys/wait.h>
 #include <vfs/vfs.h>
 #include <unistd.h>
-#include <pwd.h>
 
 /**
  * Fit string to specified width.
@@ -322,52 +321,6 @@ timedist (timeval_t __from, timeval_t __to)
 }
 
 /**
- * Get user information
- *
- * @return passwd strcuture describing user or NULL if failed
- */
-passwd_t*
-get_user_info (void)
-{
-  struct passwd *pw;
-  passwd_t *result;
-  uid_t userid;
-
-  userid = getuid ();
-  pw = getpwuid (userid);
-
-  if (pw == NULL)
-    {
-      return NULL;
-    }
-
-  result = malloc (sizeof (passwd_t));
-
-  MBS2WCS (result->name, pw->pw_name);
-  MBS2WCS (result->passwd, pw->pw_passwd);
-  MBS2WCS (result->gecos, pw->pw_gecos);
-  MBS2WCS (result->home, pw->pw_dir);
-  MBS2WCS (result->shell, pw->pw_shell);
-
-  result->uid = pw->pw_uid;
-  result->gid = pw->pw_gid;
-
-  return result;
-}
-
-void
-free_user_info (passwd_t *__self)
-{
-  free (__self->name);
-  free (__self->passwd);
-  free (__self->gecos);
-  free (__self->home);
-  free (__self->shell);
-
-  free (__self);
-}
-
-/**
  * Run the specified shell command
  *
  * @param __command - a name executed command
@@ -382,8 +335,8 @@ run_shell_command (const wchar_t *__command)
 
   wcs2mbs (&command, __command);
 
-  iface_screen_lock();
-    if ((pid = fork()) == 0)
+  iface_screen_lock ();
+    if ((pid = fork ()) == 0)
       {
         result = execl(getenv("SHELL"), "sh", "-c", command, NULL);
       }
@@ -396,8 +349,8 @@ run_shell_command (const wchar_t *__command)
       {
         result = -1;
       }
-  iface_screen_unlock();
+  iface_screen_unlock ();
 
-  free(command);
+  free (command);
   return result;
 }

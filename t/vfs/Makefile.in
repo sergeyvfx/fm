@@ -11,6 +11,7 @@ LIBADD = -L${top_builddir}/src/vfs -lvfs -ldl -lm
 
 SOURCES = \
 	main.c \
+	plug.c \
 	${top_builddir}/src/hashmap.c \
 	${top_builddir}/src/util.c \
 	${top_builddir}/src/i18n.c \
