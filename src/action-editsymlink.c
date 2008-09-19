@@ -16,25 +16,6 @@
 #include <widgets/widget.h>
 #include <vfs/vfs.h>
 
-#define CANCEL_TO_ABORT(_a) \
-  ((_a) == MR_CANCEL ? ACTION_ABORT : (_a))
-
-/**
- * Display an error message with buttons Retry and Cancel
- *
- * @param __text - text to display on message
- * @return result of message_box()
- */
-static int
-error (const wchar_t *__text, ...)
-{
-  int res;
-  wchar_t buf[4096];
-  PACK_ARGS (__text, buf, BUF_LEN (buf));
-  res = message_box (_(L"Error"), buf, MB_CRITICAL | MB_RETRYCANCEL);
-  return res;
-}
-
 /**
  * Show dialog to user and get new content of link
  *
@@ -123,8 +104,8 @@ make_editsymlink (const wchar_t *__item, const wchar_t *__filename)
                    {
                      res = 0;
                    },
-                 error,
-                 return CANCEL_TO_ABORT (__dlg_res_),
+                 action_error_retrycancel,
+                 return ACTION_CANCEL_TO_ABORT (__dlg_res_),
                  _(L"Cannot read content of symbolic link \"%ls\":\n%ls"),
                  __filename, vfs_get_error (res));
 
@@ -144,14 +125,16 @@ make_editsymlink (const wchar_t *__item, const wchar_t *__filename)
        */
 
       /* Unlink old symlink */
-      ACTION_REPEAT (res = vfs_unlink (__filename), error,
-                     res = CANCEL_TO_ABORT (__dlg_res_); goto __error_;,
+      ACTION_REPEAT (res = vfs_unlink (__filename),
+                     action_error_retrycancel,
+                     res = ACTION_CANCEL_TO_ABORT (__dlg_res_); goto __error_;,
                      _(L"Cannot unlink symbolic link \"%ls\":\n%ls"),
                      __filename, vfs_get_error (res));
 
       /* Create new symlink */
-      ACTION_REPEAT (res = vfs_symlink (content, __filename), error,
-                     res = CANCEL_TO_ABORT (__dlg_res_); goto __error_;,
+      ACTION_REPEAT (res = vfs_symlink (content, __filename),
+                     action_error_retrycancel,
+                     res = ACTION_CANCEL_TO_ABORT (__dlg_res_); goto __error_;,
                      _(L"Cannot create symbolic link \"%ls\":\n%ls"),
                      __filename, vfs_get_error (res));
 

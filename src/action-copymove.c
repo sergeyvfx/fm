@@ -89,7 +89,8 @@
   _error, ##_error_args)
 
 #define COPY_DIR_REP(_act, _error_proc, _error, _error_args...) \
-  ACTION_REPEAT (_act, _error_proc, return CANCEL_TO_ABORT (__dlg_res_), \
+  ACTION_REPEAT (_act, _error_proc, \
+       return ACTION_CANCEL_TO_ABORT (__dlg_res_),     \
        _error, ##_error_args)
 
 /**
@@ -98,7 +99,7 @@
  */
 #define OPEN_FD(_fd, _url, _flags, _res, _error, _error_args...) \
   COPY_FILE_REP (_fd=vfs_open (_url, _flags, &_res, 0), \
-  error, _error, ##_error_args)
+  action_error_retryskipcancel, _error, ##_error_args)
 
 /**
  * Allocate memory for full file name in directory listing cycle
@@ -125,8 +126,8 @@
  * Unlink target file
  */
 #define UNLINK_TARGET() \
-  ACTION_REPEAT (res = vfs_unlink (__dst), error, \
-  return CANCEL_TO_ABORT (__dlg_res_), \
+  ACTION_REPEAT (res = vfs_unlink (__dst), action_error_retryskipcancel, \
+  return ACTION_CANCEL_TO_ABORT (__dlg_res_), \
    _(L"Cannot unlink target file \"%ls\":\n%ls"), __dst, \
   vfs_get_error (res))
 
@@ -134,8 +135,8 @@
  * Unlink source file
  */
 #define UNLINK_SOURCE() \
-  ACTION_REPEAT (res=vfs_unlink (__src), error, \
-  return CANCEL_TO_ABORT (__dlg_res_), \
+  ACTION_REPEAT (res=vfs_unlink (__src), action_error_retryskipcancel, \
+  return ACTION_CANCEL_TO_ABORT (__dlg_res_), \
   _(L"Cannot unlink source file \"%ls\":\n%ls"), __src, \
   vfs_get_error (res))
 
@@ -258,9 +259,6 @@
     EVAL_SPEED (); \
   }
 
-#define CANCEL_TO_ABORT(_a) \
-  ((_a) == MR_CANCEL ? ACTION_ABORT : (_a))
-
 /* Update limit of max position in bytes progress */
 #define REDUCE_TOTAL_BYTES(_size) \
   { \
@@ -305,44 +303,6 @@ static BOOL scan = TRUE;
 /********
  * Internal stuff
  */
-
-/**
- * Display an error message with buttons Retry, Skip and cancel
- *
- * @param __text - text to display on message
- * @return result of message_box()
- */
-static int
-error (const wchar_t *__text, ...)
-{
-  wchar_t buf[4096];
-  PACK_ARGS (__text, buf, BUF_LEN (buf));
-  return message_box (_(L"Error"), buf, MB_CRITICAL | MB_RETRYSKIPCANCEL);
-}
-
-/**
- * Display an error message with buttons Retry, Skip and cancel,
- * but modal resule for MR_SKIP will be replaced with MR_IGNORE.
- *
- * Need this to make to make error messages equal but with different semantic
- * of Ignore/Skip actions.
- *
- * @param __text - text to display on message
- * @return result of message_box()
- */
-static int
-error2 (const wchar_t *__text, ...)
-{
-  int res;
-  wchar_t buf[4096];
-  PACK_ARGS (__text, buf, BUF_LEN (buf));
-  res = error (L"%ls", buf);
-  if (res == MR_SKIP)
-    {
-      return MR_IGNORE;
-    }
-  return res;
-}
 
 /**
  * Return real destination filename
@@ -444,8 +404,9 @@ make_rename (const wchar_t *__src, const wchar_t *__dst,
 {
   int res;
 
-  ACTION_REPEAT (res = vfs_rename (__src, __dst), error2,
-                 return CANCEL_TO_ABORT (__dlg_res_),
+  ACTION_REPEAT (res = vfs_rename (__src, __dst),
+                 action_error_retryskipcancel_ign,
+                 return ACTION_CANCEL_TO_ABORT (__dlg_res_),
                  _(L"Cannot move \"%ls\":\n%ls"), __src, vfs_get_error (res));
 
   /* Process accamulated queue of characters */
@@ -527,7 +488,7 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
     }
 
   /* Stat source file */
-  COPY_FILE_REP (res = vfs_stat (__src, &stat), error,
+  COPY_FILE_REP (res = vfs_stat (__src, &stat), action_error_retryskipcancel,
                  _(L"Cannot stat source file \"%ls\":\n%ls"),
                  __src, vfs_get_error (res));
 
@@ -571,7 +532,8 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
            __dst, vfs_get_error (res));
 
   /* Set mode of destination file */
-  COPY_FILE_REP (res = vfs_chmod (__dst, stat.st_mode), error2,
+  COPY_FILE_REP (res = vfs_chmod (__dst, stat.st_mode),
+                 action_error_retryskipcancel_ign,
                  _(L"Cannot chmod target file \"%ls\":\n%ls"),
                  __dst, vfs_get_error (res));
 
@@ -584,7 +546,7 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
       /* Read buffer from source file */
       COPY_FILE_REP (read = vfs_read (fd_src, buffer, MIN (remain, BUF_SIZE));
                      res = read < 0 ? read : 0;,
-                     error,
+                     action_error_retryskipcancel,
                      _(L"Cannot read source file \"%ls\":\n%ls"),
                      __src, vfs_get_error (res));
 
@@ -599,7 +561,7 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
       /* Write buffer to destination file */
       COPY_FILE_REP (written = vfs_write (fd_dst, buffer, read);
                      res = written < 0 ? written : 0;,
-                     error,
+                     action_error_retryskipcancel,
                      _(L"Cannot write target file \"%ls\":\n%ls"),
                      __dst, vfs_get_error (res));
 
@@ -758,8 +720,9 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
           if (res != -ENOENT)
             {
               /* Error STAT'ing*/
-              res = error (_(L"Cannot stat target file \"%ls\":\n%ls"), __dst,
-                           vfs_get_error (res));
+              res = action_error_retryskipcancel (_(L"Cannot stat target "
+                                                 L"file \"%ls\":\n%ls"), __dst,
+                                                 vfs_get_error (res));
 
               /* Review user's answer */
               switch (res)
@@ -791,8 +754,9 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
   else
     {
       /* Create symlink */
-      ACTION_REPEAT (res = vfs_symlink (content, __dst), error,
-                     return CANCEL_TO_ABORT (__dlg_res_),
+      ACTION_REPEAT (res = vfs_symlink (content, __dst),
+                     action_error_retryskipcancel,
+                     return ACTION_CANCEL_TO_ABORT (__dlg_res_),
                      _(L"Cannot create symbolic link \"%ls\":\n%ls"), __src,
                      vfs_get_error (res));
 
@@ -825,8 +789,8 @@ copy_special_file (const wchar_t *__src, const wchar_t *__dst,
   int res;
 
   /* Stat source file */
-  ACTION_REPEAT (res = vfs_stat (__src, &stat), error,
-                 return CANCEL_TO_ABORT (__dlg_res_),
+  ACTION_REPEAT (res = vfs_stat (__src, &stat), action_error_retryskipcancel,
+                 return ACTION_CANCEL_TO_ABORT (__dlg_res_),
                  _(L"Cannot stat source file \"%ls\":\n%ls"), __src,
                  vfs_get_error (res));
 
@@ -894,8 +858,9 @@ copy_special_file (const wchar_t *__src, const wchar_t *__dst,
               if (res != -ENOENT)
                 {
                   /* Error STAT'ing*/
-                  res = error (_(L"Cannot stat target file \"%ls\":\n%ls"),
-                               __dst, vfs_get_error (res));
+                  res = action_error_retryskipcancel (_(L"Cannot stat target "
+                                                   L"file \"%ls\":\n%ls"),
+                                                   __dst, vfs_get_error (res));
 
                   /* Review user's answer */
                   switch (res)
@@ -929,7 +894,8 @@ copy_special_file (const wchar_t *__src, const wchar_t *__dst,
         {
           /* Create special file */
           ACTION_REPEAT (res = vfs_mknod (__dst, stat.st_mode, stat.st_rdev),
-                         error, return CANCEL_TO_ABORT (__dlg_res_),
+                         action_error_retryskipcancel,
+                         return ACTION_CANCEL_TO_ABORT (__dlg_res_),
                          _(L"Cannot create special file \"%ls\":\n%ls"), __src,
                          vfs_get_error (res));
 
@@ -988,8 +954,8 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
   CHECK_THE_SAME ();
 
   /* Stat source file to determine it's type */
-  ACTION_REPEAT (res = vfs_lstat (__src, &stat), error,
-                 return CANCEL_TO_ABORT (__dlg_res_),
+  ACTION_REPEAT (res = vfs_lstat (__src, &stat), action_error_retryskipcancel,
+                 return ACTION_CANCEL_TO_ABORT (__dlg_res_),
                  _(L"Cannot stat source file \"%ls\":\n%ls"),
                  __src, vfs_get_error (res));
 
@@ -1070,7 +1036,7 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
                           {
                             res = 0;
                           },
-                       error,
+                       action_error_retryskipcancel,
                         _(L"Cannot stat target directory \"%ls\":\n%ls"),
                         __src, vfs_get_error (res));
 
@@ -1083,7 +1049,7 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
     }
 
   /* Stat source directory */
-  COPY_DIR_REP (res = vfs_stat (__src, &stat);, error,
+  COPY_DIR_REP (res = vfs_stat (__src, &stat);, action_error_retryskipcancel,
                 _(L"Cannot stat source directory \"%ls\":\n%ls"),
                 __src, vfs_get_error (res));
 
@@ -1107,7 +1073,7 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
       /* Scan directory */
       COPY_DIR_REP (count = vfs_scandir (__src, &eps, 0, vfs_alphasort);
                     res = count < 0 ? count : 0,
-                    error,
+                    action_error_retryskipcancel,
                     _(L"Cannot listing source directory \"%ls\":\n%ls"),
                     __src, vfs_get_error (res));
     }
@@ -1120,12 +1086,13 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
 
   /* Create destination directory */
   COPY_DIR_REP (res = vfs_mkdir (__dst, 0);
-                if (res == -EEXIST) res = 0;, error,
+                if (res == -EEXIST) res = 0;, action_error_retryskipcancel,
                 _(L"Cannot create target directory \"%ls\":\n%ls"),
                 __dst, vfs_get_error (res));
 
   /* Set mode of destination directory */
-  COPY_DIR_REP (res = vfs_chmod (__dst, stat.st_mode), error,
+  COPY_DIR_REP (res = vfs_chmod (__dst, stat.st_mode),
+                action_error_retryskipcancel,
                 _(L"Cannot chmod target directory \"%ls\":\n%ls"),
                 __dst, vfs_get_error (res));
 
@@ -1376,9 +1343,9 @@ make_unlink (copy_process_window_t *__proc_wnd)
         proc = vfs_unlink;
       }
 
-    ACTION_REPEAT (res = proc (path), error2,
+    ACTION_REPEAT (res = proc (path), action_error_retryskipcancel_ign,
                    action_post_move_desstroy_window (wnd);
-                   if (CANCEL_TO_ABORT (__dlg_res_) == ACTION_ABORT)
+                   if (ACTION_CANCEL_TO_ABORT (__dlg_res_) == ACTION_ABORT)
                      {
                        return ACTION_ABORT;
                      },
@@ -1452,7 +1419,7 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
                        {
                          return 0;
                        },
-                     error2,
+                     action_error_retryskipcancel_ign,
                      /* There was an error getting full listing of items */
                      /* If user will answer Cancel to error dialog, none */
                      /* of files will be copied/moved */

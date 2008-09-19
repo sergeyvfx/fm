@@ -142,7 +142,7 @@ action_check_no_pseydodir (const file_panel_item_t **__list,
 }
 
 /**
- * Display an error message with buttons Retry and cancel
+ * Display an error message with buttons Retry and Cancel
  *
  * @param __text - text to display on message
  * @return result of message_box()
@@ -153,4 +153,42 @@ action_error_retrycancel (const wchar_t *__text, ...)
   wchar_t buf[4096];
   PACK_ARGS (__text, buf, BUF_LEN (buf));
   return message_box (_(L"Error"), buf, MB_CRITICAL | MB_RETRYCANCEL);
+}
+
+/**
+ * Display an error message with buttons Retry, Skip and cancel
+ *
+ * @param __text - text to display on message
+ * @return result of message_box()
+ */
+int
+action_error_retryskipcancel (const wchar_t *__text, ...)
+{
+  wchar_t buf[4096];
+  PACK_ARGS (__text, buf, BUF_LEN (buf));
+  return message_box (_(L"Error"), buf, MB_CRITICAL | MB_RETRYSKIPCANCEL);
+}
+
+/**
+ * Display an error message with buttons Retry, Skip and Cancel,
+ * but modal result for MR_SKIP will be replaced with MR_IGNORE.
+ *
+ * Need this to make to make error messages equal but with different semantic
+ * of Ignore/Skip actions.
+ *
+ * @param __text - text to display on message
+ * @return result of message_box()
+ */
+int
+action_error_retryskipcancel_ign (const wchar_t *__text, ...)
+{
+  int res;
+  wchar_t buf[4096];
+  PACK_ARGS (__text, buf, BUF_LEN (buf));
+  res = action_error_retryskipcancel (L"%ls", buf);
+  if (res == MR_SKIP)
+    {
+      return MR_IGNORE;
+    }
+  return res;
 }

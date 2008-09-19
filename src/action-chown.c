@@ -19,9 +19,6 @@
 
 #include <vfs/vfs.h>
 
-#define CANCEL_TO_ABORT(_a) \
-  ((_a) == MR_CANCEL ? ACTION_ABORT : (_a))
-
 #define UPDATE_ID(_arg, _field) \
   { \
     if ((*_arg) == -1) \
@@ -94,7 +91,7 @@ do_chown_item (const wchar_t *__path, file_panel_item_t *__item,
 
   ACTION_REPEAT (res = vfs_chown (full, __uid, __gid),
                  action_error_retrycancel,
-                 free (full); return CANCEL_TO_ABORT (__dlg_res_),
+                 free (full); return ACTION_CANCEL_TO_ABORT (__dlg_res_),
                  mask, __item->file->name, vfs_get_error (res));
 
   /* Free unused memory */

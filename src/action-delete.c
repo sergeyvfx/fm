@@ -19,9 +19,6 @@
 static BOOL confirm = TRUE;
 static BOOL scan = TRUE;
 
-#define CANCEL_TO_ABORT(_a) \
-  ((_a) == MR_CANCEL ? ACTION_ABORT : (_a))
-
 /*
  * Free all tail dirents. Helper for copy_directory()
  */
@@ -36,44 +33,6 @@ static BOOL scan = TRUE;
           } \
       } \
   }
-
-/**
- * Display an error message with buttons Retry, Skip and cancel
- *
- * @param __text - text to display on message
- * @return result of message_box()
- */
-static int
-error (const wchar_t *__text, ...)
-{
-  wchar_t buf[4096];
-  PACK_ARGS (__text, buf, BUF_LEN (buf));
-  return message_box (_(L"Error"), buf, MB_CRITICAL | MB_RETRYSKIPCANCEL);
-}
-
-/**
- * Display an error message with buttons Retry, Skip and cancel,
- * but modal result for MR_SKIP will be replaced with MR_IGNORE.
- *
- * Need this to make to make error messages equal but with different semantic
- * of Ignore/Skip actions.
- *
- * @param __text - text to display on message
- * @return result of message_box()
- */
-static int
-error2 (const wchar_t *__text, ...)
-{
-  int res;
-  wchar_t buf[4096];
-  PACK_ARGS (__text, buf, BUF_LEN (buf));
-  res = error (L"%ls", buf);
-  if (res == MR_SKIP)
-    {
-      return MR_IGNORE;
-    }
-  return res;
-}
 
 /**
  * Confirm deletion operation
@@ -154,8 +113,8 @@ unlink_file (wchar_t *__path, delete_process_window_t *__proc_wnd)
   set_deleting_item (__path, __proc_wnd);
 
   ACTION_REPEAT (res = vfs_unlink (__path),
-                 error2,
-                 return CANCEL_TO_ABORT (__dlg_res_),
+                 action_error_retryskipcancel_ign,
+                 return ACTION_CANCEL_TO_ABORT (__dlg_res_),
                  _(L"Cannot unlink file \"%ls\":\n%ls"),
                  __path, vfs_get_error (res));
 
@@ -208,8 +167,8 @@ unlink_dir (wchar_t *__path, delete_process_window_t *__proc_wnd,
       /* Scan directory */
       ACTION_REPEAT (count = vfs_scandir (__path, &eps, 0, vfs_alphasort);
                     res = count < 0 ? count : 0,
-                    error2,
-                    return CANCEL_TO_ABORT (__dlg_res_),
+                    action_error_retryskipcancel_ign,
+                    return ACTION_CANCEL_TO_ABORT (__dlg_res_),
                     _(L"Cannot listing directory \"%ls\":\n%ls"),
                     __path, vfs_get_error (res));
     }
@@ -284,8 +243,8 @@ unlink_dir (wchar_t *__path, delete_process_window_t *__proc_wnd,
       set_deleting_item (__path, __proc_wnd);
 
       ACTION_REPEAT (res = vfs_rmdir (__path),
-                     error2,
-                     return CANCEL_TO_ABORT (__dlg_res_),
+                     action_error_retryskipcancel_ign,
+                     return ACTION_CANCEL_TO_ABORT (__dlg_res_),
                      _(L"Cannot unlink directory \"%ls\":\n%ls"),
                      __path, vfs_get_error (res));
     }
@@ -351,7 +310,7 @@ make_deletion (const wchar_t *__base_dir,
                        {
                          return 0;
                        },
-                     error2,
+                     action_error_retryskipcancel_ign,
                      return 0,
                      _(L"Cannot get listing of items:\n%ls"),
                      vfs_get_error (res));

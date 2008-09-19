@@ -134,8 +134,21 @@ action_choose_file_panel (const wchar_t *__caption,
  * Helpers
  */
 
+#define ACTION_CANCEL_TO_ABORT(_a) \
+  ((_a) == MR_CANCEL ? ACTION_ABORT : (_a))
+
+/* Display an error message with buttons Retry and Cancel */
 int
 action_error_retrycancel (const wchar_t *__text, ...);
+
+/* Display an error message with buttons Retry, Skip and cancel */
+int
+action_error_retryskipcancel (const wchar_t *__text, ...);
+
+/* Display an error message with buttons Retry, Skip and Cancel, */
+/*  but modal result for MR_SKIP will be replaced with MR_IGNORE. */
+int
+action_error_retryskipcancel_ign (const wchar_t *__text, ...);
 
 END_HEADER
 
