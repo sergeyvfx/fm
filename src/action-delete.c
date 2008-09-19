@@ -53,7 +53,7 @@ error (const wchar_t *__text, ...)
 
 /**
  * Display an error message with buttons Retry, Skip and cancel,
- * but modal resule for MR_SKIP will be replaced with MR_IGNORE.
+ * but modal result for MR_SKIP will be replaced with MR_IGNORE.
  *
  * Need this to make to make error messages equal but with different semantic
  * of Ignore/Skip actions.

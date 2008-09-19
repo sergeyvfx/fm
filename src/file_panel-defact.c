@@ -1213,6 +1213,7 @@ fpd_create (file_panel_t *__panel)
   _REGISTER_HOTKEY (L"F8",      action_delete);
   _REGISTER_HOTKEY (L"C-x s",   action_symlink);
   _REGISTER_HOTKEY (L"C-x C-s", action_editsymlink);
+  _REGISTER_HOTKEY (L"C-x o",   action_chown);
 
   return 0;
 }

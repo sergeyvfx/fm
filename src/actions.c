@@ -13,6 +13,7 @@
 #include "actions.h"
 #include "i18n.h"
 #include "dir.h"
+#include "messages.h"
 
 #define FORMAT_OUT_BUF(_params...)\
   { \
@@ -138,4 +139,18 @@ action_check_no_pseydodir (const file_panel_item_t **__list,
     }
 
   return TRUE;
+}
+
+/**
+ * Display an error message with buttons Retry and cancel
+ *
+ * @param __text - text to display on message
+ * @return result of message_box()
+ */
+int
+action_error_retrycancel (const wchar_t *__text, ...)
+{
+  wchar_t buf[4096];
+  PACK_ARGS (__text, buf, BUF_LEN (buf));
+  return message_box (_(L"Error"), buf, MB_CRITICAL | MB_RETRYCANCEL);
 }

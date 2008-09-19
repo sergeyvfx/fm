@@ -36,6 +36,8 @@ SOURCES = \
 	actions.c \
 	action-choose_panel.c \
 	action-listing.c \
+	action-chown.c \
+	action-chown-iface.c \
 	action-copymove.c \
 	action-copymove-iface.c \
 	action-copy.c \

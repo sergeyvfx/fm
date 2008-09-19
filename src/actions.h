@@ -121,10 +121,21 @@ action_symlink (file_panel_t *__panel);
 int
 action_editsymlink (file_panel_t *__panel);
 
+/* Change owner of single file or group of files */
+int
+action_chown (file_panel_t *__panel);
+
 /* Chooses file panel for action */
 file_panel_t*
 action_choose_file_panel (const wchar_t *__caption,
                           const wchar_t *__short_msg);
+
+/**
+ * Helpers
+ */
+
+int
+action_error_retrycancel (const wchar_t *__text, ...);
 
 END_HEADER
 

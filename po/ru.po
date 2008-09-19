@@ -377,6 +377,33 @@ msgstr "Символическая ссылка \"%ls\" указывает на:
 msgid "Cannot unlink symbolic link \"%ls\":\n%ls"
 msgstr "Невозможно удалить символическую ссылку: \"%ls\":\n%ls"
 
+msgid "Change owner"
+msgstr "Смена владельца"
+
+msgid "User name:"
+msgstr "Имя пользователя:"
+
+msgid "Group name:"
+msgstr "Имя группы:"
+
+msgid "List of users"
+msgstr "Список пользователей"
+
+msgid "List of groups"
+msgstr "Список групп"
+
+msgid "Invalid name of user"
+msgstr "Неправильное имя пользователя"
+
+msgid "Invalid name of group"
+msgstr "Неправильное имя группы"
+
+msgid "Cannot change owner of file \"%ls\":\n%ls"
+msgstr "Невозможно сменить владельца файла \"%ls\":\n%ls"
+
+msgid "Cannot change owner of directory \"%ls\":\n%ls"
+msgstr "Невозможно сменить владельца директории \"%ls\":\n%ls"
+
 ##
 # POSIX errors
 
