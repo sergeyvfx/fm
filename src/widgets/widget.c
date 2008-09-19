@@ -1239,3 +1239,33 @@ widget_create_layout (widget_t *__widget)
 
   return res;
 }
+
+/**
+ * Check widget's visibility
+ *
+ * @param __widget - widget descriptor for which visibility will be checked
+ * @return non-zero if widget is visible, zero otherwise
+ */
+BOOL
+widget_visible (widget_t *__widget)
+{
+  widget_t *cur;
+
+  if (!__widget)
+    {
+      return FALSE;
+    }
+
+  cur = __widget;
+  while (cur)
+    {
+      if ((WIDGET_POSITION (cur)).z <= 0)
+        {
+          return FALSE;
+        }
+
+      cur = cur->parent;
+    }
+
+  return TRUE;
+}

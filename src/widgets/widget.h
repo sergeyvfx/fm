@@ -87,7 +87,7 @@
 #define WIDGET_SHORTCUT(_w)  ((WIDGET (_w))->shortcut_key)
 #define WIDGET_USER_DATA(_w) ((WIDGET (_w))->user_data)
 
-#define WIDGET_VISIBLE(_w)   ((WIDGET_POSITION (_w)).z>0)
+#define WIDGET_VISIBLE(_w)   (widget_visible (WIDGET (_w)))
 
 #define WIDGET_METHOD(_w, _m)         (WIDGET (_w))->methods._m
 #define WIDGET_CALLBACK(_w, _cb)      (WIDGET (_w))->callbacks._cb
@@ -425,6 +425,10 @@ widget_unlock_redraw (widget_t *__widget);
 /* Return first focusable widget in container */
 widget_t*
 widget_first_focusable (const w_container_t* __parent);
+
+/* Check widget's visibility */
+BOOL
+widget_visible (widget_t *__widget);
 
 /****
  * Deep-core common stuff
