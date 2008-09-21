@@ -330,6 +330,13 @@ make_guessing (w_edit_t *__edit)
     {
       if (!wcsncmp (prefix, __edit->variants.strings[i], len))
         {
+          /* Full equivalent */
+          if (len == wcslen (__edit->variants.strings[i]))
+            {
+              __edit->suffix = NULL;
+              break;
+            }
+
           __edit->suffix = __edit->variants.strings[i] + len;
           break;
         }
@@ -509,7 +516,7 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
           if (len + suff_len >= __edit->text.allocated)
             {
               __edit->text.data = realloc (__edit->text.data,
-                                           len + suff_len + 1);
+                                       (len + suff_len + 1) * sizeof (wchar_t));
               __edit->text.allocated = len + suff_len;
             }
 
