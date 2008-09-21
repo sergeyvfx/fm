@@ -188,7 +188,7 @@ wcsrep (wchar_t *__str, size_t __max_len,
   wchar_t *res = malloc (sizeof (wchar_t)*(__max_len));
   size_t len_remain = __max_len;
 
-  f = malloc ((n + m + 2) * sizeof (int));
+  f = malloc ((n + m + 2) * sizeof (size_t));
   f[1] = k = 0;
   res[0] = 0;
 
