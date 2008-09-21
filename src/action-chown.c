@@ -68,14 +68,17 @@ get_initial_ids (const wchar_t *__path, const file_panel_item_t **__list,
  * @param __item - item for which chown() will be called
  * @param __uid - user id
  * @param __gid - group id
+ * @param __multiselect - are a lot of items selected?
+ * This parameter used to determine which message box should be used.
  * @return zero on success, non-zero otherwise
  */
 static int
 do_chown_item (const wchar_t *__path, file_panel_item_t *__item,
-               int __uid, int __gid)
+               int __uid, int __gid, BOOL __multiselect)
 {
   wchar_t *full, *mask;
   int res;
+  int (*msg_proc) (const wchar_t*, ...);
 
   /* Get full filename */
   full = wcdircatsubdir (__path, __item->file->name);
@@ -89,13 +92,27 @@ do_chown_item (const wchar_t *__path, file_panel_item_t *__item,
       mask = _(L"Cannot change owner of file \"%ls\":\n%ls");
     }
 
+  if (__multiselect)
+    {
+      msg_proc = action_error_retryskipcancel;
+    }
+  else
+    {
+      msg_proc = action_error_retrycancel;
+    }
+
   ACTION_REPEAT (res = vfs_chown (full, __uid, __gid),
-                 action_error_retrycancel,
+                 msg_proc,
                  free (full); return ACTION_CANCEL_TO_ABORT (__dlg_res_),
                  mask, __item->file->name, vfs_get_error (res));
 
   /* Free unused memory */
   free (full);
+
+  if (res)
+    {
+      return ACTION_SKIP;
+    }
 
   /* Item is now unselected */
   __item->selected = FALSE;
@@ -117,20 +134,24 @@ static unsigned long
 do_chown (const wchar_t *__path, const file_panel_item_t **__list,
           unsigned long __count, int __uid, int __gid)
 {
-  unsigned long i, res;
+  unsigned long i, res = 0;
   int r;
 
   for (i = 0; i < __count; ++i)
     {
-      r = do_chown_item (__path, (file_panel_item_t*)__list[i], __uid, __gid);
+      r = do_chown_item (__path, (file_panel_item_t*)__list[i],
+                         __uid, __gid, __count > 1);
+
+      if (r == ACTION_OK)
+        {
+          ++res;
+        }
 
       /* User aborted chown'ing after  */
       if (r == ACTION_ABORT)
         {
           break;
         }
-
-      ++res;
     }
 
   return res;
