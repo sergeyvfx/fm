@@ -200,14 +200,21 @@ iface_init (void)
 
   scr_hide_cursor ();
 
+  /*
+   * NOTE: We need this stuff initialized here, because
+   *       if some stuff will fail initialization. message will be
+   *       shown on screen. And for correct working of this message
+   *       hotkeys' contexts should be already working.
+   */
+
+  /* Initialize hotkeys' stuff */
+  _INIT_ITERATOR (hotkeys_init);
+
   /* Initialize VFS */
   _INIT_ITERATOR (init_vfs);
 
   /* Create all widgets */
   _INIT_ITERATOR (create_widgets);
-
-  /* Initialize hotkeys' stuff */
-  _INIT_ITERATOR (hotkeys_init);
 
   /*
    * NOTE: We should initialize hotkeys here, because this hotkeys
