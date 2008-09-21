@@ -52,28 +52,56 @@ typedef struct
   /* Font of shaded style */
   scr_font_t *shaded_font;
 
+  /* Font of auto-guessing suffix */
+  scr_font_t *suffix_font;
+
   /* Is edit in shaded state? */
   BOOL shaded;
+
+  /* Variants for auto-guessing */
+  struct
+  {
+    wchar_t **strings;
+    unsigned long count;
+  } variants;
+
+  /* Text suffix from auto-guessing stuff */
+  wchar_t *suffix;
+
 } w_edit_t;
 
 /********
  *
  */
 
+/* Create new edit box */
 w_edit_t*
 widget_create_edit (w_container_t *__parent, int __x, int __y, int __width);
 
+/* Get text of edit box */
 void
 w_edit_set_text (w_edit_t* __exit, const wchar_t *__text);
 
+/* Get text from edit box */
 wchar_t*
 w_edit_get_text (w_edit_t* __edit);
 
+/* Set fonts used in edit */
 void
 w_edit_set_fonts (w_edit_t *__edit, scr_font_t *__font,
-                  scr_font_t *__shaded_font);
+                  scr_font_t *__shaded_font, scr_font_t *__suffix_font);
 
+/* Set shaded state of specified edit widget */
 void
 w_edit_set_shaded (w_edit_t *__edit, BOOL __shaded);
+
+/* Set variants list for auto-guessing stuff */
+void
+w_edit_set_variants (w_edit_t *__edit, wchar_t **__strings,
+                     unsigned long __count);
+
+/* Add variants to list for auto-guessing stuff */
+void
+w_edit_add_variant (w_edit_t *__edit, wchar_t *__string);
 
 #endif

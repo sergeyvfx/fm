@@ -13,11 +13,38 @@
 #include "widget.h"
 #include "util.h"
 
+#include <wchar.h>
+
 #define BUFFER_REALLOC_DELTA  16
 
 #define CALL_CHECKVALIDNESS(_edit) \
   (WIDGET_CALL_USER_CALLBACK (_edit, property_changed, \
                               _edit, W_EDIT_CHECKVALIDNESS_PROP))
+
+/**
+ * Destroy list of variants
+ *
+ * @param __edit - edit box in wgich list of variants will be destroyed
+ */
+void
+free_variants (w_edit_t *__edit)
+{
+  unsigned long i;
+
+  if (!__edit)
+    {
+      return;
+    }
+
+  for (i = 0; i < __edit->variants.count; ++i)
+    {
+      free (__edit->variants.strings[i]);
+    }
+
+  SAFE_FREE (__edit->variants.strings);
+
+  __edit->variants.count = 0;
+}
 
 /**
  * Destroy an edit widget
@@ -35,6 +62,8 @@ edit_destructor (w_edit_t *__edit)
 
   SAFE_FREE (__edit->text.data);
 
+  free_variants (__edit);
+
   free (__edit);
   return 0;
 }
@@ -49,7 +78,8 @@ static int
 edit_drawer (w_edit_t *__edit)
 {
   int i, printed_len, w, printed_width = 0, dummy;
-  size_t len, scrolled, caret_pos;
+  size_t len, suffix_len, text_len, cur_printed_len;
+  size_t scrolled, caret_pos;
 
   /* Inherit layout from parent */
   scr_window_t layout = WIDGET_LAYOUT (__edit);
@@ -74,15 +104,19 @@ edit_drawer (w_edit_t *__edit)
     }
 
   /* Calculate length of text which has to be printed */
+  text_len = __edit->text.data ? wcslen (__edit->text.data) : 0;
+  suffix_len = __edit->suffix ? wcslen (__edit->suffix) : 0;
+
   scrolled = __edit->scrolled;
-  len = wcslen (__edit->text.data);
+  len = text_len + suffix_len;
   w = __edit->position.width;
   caret_pos = __edit->caret_pos;
 
   printed_len = MIN (len - scrolled, w - (caret_pos - scrolled == w ? 1 : 0));
 
   /* Print text */
-  for (i = 0; i < printed_len; i++)
+  cur_printed_len = MIN (printed_len, text_len);
+  for (i = 0; i < cur_printed_len; i++)
     {
       dummy = wcwidth (__edit->text.data[i + scrolled]);
       if (printed_width + dummy > w)
@@ -97,6 +131,21 @@ edit_drawer (w_edit_t *__edit)
           caret_pos += dummy - 1;
         }
 
+      printed_width += dummy;
+    }
+
+  /* Print suffix */
+  scr_wnd_font (layout, *__edit->suffix_font);
+  cur_printed_len = printed_len - text_len;
+  for (i = 0; i < cur_printed_len; ++i)
+    {
+      dummy = wcwidth (__edit->suffix[i]);
+      if (printed_width + dummy > w)
+        {
+          /* Printed text will not fit to width of edit box */
+          break;
+        }
+      scr_wnd_add_wchar (layout, __edit->suffix[i]);
       printed_width += dummy;
     }
 
@@ -146,6 +195,10 @@ static int
 edit_blured (w_edit_t *__edit)
 {
   _WIDGET_CALL_USER_CALLBACK (__edit, blured, __edit);
+
+  /* Assume suffix should be rejected if edit box lost focus */
+  __edit->suffix = NULL;
+  widget_redraw (WIDGET (__edit));
 
   /* When edit box is blured we should hide caret */
   scr_hide_cursor ();
@@ -240,6 +293,45 @@ edit_validate_scrolling (w_edit_t *__edit)
       if (caret_pos_rel >= __edit->position.width)
         {
           __edit->scrolled += caret_pos_rel - __edit->position.width;
+        }
+    }
+}
+
+/**
+ * Make text auto-guessing to calculate suffix
+ *
+ * @param __edit - edit to make guessing on it
+ */
+static void
+make_guessing (w_edit_t *__edit)
+{
+  wchar_t *prefix;
+  unsigned long i;
+  size_t len;
+
+  if (!__edit)
+    {
+      return;
+    }
+
+  __edit->suffix = 0;
+
+  prefix = w_edit_get_text (__edit);
+  len = wcslen (prefix);
+
+  /* It would be better if we calculate suffix */
+  /* for non-empty prefixes only */
+  if (len == 0)
+    {
+      return;
+    }
+
+  for (i = 0; i < __edit->variants.count; ++i)
+    {
+      if (!wcsncmp (prefix, __edit->variants.strings[i], len))
+        {
+          __edit->suffix = __edit->variants.strings[i] + len;
+          break;
         }
     }
 }
@@ -384,6 +476,57 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
 
       break;
 
+    case KEY_ESC:
+      /* If user hits Escape button when there is guessed suffix of string */
+      /* we should cancel this guessing */
+      /* And if user hits Escape button when there is no suffix, */
+      /* we should do nothing */
+      if (__edit->suffix)
+        {
+          __edit->suffix = NULL;
+          widget_redraw (WIDGET (__edit));
+          return TRUE;
+        }
+      else
+        {
+          return FALSE;
+        }
+      break;
+
+    case KEY_RETURN:
+      /* If user hits Return button when there is guessed suffix of string */
+      /* we should accept guessing string to main buffer */
+      /* And if user hits Return button when there is no suffix, */
+      /* we should do nothing */
+      if (__edit->suffix)
+        {
+          size_t len = wcslen (__edit->text.data),
+                 suff_len = wcslen (__edit->suffix);
+
+          /* Realloc buffer if needed */
+          if (len + suff_len > __edit->text.allocated)
+            {
+              __edit->text.data = realloc (__edit->text.data, len + suff_len);
+              __edit->text.allocated = len + suff_len;
+            }
+
+          /* Append auto-guessed suffix to main text buffer */
+          wcscat (__edit->text.data, __edit->suffix);
+
+          /* Move caret to end of text */
+          __edit->caret_pos = len + suff_len;
+          edit_validate_scrolling (__edit);
+
+          __edit->suffix = NULL;
+          widget_redraw (WIDGET (__edit));
+          return TRUE;
+        }
+      else
+        {
+          return FALSE;
+        }
+      break;
+
     default:
 
 #ifdef SCREEN_NCURSESW
@@ -472,6 +615,10 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
           __edit->text.allocated = 0;
         }
     }
+  else
+    {
+      make_guessing (__edit);
+    }
 
   SAFE_FREE (sbuffer);
 
@@ -479,6 +626,22 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
   widget_redraw (WIDGET (__edit));
 
   return TRUE;
+}
+
+/**
+ * Sort strings in variants' list
+ *
+ * @param __edit - edit box in which strings will be sorted
+ */
+void
+sort_variants (w_edit_t *__edit)
+{
+  int cmp (const void *__a, const void *__b)
+  {
+    return wcscmp (*(wchar_t**)__a, *(wchar_t**)__b);
+  };
+  qsort (__edit->variants.strings, __edit->variants.count,
+         sizeof (wchar_t*), cmp);
 }
 
 /********
@@ -514,8 +677,9 @@ widget_create_edit (w_container_t *__parent,
   WIDGET_CALLBACK (res, focused) = (widget_action) edit_focused;
   WIDGET_CALLBACK (res, blured) = (widget_action) edit_blured;
 
-  res->font = &FONT (CID_BLACK, CID_CYAN);
+  res->font        = &FONT (CID_BLACK, CID_CYAN);
   res->shaded_font = &FONT (CID_BLUE, CID_CYAN);
+  res->suffix_font = &FONT (CID_CYAN, CID_BLUE);
 
   w_edit_set_text (res, L"");
 
@@ -584,7 +748,7 @@ w_edit_get_text (w_edit_t* __edit)
  */
 void
 w_edit_set_fonts (w_edit_t *__edit, scr_font_t *__font,
-                  scr_font_t *__shaded_font)
+                  scr_font_t *__shaded_font, scr_font_t *__suffix_font)
 {
   if (!__edit)
     {
@@ -593,6 +757,7 @@ w_edit_set_fonts (w_edit_t *__edit, scr_font_t *__font,
 
   WIDGET_SAFE_SET_FONT (__edit, font, __font);
   WIDGET_SAFE_SET_FONT (__edit, shaded_font, __shaded_font);
+  WIDGET_SAFE_SET_FONT (__edit, suffix_font, __suffix_font);
 
   widget_redraw (WIDGET (__edit));
 }
@@ -609,3 +774,61 @@ w_edit_set_shaded (w_edit_t *__edit, BOOL __shaded)
   __edit->shaded = __shaded;
   widget_redraw (WIDGET (__edit));
 }
+
+/**
+ * Set variants list for auto-guessing stuff
+ *
+ * @param __edit - edit box for which variants will be set
+ * @param __strings - list of variants
+ * @param __count - count of elements in list
+ */
+void
+w_edit_set_variants (w_edit_t *__edit, wchar_t **__strings,
+                     unsigned long __count)
+{
+  unsigned long i;
+
+  if (!__edit || !__strings)
+    {
+      return;
+    }
+
+  /* Free previously used variants */
+  free_variants (__edit);
+
+  __edit->variants.strings = malloc (__count * sizeof (wchar_t*));
+  for (i = 0; i < __count; ++i)
+    {
+      __edit->variants.strings[i] = wcsdup (__strings[i]);
+    }
+  __edit->variants.count = __count;
+
+  sort_variants (__edit);
+
+  /* We should to re-new suffix and redraw widget */
+  make_guessing (__edit);
+  widget_redraw (WIDGET (__edit));
+}
+
+/**
+ * Add variants to list for auto-guessing stuff
+ *
+ * @param __edit - edit box in which variant will be added
+ * @param __string - variant to add
+ */
+void
+w_edit_add_variant (w_edit_t *__edit, wchar_t *__string)
+{
+  if (!__edit || !__string)
+    {
+      return;
+    }
+
+  __edit->variants.strings = realloc (__edit->variants.strings,
+                                       (__edit->variants.count + 1) *
+                                           sizeof (wchar_t*));
+  __edit->variants.strings[__edit->variants.count] = wcsdup (__string);
+  ++__edit->variants.count;
+  sort_variants (__edit);
+}
+

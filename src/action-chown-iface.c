@@ -59,6 +59,8 @@ fill_users_list (w_list_t *__list, int __id)
 	{
 	  w_list_append_item (__list, list[i]->name, 0);
 
+          w_edit_add_variant (WIDGET_USER_DATA (__list), list[i]->name);
+
           /* Set selection to list item */
           /* and set text of edit box */
           if (list[i]->uid == __id)
@@ -101,6 +103,8 @@ fill_groups_list (w_list_t *__list, int __id)
       for (i = 0; i < count; ++i)
 	{
 	  w_list_append_item (__list, list[i]->name, 0);
+
+          w_edit_add_variant (WIDGET_USER_DATA (__list), list[i]->name);
 
           /* Set selection to list item */
           /* and set text of edit box */
