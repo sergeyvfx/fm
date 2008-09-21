@@ -350,7 +350,7 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
 
   size_t spos, sscrolled;
   wchar_t *sbuffer = NULL;
-  BOOL rollback_changes = FALSE, sshaded;
+  BOOL rollback_changes = FALSE, sshaded, reject_suffix = FALSE;
 
   /* Save data for rollback if validation failed */
   spos      = __edit->caret_pos;
@@ -451,6 +451,8 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
             /* so, there are no chars to delete */
             if (__edit->caret_pos == n)
             {
+              reject_suffix = TRUE;
+              widget_redraw (WIDGET (__edit));
               break;
             }
           }
@@ -504,9 +506,10 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
                  suff_len = wcslen (__edit->suffix);
 
           /* Realloc buffer if needed */
-          if (len + suff_len > __edit->text.allocated)
+          if (len + suff_len >= __edit->text.allocated)
             {
-              __edit->text.data = realloc (__edit->text.data, len + suff_len);
+              __edit->text.data = realloc (__edit->text.data,
+                                           len + suff_len + 1);
               __edit->text.allocated = len + suff_len;
             }
 
@@ -617,7 +620,14 @@ edit_keydown (w_edit_t *__edit, wint_t __ch)
     }
   else
     {
-      make_guessing (__edit);
+      if (!reject_suffix)
+        {
+          make_guessing (__edit);
+        }
+      else
+        {
+          __edit->suffix = NULL;
+        }
     }
 
   SAFE_FREE (sbuffer);
