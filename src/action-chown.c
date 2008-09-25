@@ -18,15 +18,24 @@
 #include <vfs/vfs.h>
 #include <widgets/widget.h>
 
+/*
+ * NOTE: Current implementation of changing owner always
+ *       follows symbolic links
+ */
+
+/*
+ * TODO: Add option to make this stuff not follow symbolic links
+ */
+
 #define UPDATE_ID(_arg, _field) \
   { \
     if ((*_arg) == -1) \
       { \
-        (*_arg) = __list[i]->file->lstat._field; \
+        (*_arg) = __list[i]->file->stat._field; \
       } \
     else \
       { \
-        if ((*_arg) != __list[i]->file->lstat._field) \
+        if ((*_arg) != __list[i]->file->stat._field) \
           { \
             (*_arg) = -2; \
           } \
@@ -655,6 +664,10 @@ action_chown (file_panel_t *__panel)
 
   res = get_initial_ids (cwd, (const file_panel_item_t**)list,
                          count, &uid, &gid);
+
+  /*
+   * TODO: What should we do if there is wrong symbolic ling in selection?
+   */
 
   if (res == ACTION_OK)
     {
