@@ -1414,7 +1414,8 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
   if (scan_allowed)
     {
       ACTION_REPEAT (res = action_get_listing (__base_dir, __src_list,
-                                     __count, &listing, __move);
+                                               __count, &listing,
+                                               __move, FALSE);
                      if (res == ACTION_ABORT)
                        {
                          return 0;

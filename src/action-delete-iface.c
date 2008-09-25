@@ -51,7 +51,7 @@ button_keydown (w_button_t *__button, wint_t __ch)
 
   if (__ch == KEY_ESC)
     {
-      /* If escaped was pressed, copy operation shoud be aborted */
+      /* If escaped was pressed, delete operation shoud be aborted */
       delete_process_window_t *wnd;
       wnd = WIDGET_USER_DATA (__button);
       wnd->abort = TRUE;

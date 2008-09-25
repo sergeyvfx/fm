@@ -10,6 +10,7 @@
  * See the file COPYING.
  */
 
+#include "action-chown-iface.h"
 #include "actions.h"
 #include "i18n.h"
 #include "usergroup.h"
@@ -336,6 +337,53 @@ group_id (wchar_t *__name)
   return res;
 }
 
+/**
+ * Handler of clicking button 'abort' on process window
+ *
+ * @param __button - sender button
+ * @return non-zero if action has been handled, non-zero otherwise
+ */
+static int
+abort_button_clicked (w_button_t *__button)
+{
+  chown_process_window_t *wnd;
+  if (!__button || !WIDGET_USER_DATA (__button))
+    {
+      return 0;
+    }
+
+  wnd = WIDGET_USER_DATA (__button);
+
+  wnd->abort = TRUE;
+
+  return TRUE;
+}
+
+/**
+ * Handler of keydown message for buttons on process window
+ *
+ * @param __button - button on which key was pressed
+ * @param __ch - code of pressed key
+ */
+static int
+button_keydown (w_button_t *__button, wint_t __ch)
+{
+  if (!__button || !WIDGET_USER_DATA (__button))
+    {
+      return 0;
+    }
+
+  if (__ch == KEY_ESC)
+    {
+      /* If escaped was pressed, chown operation shoud be aborted */
+      chown_process_window_t *wnd;
+      wnd = WIDGET_USER_DATA (__button);
+      wnd->abort = TRUE;
+    }
+
+  return 0;
+}
+
 /********
  * User's backend
  */
@@ -345,10 +393,12 @@ group_id (wchar_t *__name)
  *
  * @param __user - identificator of file's owner
  * @param __group - identificator of file's group
+ * @param __rec - used to determine if it s able to make recursive chown
+ * and user's decision will be written here
  * @return zero on success, non-zero otherwise
  */
 int
-action_chown_dialog (int *__user, int *__group)
+action_chown_dialog (int *__user, int *__group, int *__rec)
 {
   w_window_t *wnd;
   w_container_t *cnt;
@@ -356,6 +406,7 @@ action_chown_dialog (int *__user, int *__group)
   w_button_t *btn;
   w_list_t *list;
   w_edit_t *edt_user, *edt_group, *editboxes[2];
+  w_checkbox_t *cb = NULL;
 
   /* Create widgets */
   wnd = widget_create_window (_(L"Change owner"), 0, 0, 55, 20, WMS_CENTERED);
@@ -380,7 +431,7 @@ action_chown_dialog (int *__user, int *__group)
 
   /* List of users */
   list = widget_create_list (cnt, _(L"List of users"), 1, 3, dummy,
-                             cnt->position.height - 5);
+                             cnt->position.height - 5 - ((*__rec) ? 1 : 0));
   WIDGET_USER_DATA (list) = edt_user;
   WIDGET_USER_DATA (edt_user) = list;
   WIDGET_USER_CALLBACK (list, property_changed) = list_property_changed;
@@ -389,11 +440,18 @@ action_chown_dialog (int *__user, int *__group)
   /* List of Groups */
   list = widget_create_list (cnt, _(L"List of groups"), dummy + 2, 3,
                              cnt->position.width - dummy - 3,
-                             cnt->position.height - 5);
+                             cnt->position.height - 5 - ((*__rec) ? 1 : 0));
   WIDGET_USER_DATA (list) = edt_group;
   WIDGET_USER_DATA (edt_group) = list;
   WIDGET_USER_CALLBACK (list, property_changed) = list_property_changed;
   fill_groups_list (list, *__group);
+
+  if (*__rec)
+    {
+      /* Recursively chown'ing is able */
+      cb = widget_create_checkbox (cnt, _(L"_Recursively"),
+                                   1, wnd->position.height - 3, FALSE);
+    }
 
   /* Create buttons */
   dummy = widget_shortcut_length (_(L"_Ok"));
@@ -417,10 +475,70 @@ action_chown_dialog (int *__user, int *__group)
     {
       (*__user)  = user_id (w_edit_get_text (edt_user));
       (*__group) = group_id (w_edit_get_text (edt_group));
+
+      if (*__rec)
+        {
+          (*__rec) = w_checkbox_get (cb);
+        }
     }
 
   /* Free currently unused memory */
   widget_destroy (WIDGET (wnd));
 
   return  (res == MR_OK) ? (ACTION_OK) : (ACTION_ABORT);
+}
+
+/* Create chown'ing process window */
+chown_process_window_t*
+action_chown_create_proc_wnd (BOOL __total_progress)
+{
+  chown_process_window_t *res;
+  w_button_t *btn;
+  w_container_t *cnt;
+  int dummy;
+
+  MALLOC_ZERO (res, sizeof (chown_process_window_t));
+
+  res->window = widget_create_window (_(L"Change owner"), 0, 0,
+                                      50, 5 + (__total_progress ? 3 : 0),
+                                      WMS_CENTERED);
+  cnt = WIDGET_CONTAINER (res->window);
+
+  if (__total_progress)
+    {
+      /*
+       * NOTE: Real maximum progress bar's position will
+       *       be set later in chown'ing stuff
+       */
+      res->progress = widget_create_progress (cnt, 100, 1, 4,
+                                              cnt->position.width - 2, 0);
+    }
+
+  widget_create_text (cnt, _(L"Changing owner of file or directory:"), 1, 1);
+  res->text = widget_create_text (cnt, L"", 1, 2);
+
+  /* Create button */
+  dummy = (cnt->position.width -
+           widget_shortcut_length (_(L"_Abort")) - 6) / 2;
+  btn = widget_create_button (cnt, _(L"_Abort"),
+                              dummy, cnt->position.height - 2, WBS_DEFAULT);
+  btn->modal_result = MR_ABORT;
+  WIDGET_USER_DATA (btn) = res;
+  WIDGET_USER_CALLBACK (btn, clicked) = (widget_action)abort_button_clicked;
+  WIDGET_USER_CALLBACK (btn, keydown) = (widget_keydown_proc)button_keydown;
+
+  return res;
+}
+
+/* Create chown'ing process window */
+void
+action_chown_destroy_proc_wnd (chown_process_window_t *__window)
+{
+  if (!__window)
+    {
+      return;
+    }
+
+  widget_destroy (WIDGET (__window->window));
+  free (__window);
 }

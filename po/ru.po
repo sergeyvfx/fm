@@ -404,6 +404,12 @@ msgstr "Невозможно сменить владельца файла \"%ls\
 msgid "Cannot change owner of directory \"%ls\":\n%ls"
 msgstr "Невозможно сменить владельца директории \"%ls\":\n%ls"
 
+msgid "_Recursively"
+msgstr "_Рекурсивно"
+
+msgid "Changing owner of file or directory:"
+msgstr "Смена владельца файла или директории:"
+
 ##
 # POSIX errors
 

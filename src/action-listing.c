@@ -130,10 +130,13 @@ listing_drop_item (action_listing_tree_t *__node)
  * @param __count - total count of files
  * @param __size - total size of files
  * @param __ignore_errors - ignore error in listing procress
+ * @param __count_dirs - count dirs to summary items count
+ * @return zero on success, non-zero otherwise
  */
 static int
 get_listing_iter (const wchar_t *__path, action_listing_tree_t **__res,
-                  __u64_t *__count, __u64_t *__size, BOOL __ignore_errors)
+                  __u64_t *__count, __u64_t *__size, BOOL __ignore_errors,
+                  BOOL __count_dirs)
 {
   if (isdir (__path))
     {
@@ -183,6 +186,11 @@ get_listing_iter (const wchar_t *__path, action_listing_tree_t **__res,
       (*__res)->count = count;
       (*__res)->dirent = dirent;
 
+      if (__count_dirs)
+        {
+          ++(*__count);
+        }
+
       MALLOC_ZERO ((*__res)->items, count * sizeof (action_listing_tree_t*));
 
       len = wcslen (__path) + MAX_FILENAME_LEN + 1;
@@ -197,7 +205,8 @@ get_listing_iter (const wchar_t *__path, action_listing_tree_t **__res,
             {
               swprintf (cur, len, L"%ls/%ls", __path, dirent[i]->name);
               res = get_listing_iter (cur, &(*__res)->items[i],
-                                      __count, __size, __ignore_errors);
+                                      __count, __size, __ignore_errors,
+                                      __count_dirs);
               if (res == ACTION_ABORT)
                 {
                   free (cur);
@@ -312,13 +321,14 @@ free_listing_iter (action_listing_tree_t *__tree)
  * @param __count - count of items in list
  * @param __res - pointer to a structure, where result will be saved
  * @param __ignore_errors - ignore error in listing procress
+ * @param __count_dirs - count dirs to summary items count
  * @return zero on success, non-zero otherwise
  */
 int
 action_get_listing (const wchar_t *__base_dir,
                     const file_panel_item_t **__list,
                     unsigned long __count, action_listing_t *__res,
-                    BOOL __ignore_errors)
+                    BOOL __ignore_errors, BOOL __count_dirs)
 {
   unsigned long i, ptr;
   wchar_t *cur, *format;
@@ -364,7 +374,8 @@ action_get_listing (const wchar_t *__base_dir,
 
       /* Get listing of item */
       res = get_listing_iter (cur, &__res->tree->items[ptr],
-                              &__res->count, &__res->size, __ignore_errors);
+                              &__res->count, &__res->size, __ignore_errors,
+                              __count_dirs);
 
       /* There is an error while listing */
       if (res)

@@ -20,7 +20,7 @@ static BOOL confirm = TRUE;
 static BOOL scan = TRUE;
 
 /*
- * Free all tail dirents. Helper for copy_directory()
+ * Free all tail dirents. Helper for unlink_dir()
  */
 #define FREE_REMAIN_DIRENT() \
   { \
@@ -182,8 +182,7 @@ unlink_dir (wchar_t *__path, delete_process_window_t *__proc_wnd,
     {
       if (!IS_PSEUDODIR (eps[i]->name))
         {
-          /* Get full filename of current file or directory and */
-          /* it's destination */
+          /* Get full filename of current file or directory */
           swprintf (full_name, len, L"%ls/%ls", __path, eps[i]->name);
 
           if (isdir (full_name))
@@ -305,7 +304,8 @@ make_deletion (const wchar_t *__base_dir,
   if (scan)
     {
       ACTION_REPEAT (res = action_get_listing (__base_dir, __list,
-                                     __count, &listing, false);
+                                               __count, &listing,
+                                               FALSE, FALSE);
                      if (res == ACTION_ABORT)
                        {
                          return 0;
