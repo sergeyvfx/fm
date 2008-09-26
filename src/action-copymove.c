@@ -219,7 +219,7 @@
 /* Next buffer of file was copied */
 
 /*
- * NOTE: The magick value in this macros is needed to
+ * NOTE: The magic value in this macros is needed to
  *       make load of CPU not so enormous
  */
 
@@ -228,7 +228,7 @@
     /* Set progress for current copying file */ \
     w_progress_set_pos (__proc_wnd->file_progress, copied); \
     __proc_wnd->bytes_copied += _size; \
-    if (iteration % 8 /* Magick constant */) \
+    if (iteration % 8 /* Magic constant */ || remain == 0) \
       { \
         /* Update progress of total copied bytes */ \
         if (__proc_wnd->bytes_progress) \
@@ -367,14 +367,14 @@ is_newer (const wchar_t *__src, const wchar_t *__dst)
 }
 
 /**
- * Is total progress info displaying avaliable
+ * Is total progress info displaying available
  *
  * @param __src_list - list of items to be copied
  * @param __count - count of items in list
- * @return is total progress info displaying avaliable
+ * @return is total progress info displaying available
  */
 static BOOL
-total_progress_avaliable (const file_panel_item_t **__src_list,
+total_progress_available (const file_panel_item_t **__src_list,
                           unsigned long __count)
 {
   if (!__src_list || !scan)
@@ -391,7 +391,7 @@ total_progress_avaliable (const file_panel_item_t **__src_list,
 }
 
 /**
- * Makes a vfs_rename() opertaion
+ * Makes a vfs_rename() operation
  *
  * @param __src - source path
  * @param __dst - destination path
@@ -409,7 +409,7 @@ make_rename (const wchar_t *__src, const wchar_t *__dst,
                  return ACTION_CANCEL_TO_ABORT (__dlg_res_),
                  _(L"Cannot move \"%ls\":\n%ls"), __src, vfs_get_error (res));
 
-  /* Process accamulated queue of characters */
+  /* Process accumulated queue of characters */
   widget_process_queue ();;
 
   if (res)
@@ -555,7 +555,7 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
       *       So, need to process after both of this operations.
       */
 
-      /* Process accamulated queue of characters */
+      /* Process accumulated queue of characters */
       COPY_PROCESS_QUEUE ();
 
       /* Write buffer to destination file */
@@ -566,12 +566,13 @@ copy_regular_file (const wchar_t *__src, const wchar_t *__dst,
                      __dst, vfs_get_error (res));
 
       copied += written;
+      remain -= read;
+
       BUFFER_COPIED (written);
 
-      /* Process accamulated queue of characters */
+      /* Process accumulated queue of characters */
       COPY_PROCESS_QUEUE ();
 
-      remain -= read;
       ++iteration;
     }
 
@@ -728,7 +729,7 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
               switch (res)
                 {
                 case MR_RETRY:
-                  /* Process accamulated queue of characters */
+                  /* Process accumulated queue of characters */
                   COPY_PROCESS_QUEUE ();
                   continue;
 
@@ -741,7 +742,7 @@ copy_symlink (const wchar_t *__src, const wchar_t *__dst,
             }
         }
 
-      /* Process accamulated queue of characters */
+      /* Process accumulated queue of characters */
       COPY_PROCESS_QUEUE ();
 
       break;
@@ -866,7 +867,7 @@ copy_special_file (const wchar_t *__src, const wchar_t *__dst,
                   switch (res)
                     {
                     case MR_RETRY:
-                      /* Process accamulated queue of characters */
+                      /* Process accumulated queue of characters */
                       COPY_PROCESS_QUEUE ();
                       continue;
 
@@ -879,7 +880,7 @@ copy_special_file (const wchar_t *__src, const wchar_t *__dst,
                 }
             }
 
-          /* Process accamulated queue of characters */
+          /* Process accumulated queue of characters */
           COPY_PROCESS_QUEUE ();
 
           break;
@@ -901,7 +902,7 @@ copy_special_file (const wchar_t *__src, const wchar_t *__dst,
 
           if (__proc_wnd->move)
             {
-              /* Special files (like regilar files) shouldn't be */
+              /* Special files (like regular files) shouldn't be */
               /* unlimked immediately */
 
               deque_push_back (__proc_wnd->unlink_list, wcsdup (__src));
@@ -944,7 +945,7 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
   /* Initialize current info on screen */
   w_progress_set_pos (__proc_wnd->file_progress, 0);
 
-  /* +1 becase I want to skip directory delimeter too */
+  /* +1 because I want to skip directory delimiter too */
   prefix_len = wcslen (__proc_wnd->abs_path_prefix) + 1;
 
   COPY_SET_FN (__src + prefix_len, source, L"Source");
@@ -1080,7 +1081,7 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
 
   /*
    * NOTE: Destination directory must be created AFTER listing of source one.
-   *       It depends on posibility that destination directory will
+   *       It depends on possibility that destination directory will
    *       be created inside source.
    */
 
@@ -1128,7 +1129,7 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
                   s_strategy = __proc_wnd->move_strategy;
 
                   /* We need this because previously move_strategy */
-                  /* was calclated for parent directory, not */
+                  /* was calculated for parent directory, not */
                   /* for child. It is not the same. Because parent */
                   /* may be a mount-point */
                   if (move_strategy == MOVE_STRATEGY_UNDEFINED)
@@ -1171,7 +1172,7 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
             }
         }
 
-      /* Process accamulated queue of characters */
+      /* Process accumulated queue of characters */
       widget_process_queue ();
       if (PROCESS_ABORTED ())
         {
@@ -1298,7 +1299,7 @@ make_copy_iter (const wchar_t *__src, const wchar_t *__dst,
  * Unlink all items from list of items to be unlinked
  *
  * @param __proc_wnd - window with different current information
- * @return zero on sucess, non-zero otherwise
+ * @return zero on success, non-zero otherwise
  */
 static int
 make_unlink (copy_process_window_t *__proc_wnd)
@@ -1365,7 +1366,7 @@ make_unlink (copy_process_window_t *__proc_wnd)
  *
  * @param __move - if FALSE, then make copying of files,
  * otherwise - move files
- * @param __base_dir - base directpry
+ * @param __base_dir - base directory
  * @param __src_list - list of source items
  * @param __count - count of items to be copied
  * @param __dst - URL of destination
@@ -1379,7 +1380,7 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
   copy_process_window_t *wnd;
   int res, owr_all_rule = 0;
   wchar_t *dst, *src, *dummy = (wchar_t*) __dst, *item_name;
-  unsigned long i, count = 0, source_count;
+  unsigned long i, j, count = 0, source_count;
   file_panel_item_t *item;
   BOOL scan_allowed;
   action_listing_t listing;
@@ -1408,7 +1409,7 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
       return 0;
     }
 
-  scan_allowed = total_progress_avaliable (__src_list, __count);
+  scan_allowed = total_progress_available (__src_list, __count);
 
   /* Get listing of items */
   if (scan_allowed)
@@ -1461,11 +1462,19 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
   w_window_show (wnd->window);
 
   item = NULL;
+  j = 0;
   for (i = 0; i < source_count; ++i)
     {
       if (scan_allowed)
         {
           item_name = listing.tree->dirent[i]->name;
+
+          /* Need this to cast deselecting of copied items */
+          item = (file_panel_item_t*)__src_list[j++];
+          while ((wcscmp (item->file->name, item_name) != 0) && j < __count)
+            {
+              item = (file_panel_item_t*)__src_list[j++];
+            }
         }
       else
         {
@@ -1481,7 +1490,7 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
 
       if (res == 0)
         {
-          /* In case of successfull copying */
+          /* In case of successful copying */
           /* we need free selection from copied item */
           if (item != NULL)
             {
@@ -1498,7 +1507,7 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
             }
         }
 
-      /* Maybe this will help to grow up interactvity */
+      /* Maybe this will help to grow up interactivity */
       widget_process_queue ();
       if (wnd->abort)
         {
