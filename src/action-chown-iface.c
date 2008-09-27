@@ -31,6 +31,10 @@
       } \
   }
 
+/* Enable navigation in list when up/down arrow key */
+/* pressed when edit box is focused */
+#define LIST_NAVIGATE_FROM_EDIT
+
 /**
  * Fill specified list with user names
  *
@@ -364,6 +368,7 @@ abort_button_clicked (w_button_t *__button)
  *
  * @param __button - button on which key was pressed
  * @param __ch - code of pressed key
+ * @return non-zero if action has been handled, non-zero otherwise
  */
 static int
 button_keydown (w_button_t *__button, wint_t __ch)
@@ -382,6 +387,36 @@ button_keydown (w_button_t *__button, wint_t __ch)
     }
 
   return 0;
+}
+
+/**
+ * Handler of keydown message for edit box in dialog
+ *
+ * @param __edit - edit box received this message
+ * @param __ch - code of pressed key
+ * @return non-zero if action has been handled, non-zero otherwise
+ */
+static int
+edit_keydown (w_edit_t *__edit, wint_t __ch)
+{
+#ifdef LIST_NAVIGATE_FROM_EDIT
+  /* If navigating in list from edit is enabled */
+  /* and pressed button is an up or down arrow, */
+  /* we should call list's callback and disable */
+  /* handling this key in edit box's handler */
+  if (__ch == KEY_UP || __ch == KEY_DOWN)
+    {
+      w_list_t *list;
+      list = WIDGET_USER_DATA (__edit);
+      WIDGET_CALL_CALLBACK (list, keydown, list, __ch);
+
+      /* We need this call because list may want to be redrawn */
+      /* but in this case cursor may be moved to different place */
+      widget_redraw (WIDGET (__edit));
+      return TRUE;
+    }
+#endif
+  return FALSE;
 }
 
 /********
@@ -419,12 +454,14 @@ action_chown_dialog (int *__user, int *__group, int *__rec)
   widget_create_text (cnt, _(L"User name:"), 1, 1);
   edt_user = widget_create_edit (cnt, 1, 2, dummy);
   WIDGET_USER_CALLBACK (edt_user, property_changed) = edit_property_changed;
+  WIDGET_USER_CALLBACK (edt_user, keydown) = (widget_keydown_proc)edit_keydown;
 
   /* Caption and edit box for group name */
   widget_create_text (cnt, _(L"Group name:"), dummy + 2, 1);
   edt_group = widget_create_edit (cnt, dummy + 2, 2,
                                  cnt->position.width - dummy - 3);
   WIDGET_USER_CALLBACK (edt_group, property_changed) = edit_property_changed;
+  WIDGET_USER_CALLBACK (edt_group, keydown) = (widget_keydown_proc)edit_keydown;
 
   editboxes[0] = edt_user;
   editboxes[1] = edt_group;

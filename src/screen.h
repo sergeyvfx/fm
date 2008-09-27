@@ -93,6 +93,10 @@ extern BOOL curs_wis;
 #define scr_wnd_attron(_wnd,_attr)      wattron (_wnd,_attr)
 #define scr_wnd_attroff(_wnd,_attr)     wattroff (_wnd,_attr)
 
+/*
+ * TODO: Implement saving/restoring cursor position
+ */
+
 #define scr_wnd_attr_backup(_w) \
   attr_t __old_attr_; \
   short  __old_pair_; \
