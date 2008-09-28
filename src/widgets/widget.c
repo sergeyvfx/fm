@@ -12,8 +12,10 @@
 
 #include "widget.h"
 #include "deque.h"
+#include "hook.h"
 
 #include <malloc.h>
+#include <time.h>
 
 /********
  *
@@ -23,6 +25,8 @@
 
 #define FOCUSABLE(_w) \
   (!WIDGET_TEST_FLAG (_w, WF_UNFOCUSABE))
+
+#define DELAY (0.2*1000*10)
 
 /* List of root widgets */
 static deque_t *root_widgets = NULL;
@@ -37,6 +41,8 @@ static deque_t *root_widgets = NULL;
  */
 static BOOL destroying_root_widgets = FALSE;
 
+static BOOL main_loop_started = FALSE;
+static BOOL stop_main_loop = FALSE;
 
 /********
  * Deep-core stuff
@@ -370,6 +376,26 @@ on_scr_resize_iter (short __step)
     }
 }
 
+/**
+ * Callback for hook "exit-hook"
+ *
+ * @param __call_data - calling context
+ * @return HOOK_SUCCESS if succeed, HOOK_FAILURE otherwise
+ */
+int
+exit_hook_callback (struct dynstruct_t *__call_data ATTR_UNUSED)
+{
+  /* We need to stop widgets' main loop */
+  /* if it is started */
+
+  if (main_loop_started)
+    {
+      stop_main_loop = TRUE;
+    }
+
+  return HOOK_SUCCESS;
+}
+
 /********
  *
  */
@@ -382,11 +408,23 @@ widget_main_loop (void)
 {
   wint_t ch;
 
+  main_loop_started = TRUE;
+
   for (;;)
     {
-      ch = scr_wnd_getch (TRUE);
-      widget_process_char (ch);
+      ch = widget_get_char ();
+
+      if (ch)
+        {
+          widget_process_char (ch);
+        }
+      else
+        {
+          break;
+        }
     }
+
+  main_loop_started = FALSE;
 }
 
 /**
@@ -421,6 +459,35 @@ widget_process_queue (void)
 }
 
 /**
+ * Get next character for widgets' stuff
+ *
+ * @param __locking - is this call is locking
+ * @return code of next character
+ */
+wint_t
+widget_get_char (void)
+{
+  struct timespec timestruc = {0, DELAY};
+  wint_t ch;
+
+  while (!stop_main_loop)
+    {
+      ch = scr_wnd_getch (FALSE);
+
+      if (ch)
+        {
+          return ch;
+        }
+      else
+        {
+          nanosleep (&timestruc, 0);
+        }
+    }
+
+  return 0;
+}
+
+/**
  * Initialize widgets' stuff
  *
  * @return a zero in successful, non-zero otherwise
@@ -435,6 +502,8 @@ widgets_init (void)
       return -1;
     }
 
+  hook_register (L"exit-hook", exit_hook_callback, 0);
+
   return 0;
 }
 
@@ -444,6 +513,8 @@ widgets_init (void)
 void
 widgets_done (void)
 {
+  hook_unhook (L"exit-hook", exit_hook_callback);
+
   destroying_root_widgets = TRUE;
   deque_destroy (root_widgets, widget_deque_deleter);
   root_widgets = NULL;

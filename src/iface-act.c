@@ -13,8 +13,7 @@
 #include "iface.h"
 #include "messages.h"
 #include "i18n.h"
-
-#include <stdlib.h>
+#include "util.h"
 
 /********
  * User's backend
@@ -29,8 +28,6 @@ iface_act_exit (void)
   if (message_box (L"fm", _(L"Are you sure you want to quit?"),
                    MB_YESNO | MB_DEFBUTTON_1) == MR_YES)
     {
-      iface_done ();
-      i18n_release ();
-      exit (0);
+      do_exit ();
     }
 }

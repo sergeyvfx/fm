@@ -50,4 +50,8 @@ timedist (timeval_t __from, timeval_t __to);
 int
 run_shell_command (const wchar_t *__command);
 
+/* Exit from file manager */
+void
+do_exit (void);
+
 #endif

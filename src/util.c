@@ -13,6 +13,7 @@
 #include "util.h"
 #include "dir.h"
 #include "iface.h"
+#include "hook.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -353,4 +354,13 @@ run_shell_command (const wchar_t *__command)
 
   free (command);
   return result;
+}
+
+/**
+ * Exit from file manager
+ */
+void
+do_exit (void)
+{
+  hook_call (L"exit-hook", NULL);
 }

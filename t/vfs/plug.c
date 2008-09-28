@@ -10,6 +10,8 @@
  * See the file COPYING.
  */
 
+#include <smartinclude.h>
+
 void
 iface_screen_lock (void)
 {
@@ -18,4 +20,11 @@ iface_screen_lock (void)
 void
 iface_screen_unlock (void)
 {
+}
+
+int
+hook_call (wchar_t *__unused_name ATTR_UNUSED,
+           void *__unused_data ATTR_UNUSED)
+{
+  return 0;
 }

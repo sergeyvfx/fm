@@ -350,6 +350,9 @@ widget_process_char (wint_t __ch);
 void
 widget_process_queue (void);
 
+wint_t
+widget_get_char (void);
+
 int
 widgets_init (void);
 

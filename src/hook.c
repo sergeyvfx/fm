@@ -103,7 +103,7 @@ int
 hook_call (const wchar_t *__name, dynstruct_t *__data)
 {
   iterator_t *hook;
-  if (!__name || !__data)
+  if (!__name)
     {
       return HOOK_FAILURE;
     }
@@ -115,10 +115,10 @@ hook_call (const wchar_t *__name, dynstruct_t *__data)
       hook_action_t *ha;
 
       deque_foreach (h->actions_list, ha);
-      if (ha->callback (__data) != 0)
-        {
-          return HOOK_BREAK;
-        }
+        if (ha->callback (__data) != 0)
+          {
+            return HOOK_BREAK;
+          }
       deque_foreach_done;
     }
   else
