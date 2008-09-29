@@ -386,12 +386,8 @@ int
 exit_hook_callback (struct dynstruct_t *__call_data ATTR_UNUSED)
 {
   /* We need to stop widgets' main loop */
-  /* if it is started */
 
-  if (main_loop_started)
-    {
-      stop_main_loop = TRUE;
-    }
+  stop_main_loop = TRUE;
 
   return HOOK_SUCCESS;
 }
@@ -407,6 +403,12 @@ void
 widget_main_loop (void)
 {
   wint_t ch;
+
+  /* Widgets' main loop stopped before it is started */
+  if (stop_main_loop)
+    {
+      return;
+    }
 
   main_loop_started = TRUE;
 
