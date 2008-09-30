@@ -382,12 +382,26 @@ on_scr_resize_iter (short __step)
  * @param __call_data - calling context
  * @return HOOK_SUCCESS if succeed, HOOK_FAILURE otherwise
  */
-int
+static int
 exit_hook_callback (struct dynstruct_t *__call_data ATTR_UNUSED)
 {
   /* We need to stop widgets' main loop */
 
   stop_main_loop = TRUE;
+
+  return HOOK_SUCCESS;
+}
+
+/**
+ * Handler for hook "switch-task-hook"
+ *
+ * @param __call_data - calling context
+ * @return HOOK_SUCCESS if succeed, HOOK_FAILURE otherwise
+ */
+static int
+switch_task_hook_callback (struct dynstruct_t *__call_data ATTR_UNUSED)
+{
+  widget_process_queue ();
 
   return HOOK_SUCCESS;
 }
@@ -505,6 +519,7 @@ widgets_init (void)
     }
 
   hook_register (L"exit-hook", exit_hook_callback, 0);
+  hook_register (L"switch-task-hook", switch_task_hook_callback, 0);
 
   return 0;
 }
@@ -516,6 +531,7 @@ void
 widgets_done (void)
 {
   hook_unhook (L"exit-hook", exit_hook_callback);
+  hook_unhook (L"switch-task-hook", exit_hook_callback);
 
   destroying_root_widgets = TRUE;
   deque_destroy (root_widgets, widget_deque_deleter);

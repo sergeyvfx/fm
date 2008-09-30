@@ -14,6 +14,7 @@
 #include "action-chown-iface.h"
 #include "messages.h"
 #include "dir.h"
+#include "hook.h"
 
 #include <vfs/vfs.h>
 #include <widgets/widget.h>
@@ -279,7 +280,7 @@ do_toplevel_chown (const wchar_t *__path, const file_panel_item_t **__list,
         }
 
       /* Process accumulated queue */
-      widget_process_queue ();
+      hook_call (L"switch-task-hook", NULL);
 
       if (__proc_wnd->abort)
         {
@@ -380,7 +381,8 @@ chown_dir_rec (wchar_t *__path, int __uid, int __gid,
         }
 
       /* Process accamulated queue of characters */
-      widget_process_queue ();
+      hook_call (L"switch-task-hook", NULL);
+
       if (__proc_wnd->abort)
         {
           /* Free allocated memory */
@@ -544,7 +546,7 @@ do_recursively_chown (const wchar_t *__path, const file_panel_item_t **__list,
         }
 
       /* Process accumulated queue */
-      widget_process_queue ();
+      hook_call (L"switch-task-hook", NULL);
 
       if (__proc_wnd->abort)
         {

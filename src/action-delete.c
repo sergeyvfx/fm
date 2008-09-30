@@ -15,6 +15,7 @@
 #include "messages.h"
 #include "i18n.h"
 #include "dir.h"
+#include "hook.h"
 
 static BOOL confirm = TRUE;
 static BOOL scan = TRUE;
@@ -215,7 +216,7 @@ unlink_dir (wchar_t *__path, delete_process_window_t *__proc_wnd,
         }
 
       /* Process accamulated queue of characters */
-      widget_process_queue ();
+      hook_call (L"switch-task-hook", NULL);
       if (__proc_wnd->abort)
         {
           /* Free allocated memory */
@@ -359,7 +360,7 @@ make_deletion (const wchar_t *__base_dir,
         }
 
       /* Process accumulated tree */
-      widget_process_queue ();
+      hook_call (L"switch-task-hook", NULL);
     }
 
   if (scanned)

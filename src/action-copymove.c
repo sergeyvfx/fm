@@ -17,6 +17,7 @@
 #include "dir.h"
 #include "util.h"
 #include "timer.h"
+#include "hook.h"
 
 #include <fcntl.h>
 #include <errno.h>
@@ -150,7 +151,7 @@
  * Process queue in copy_regular_file().
  */
 #define COPY_PROCESS_QUEUE() \
-  widget_process_queue (); \
+  hook_call (L"switch-task-hook", NULL); \
   if (PROCESS_ABORTED()) \
     { \
       break; \
@@ -410,7 +411,7 @@ make_rename (const wchar_t *__src, const wchar_t *__dst,
                  _(L"Cannot move \"%ls\":\n%ls"), __src, vfs_get_error (res));
 
   /* Process accumulated queue of characters */
-  widget_process_queue ();;
+  hook_call (L"switch-task-hook", NULL);
 
   if (res)
     {
@@ -978,7 +979,7 @@ copy_file (const wchar_t *__src, const wchar_t *__dst,
     }
 
   /* Process accamulated queue of characters */
-  widget_process_queue ();
+  hook_call (L"switch-task-hook", NULL);
   if (__proc_wnd->abort)
     {
       return ACTION_ABORT;
@@ -1173,7 +1174,7 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
         }
 
       /* Process accumulated queue of characters */
-      widget_process_queue ();
+      hook_call (L"switch-task-hook", NULL);
       if (PROCESS_ABORTED ())
         {
           /* Free allocated memory */
@@ -1508,7 +1509,7 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
         }
 
       /* Maybe this will help to grow up interactivity */
-      widget_process_queue ();
+      hook_call (L"switch-task-hook", NULL);
       if (wnd->abort)
         {
           break;
