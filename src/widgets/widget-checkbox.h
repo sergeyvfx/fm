@@ -16,7 +16,17 @@
 #endif
 
 /********
- * Type defenitions
+ * Constants
+ */
+
+/* Unknown check state */
+#define WCB_STATE_UNDEFINED (-1)
+
+/* Allow checkbox to has undefined state */
+#define WCBS_WITH_UNDEFINED 0x00001
+
+/********
+ * Type definitions
  */
 
 typedef struct
@@ -31,17 +41,25 @@ typedef struct
 
   wchar_t *caption;
   BOOL ischeck;
+
+  unsigned int style;
 } w_checkbox_t;
 
 /********
  *
  */
 
+/* Create new checkbox */
 w_checkbox_t*
 widget_create_checkbox (w_container_t *__parent, const wchar_t *__caption,
-                        int __x, int __y, BOOL __check);
+                        int __x, int __y, BOOL __check, unsigned int __style);
 
+/* Get check state from the checkbox */
 BOOL
 w_checkbox_get (const w_checkbox_t *__checkbox);
+
+/* Set check state from the checkbox */
+void
+w_checkbox_set (w_checkbox_t *__checkbox, BOOL __state);
 
 #endif

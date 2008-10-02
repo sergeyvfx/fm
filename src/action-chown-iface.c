@@ -487,7 +487,7 @@ action_chown_dialog (int *__user, int *__group, int *__rec)
     {
       /* Recursively chown'ing is able */
       cb = widget_create_checkbox (cnt, _(L"_Recursively"),
-                                   1, wnd->position.height - 3, FALSE);
+                                   1, wnd->position.height - 3, FALSE, 0);
     }
 
   /* Create buttons */
