@@ -136,17 +136,20 @@ edit_drawer (w_edit_t *__edit)
 
   /* Print suffix */
   scr_wnd_font (layout, *__edit->suffix_font);
-  cur_printed_len = printed_len - text_len;
-  for (i = 0; i < cur_printed_len; ++i)
+  if (printed_len > text_len)
     {
-      dummy = wcwidth (__edit->suffix[i]);
-      if (printed_width + dummy > w)
+      cur_printed_len = printed_len - text_len;
+      for (i = 0; i < cur_printed_len; ++i)
         {
-          /* Printed text will not fit to width of edit box */
-          break;
+          dummy = wcwidth (__edit->suffix[i]);
+          if (printed_width + dummy > w)
+            {
+              /* Printed text will not fit to width of edit box */
+              break;
+            }
+          scr_wnd_add_wchar (layout, __edit->suffix[i]);
+          printed_width += dummy;
         }
-      scr_wnd_add_wchar (layout, __edit->suffix[i]);
-      printed_width += dummy;
     }
 
   /* Print spaces to make edit needed width */
@@ -790,6 +793,18 @@ w_edit_set_shaded (w_edit_t *__edit, BOOL __shaded)
 {
   __edit->shaded = __shaded;
   widget_redraw (WIDGET (__edit));
+}
+
+/**
+ * Get shaded state of specified edit widget
+ *
+ * @param __edit - edit widget where shade state will be changed
+ * @return non-zero if edit is shaded, non-zero otherwise
+ */
+BOOL
+w_edit_get_shaded (w_edit_t *__edit)
+{
+  return __edit->shaded;
 }
 
 /**

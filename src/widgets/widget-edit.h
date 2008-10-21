@@ -95,6 +95,10 @@ w_edit_set_fonts (w_edit_t *__edit, scr_font_t *__font,
 void
 w_edit_set_shaded (w_edit_t *__edit, BOOL __shaded);
 
+/* Get shaded state of specified edit widget */
+BOOL
+w_edit_get_shaded (w_edit_t *__edit);
+
 /* Set variants list for auto-guessing stuff */
 void
 w_edit_set_variants (w_edit_t *__edit, wchar_t **__strings,

@@ -26,10 +26,9 @@
 static int
 show_dialog (const wchar_t *__item, wchar_t **__content)
 {
-  int res, left, dummy;
+  int res;
   w_window_t *wnd;
   w_edit_t *e_cnt;
-  w_button_t *btn;
   wchar_t *buf, fit[20];
 
   wnd = widget_create_window (_(L"Edit symlink"), 0, 0, 60, 6, WMS_CENTERED);
@@ -45,18 +44,7 @@ show_dialog (const wchar_t *__item, wchar_t **__content)
   free (buf);
 
   /* Create buttons */
-  dummy = widget_shortcut_length (_(L"_Ok"));
-  left = (wnd->position.width - dummy -
-          widget_shortcut_length (_(L"_Cancel")) - 11) / 2;
-
-  btn = widget_create_button (WIDGET_CONTAINER (wnd), _(L"_Ok"), left,
-                              wnd->position.height - 2, WBS_DEFAULT);
-  btn->modal_result = MR_OK;
-
-  left += dummy + 7;
-  btn = widget_create_button (WIDGET_CONTAINER (wnd), _(L"_Cancel"), left,
-                              wnd->position.height - 2, 0);
-  btn->modal_result = MR_CANCEL;
+  action_create_ok_cancel_btns (wnd);
 
   /* Show window */
   res = w_window_show_modal (wnd);

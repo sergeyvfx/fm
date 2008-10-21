@@ -30,10 +30,8 @@ static wchar_t*
 get_directory_name (void)
 {
   w_window_t *wnd;
-  w_button_t *btn;
   w_edit_t *edit;
-  wchar_t *txt_ok, *txt_cancel, *res = NULL;
-  int w_ok, w_cancel, button_left;
+  wchar_t *res = NULL;
 
   /* Create window */
   wnd = widget_create_window (_(L"Create a new directory"),
@@ -47,20 +45,7 @@ get_directory_name (void)
                              wnd->position.width - 2);
 
   /* Create buttons */
-  txt_ok = _(L"_Ok");
-  w_ok = widget_shortcut_length (txt_ok);
-  txt_cancel = _(L"_Cancel");
-  w_cancel = widget_shortcut_length (txt_cancel);
-
-  button_left = (wnd->position.width - (w_ok + w_cancel + 11)) / 2;
-  btn = widget_create_button (WIDGET_CONTAINER (wnd), txt_ok,
-                              button_left, 4, WBS_DEFAULT);
-  btn->modal_result = MR_OK;
-
-  button_left += w_ok + 7;
-  btn = widget_create_button (WIDGET_CONTAINER (wnd), txt_cancel,
-                              button_left, 4, 0);
-  btn->modal_result = MR_CANCEL;
+  action_create_ok_cancel_btns (wnd);
 
   if (w_window_show_modal (wnd) != MR_CANCEL)
     {

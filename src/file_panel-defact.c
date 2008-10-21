@@ -1214,6 +1214,7 @@ fpd_create (file_panel_t *__panel)
   _REGISTER_HOTKEY (L"C-x s",   action_symlink);
   _REGISTER_HOTKEY (L"C-x C-s", action_editsymlink);
   _REGISTER_HOTKEY (L"C-x o",   action_chown);
+  _REGISTER_HOTKEY (L"C-x c",   action_chmod);
 
   return 0;
 }

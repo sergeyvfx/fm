@@ -533,9 +533,8 @@ int
 action_copy_show_dialog (BOOL __move, const file_panel_item_t **__src_list,
                          unsigned long __count, wchar_t **__dst)
 {
-  int res, left, dummy;
+  int res;
   w_window_t *wnd;
-  w_button_t *btn;
   w_edit_t *to;
   w_container_t *cnt;
   wchar_t msg[1024];
@@ -554,18 +553,7 @@ action_copy_show_dialog (BOOL __move, const file_panel_item_t **__src_list,
   w_edit_set_shaded (to, TRUE);
 
   /* Create buttons */
-  dummy = widget_shortcut_length (_(L"_Ok"));
-  left = (wnd->position.width - dummy -
-          widget_shortcut_length (_(L"_Cancel")) - 11) / 2;
-
-  btn = widget_create_button (cnt, _(L"_Ok"), left,
-                              wnd->position.height - 2, WBS_DEFAULT);
-  btn->modal_result = MR_OK;
-
-  left += dummy + 7;
-  btn = widget_create_button (cnt, _(L"_Cancel"), left,
-                              wnd->position.height - 2, 0);
-  btn->modal_result = MR_CANCEL;
+  action_create_ok_cancel_btns (wnd);
 
   res = w_window_show_modal (wnd);
 

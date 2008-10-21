@@ -126,12 +126,10 @@ window_dimensions (const wchar_t *__caption, const wchar_t *__short_msg)
 static file_panel_t*
 show_list (const wchar_t *__caption, const wchar_t *__short_msg)
 {
-  int modal_result, w_ok, w_cancel, button_left;
+  int modal_result;
   w_window_t *wnd;
   w_list_t *list;
   file_panel_t *res;
-  wchar_t *cpt_ok, *cpt_cancel;
-  w_button_t *btn;
   widget_position_t pos;
 
   /* Create window */
@@ -144,22 +142,7 @@ show_list (const wchar_t *__caption, const wchar_t *__short_msg)
                              wnd->position.height - 3);
 
   /* Create buttons */
-  cpt_ok = _(L"_Ok");
-  w_ok = widget_shortcut_length (cpt_ok) + 6;
-  cpt_cancel = _(L"_Cancel");
-  w_cancel = widget_shortcut_length (cpt_cancel) + 4;
-
-  button_left = (wnd->position.width - (w_ok  + w_cancel + 2)) / 2;
-
-  btn = widget_create_button (WIDGET_CONTAINER (wnd), cpt_ok,
-                              button_left, wnd->position.height - 2,
-                              WBS_DEFAULT);
-  btn->modal_result = MR_OK;
-  button_left += w_ok + 1;
-
-  btn = widget_create_button (WIDGET_CONTAINER (wnd), cpt_cancel,
-                              button_left, wnd->position.height - 2, 0);
-  btn->modal_result = MR_CANCEL;
+  action_create_ok_cancel_btns (wnd);
 
   /* Fill list with items */
   fill_list (list);

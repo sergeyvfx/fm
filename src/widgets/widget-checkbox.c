@@ -81,17 +81,56 @@ checkbox_drawer (w_checkbox_t *__checkbox)
               ch = ' ';
             }
         }
-      scr_wnd_printf (layout, "[%c] ", ch);
+      scr_wnd_printf (layout, "[%c]", ch);
 
-      widget_shortcut_print (layout, __checkbox->caption,
-          __checkbox->focused ? *__checkbox->font_focus : *__checkbox->font,
-          __checkbox->focused ? *__checkbox->hotkey_focus
-              : *__checkbox->hotkey_font);
+      if (wcscmp (__checkbox->caption, L"") != 0)
+        {
+          scr_wnd_putch (layout, ' ');
+          widget_shortcut_print (layout, __checkbox->caption,
+             __checkbox->focused ? *__checkbox->font_focus : *__checkbox->font,
+             __checkbox->focused ? *__checkbox->hotkey_focus :
+                                   *__checkbox->hotkey_font);
+        }
     }
 
   scr_wnd_attr_restore (layout);
 
   return 0;
+}
+
+/**
+ * Turn state of checkbox
+ *
+ * @param __checkbox - for which checkbox state will be turned
+ */
+static void
+checkbox_turn_state (w_checkbox_t *__checkbox)
+{
+  if (__checkbox->style & WCBS_WITH_UNDEFINED)
+    {
+      if (__checkbox->ischeck == WCB_STATE_UNDEFINED)
+        {
+          __checkbox->ischeck = FALSE;
+        }
+      else
+        {
+          if (__checkbox->ischeck)
+            {
+              __checkbox->ischeck = WCB_STATE_UNDEFINED;
+            }
+          else
+            {
+              __checkbox->ischeck = TRUE;
+            }
+        }
+    }
+  else
+    {
+      __checkbox->ischeck = !__checkbox->ischeck;
+    }
+
+  WIDGET_CALL_USER_CALLBACK (__checkbox, property_changed,
+                             __checkbox, W_CHECKBOX_CHECKED_PROP);
 }
 
 /**
@@ -109,28 +148,7 @@ checkbox_keydown (w_checkbox_t *__checkbox, wint_t __ch)
   switch (__ch)
     {
     case KEY_SPACE:
-      if (__checkbox->style & WCBS_WITH_UNDEFINED)
-        {
-          if (__checkbox->ischeck == WCB_STATE_UNDEFINED)
-            {
-              __checkbox->ischeck = FALSE;
-            }
-          else
-            {
-              if (__checkbox->ischeck)
-                {
-                  __checkbox->ischeck = WCB_STATE_UNDEFINED;
-                }
-              else
-                {
-                  __checkbox->ischeck = TRUE;
-                }
-            }
-        }
-      else
-        {
-          __checkbox->ischeck = !__checkbox->ischeck;
-        }
+      checkbox_turn_state (__checkbox);
       widget_redraw (WIDGET (__checkbox));
       return TRUE;
     }
@@ -149,9 +167,12 @@ static int
 checkbox_shortcut (w_checkbox_t *__checkbox)
 {
   _WIDGET_CALL_USER_CALLBACK (__checkbox, shortcut, __checkbox);
-  widget_set_focus(WIDGET (__checkbox));
+  widget_set_focus (WIDGET (__checkbox));
 
-  return checkbox_keydown (__checkbox, KEY_SPACE);
+  checkbox_turn_state (__checkbox);
+  widget_redraw (WIDGET (__checkbox));
+
+  return TRUE;
 }
 
 /**
@@ -229,4 +250,33 @@ w_checkbox_set (w_checkbox_t *__checkbox, BOOL __state)
 
   __checkbox->ischeck = __state;
   widget_redraw (WIDGET (__checkbox));
+
+  /* Call property changed callback */
+  WIDGET_CALL_USER_CALLBACK (__checkbox, property_changed,
+                             __checkbox, W_CHECKBOX_CHECKED_PROP);
+}
+
+/**
+ * Set colors used in checkbox
+ *
+ * @param __checkbox - for which checkbox fonts will be set
+ * @param __font - font of normal text
+ * @param __font_focus - font of text when checkbox is focused
+ * @param __hotkey_font - font of shortcut character
+ * @param __hotkey_focus - font of shortcut character when checkbox is focused
+ */
+void
+w_checkbox_set_fonts (w_checkbox_t *__checkbox, scr_font_t *__font,
+                      scr_font_t *__font_focus, scr_font_t *__hotkey_font,
+                      scr_font_t *__hotkey_focus)
+{
+  if (!__checkbox)
+    {
+      return;
+    }
+
+  WIDGET_SAFE_SET_FONT (__checkbox, font,         __font);
+  WIDGET_SAFE_SET_FONT (__checkbox, font_focus,   __font_focus);
+  WIDGET_SAFE_SET_FONT (__checkbox, hotkey_font,  __hotkey_font);
+  WIDGET_SAFE_SET_FONT (__checkbox, hotkey_focus, __hotkey_focus);
 }

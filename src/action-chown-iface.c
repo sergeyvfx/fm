@@ -437,8 +437,7 @@ action_chown_dialog (int *__user, int *__group, int *__rec)
 {
   w_window_t *wnd;
   w_container_t *cnt;
-  int left, dummy, res;
-  w_button_t *btn;
+  int dummy, res;
   w_list_t *list;
   w_edit_t *edt_user, *edt_group, *editboxes[2];
   w_checkbox_t *cb = NULL;
@@ -491,18 +490,7 @@ action_chown_dialog (int *__user, int *__group, int *__rec)
     }
 
   /* Create buttons */
-  dummy = widget_shortcut_length (_(L"_Ok"));
-  left = (wnd->position.width - dummy -
-          widget_shortcut_length (_(L"_Cancel")) - 11) / 2;
-
-  btn = widget_create_button (WIDGET_CONTAINER (wnd), _(L"_Ok"), left,
-                              wnd->position.height - 2, WBS_DEFAULT);
-  btn->modal_result = MR_OK;
-
-  left += dummy + 7;
-  btn = widget_create_button (WIDGET_CONTAINER (wnd), _(L"_Cancel"), left,
-                              wnd->position.height - 2, 0);
-  btn->modal_result = MR_CANCEL;
+  action_create_ok_cancel_btns (wnd);
 
   /* Show window and overview result */
   res = w_window_show_modal (wnd);
@@ -525,7 +513,12 @@ action_chown_dialog (int *__user, int *__group, int *__rec)
   return  (res == MR_OK) ? (ACTION_OK) : (ACTION_ABORT);
 }
 
-/* Create chown'ing process window */
+/**
+ * Create chown'ing process window
+ *
+ * @param __total_progress - create total progress bar?
+ * @return descriptor of created window
+ */
 chown_process_window_t*
 action_chown_create_proc_wnd (BOOL __total_progress)
 {
@@ -567,7 +560,11 @@ action_chown_create_proc_wnd (BOOL __total_progress)
   return res;
 }
 
-/* Create chown'ing process window */
+/**
+ * Destroy chown'ing process window
+ *
+ * @param __window - window to be destroyed
+ */
 void
 action_chown_destroy_proc_wnd (chown_process_window_t *__window)
 {

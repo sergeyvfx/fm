@@ -23,7 +23,10 @@
 #define WCB_STATE_UNDEFINED (-1)
 
 /* Allow checkbox to has undefined state */
-#define WCBS_WITH_UNDEFINED 0x00001
+#define WCBS_WITH_UNDEFINED 0x0001
+
+/* Code of value property */
+#define W_CHECKBOX_CHECKED_PROP 0x0001
 
 /********
  * Type definitions
@@ -61,5 +64,11 @@ w_checkbox_get (const w_checkbox_t *__checkbox);
 /* Set check state from the checkbox */
 void
 w_checkbox_set (w_checkbox_t *__checkbox, BOOL __state);
+
+/* Set colors used in checkbox */
+void
+w_checkbox_set_fonts (w_checkbox_t *__checkbox, scr_font_t *__font,
+                      scr_font_t *__font_focus, scr_font_t *__hotkey_font,
+                      scr_font_t *hotkey_focus);
 
 #endif

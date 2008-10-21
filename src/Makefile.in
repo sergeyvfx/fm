@@ -36,6 +36,8 @@ SOURCES = \
 	actions.c \
 	action-choose_panel.c \
 	action-listing.c \
+	action-chmod.c \
+	action-chmod-iface.c \
 	action-chown.c \
 	action-chown-iface.c \
 	action-copymove.c \
@@ -46,6 +48,7 @@ SOURCES = \
 	action-editsymlink.c \
 	action-move.c \
 	action-mkdir.c \
+	action-operate.c \
 	action-symlink.c \
 	shared.c \
 	usergroup.c

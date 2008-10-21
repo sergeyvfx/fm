@@ -37,7 +37,7 @@ action_chown_dialog (int *__user, int *__group, int *__rec);
 chown_process_window_t*
 action_chown_create_proc_wnd (BOOL __total_progress);
 
-/* Create chown'ing process window */
+/* Destroy chown'ing process window */
 void
 action_chown_destroy_proc_wnd (chown_process_window_t *__window);
 

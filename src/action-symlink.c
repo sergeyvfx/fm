@@ -48,10 +48,9 @@ error (const wchar_t *__text, ...)
 static int
 show_dialog (wchar_t **__content, wchar_t **__fn)
 {
-  int res, left, dummy;
+  int res;
   w_window_t *wnd;
   w_edit_t *e_cnt, *e_fn;
-  w_button_t *btn;
 
   wnd = widget_create_window (_(L"Symbolic link"), 0, 0, 60, 9, WMS_CENTERED);
 
@@ -70,18 +69,7 @@ show_dialog (wchar_t **__content, wchar_t **__fn)
   w_edit_set_shaded (e_fn, TRUE);
 
   /* Create buttons */
-  dummy = widget_shortcut_length (_(L"_Ok"));
-  left = (wnd->position.width - dummy -
-          widget_shortcut_length (_(L"_Cancel")) - 11) / 2;
-
-  btn = widget_create_button (WIDGET_CONTAINER (wnd), _(L"_Ok"), left,
-                              wnd->position.height - 2, WBS_DEFAULT);
-  btn->modal_result = MR_OK;
-
-  left += dummy + 7;
-  btn = widget_create_button (WIDGET_CONTAINER (wnd), _(L"_Cancel"), left,
-                              wnd->position.height - 2, 0);
-  btn->modal_result = MR_CANCEL;
+  action_create_ok_cancel_btns (wnd);
 
   /* Show window */
   res = w_window_show_modal (wnd);

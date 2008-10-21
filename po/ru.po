@@ -410,6 +410,54 @@ msgstr "_Рекурсивно"
 msgid "Changing owner of file or directory:"
 msgstr "Смена владельца файла или директории:"
 
+msgid "Permissions"
+msgstr "Права доступа"
+
+msgid "Cannot stat file or directory \"%ls\":\n%ls"
+msgstr "Невозможно получить свойства файла или директории \"%ls\":\n%ls"
+
+msgid "Enter octal permissions:"
+msgstr "Введите права числом:"
+
+msgid "Or use checkboxes to build it:"
+msgstr "Или используйте чекбоксы:"
+
+msgid "Set user ID on execution"
+msgstr "Устанавливать UID при выполнении"
+
+msgid "Set group ID on execution"
+msgstr "Устанавливать GID при выполнении"
+
+msgid "Sticky bit"
+msgstr "Закрепляющий бит"
+
+msgid "Read"
+msgstr "Чтение"
+
+msgid "Write"
+msgstr "Запись"
+
+msgid "Execute"
+msgstr "Исполнение"
+
+msgid "Owner"
+msgstr "Владелец"
+
+msgid "Group"
+msgstr "Группа"
+
+msgid "Other"
+msgstr "Остальные"
+
+msgid "Additional options:"
+msgstr "Дополнительные опции:"
+
+msgid "Cannot change mode of file \"%ls\":\n%ls"
+msgstr "Невозможно сменить режим файла \"%ls\":\n%ls"
+
+msgid "Cannot change mode of directory \"%ls\":\n%ls"
+msgstr "Невозможно сменить режим директории \"%ls\":\n%ls"
+
 ##
 # POSIX errors
 

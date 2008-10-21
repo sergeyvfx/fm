@@ -32,6 +32,8 @@ BEGIN_HEADER
 #define ACTION_IGNORE 2
 #define ACTION_SKIP   3
 
+#define AOF_DIR_IGNORED_ITEMS 0x0001
+
 /********
  * Macro definitions
  */
@@ -73,6 +75,13 @@ BEGIN_HEADER
         break; \
       } \
   } while (TRUE);
+
+/********
+ * Type definitions
+ */
+
+typedef int (*action_operator_t) (const wchar_t *__name, vfs_stat_t __stat,
+                                  void *__user_data, unsigned int __flags);
 
 /********
  *
@@ -125,6 +134,10 @@ action_editsymlink (file_panel_t *__panel);
 int
 action_chown (file_panel_t *__panel);
 
+/* Change mode of single file or group of files */
+int
+action_chmod (file_panel_t *__panel);
+
 /* Chooses file panel for action */
 file_panel_t*
 action_choose_file_panel (const wchar_t *__caption,
@@ -149,6 +162,21 @@ action_error_retryskipcancel (const wchar_t *__text, ...);
 /*  but modal result for MR_SKIP will be replaced with MR_IGNORE. */
 int
 action_error_retryskipcancel_ign (const wchar_t *__text, ...);
+
+/* Create buttons `Ok` and `Cancel` on specified window */
+void
+action_create_ok_cancel_btns (w_window_t *__window);
+
+/* Operate on items from specified list */
+int
+action_operate (const wchar_t *__caption, const wchar_t *__desc,
+                file_panel_t *__panel,
+                const wchar_t *__base_dir, const file_panel_item_t **__list,
+                unsigned long __count, BOOL __recursively, BOOL __prescan,
+                action_operator_t __operation,
+                action_operator_t __before_rec_op,
+                action_operator_t __after_rec_op,
+                void *__user_data);
 
 END_HEADER
 

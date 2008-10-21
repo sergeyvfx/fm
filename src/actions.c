@@ -192,3 +192,33 @@ action_error_retryskipcancel_ign (const wchar_t *__text, ...)
     }
   return res;
 }
+
+/**
+ * Create buttons `Ok` and `Cancel` on specified window
+ *
+ * @param __window - descri[tor of window on which buttons will be created
+ */
+void
+action_create_ok_cancel_btns (w_window_t *__window)
+{
+  int dummy, left;
+  w_button_t *btn;
+
+  if (!__window)
+    {
+      return;
+    }
+
+  dummy = widget_shortcut_length (_(L"_Ok"));
+  left = (__window->position.width - dummy -
+          widget_shortcut_length (_(L"_Cancel")) - 11) / 2;
+
+  btn = widget_create_button (WIDGET_CONTAINER (__window), _(L"_Ok"), left,
+                              __window->position.height - 2, WBS_DEFAULT);
+  btn->modal_result = MR_OK;
+
+  left += dummy + 7;
+  btn = widget_create_button (WIDGET_CONTAINER (__window), _(L"_Cancel"), left,
+                              __window->position.height - 2, 0);
+  btn->modal_result = MR_CANCEL;
+}
