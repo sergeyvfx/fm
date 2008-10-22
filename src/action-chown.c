@@ -148,34 +148,6 @@ chown_operation (const wchar_t *__path, vfs_stat_t __stat,
 }
 
 
-/**
- * Determine is it able to make recursively chown'ing
- *
- * @param __list - list of selected items
- * @param __count - count of selected items
- * @return non-zero if recursively chown'ing is able, zero otherwise
- */
-BOOL
-is_recursively_able (const file_panel_item_t **__list, unsigned long __count)
-{
-  /* Recursively chown'ing is able if */
-  /* at least one selected item is a directory */
-
-  unsigned int i;
-
-  /* Review all items */
-  for (i = 0; i < __count; ++i)
-    {
-      if (S_ISDIR (__list[i]->file->stat.st_mode))
-        {
-          /* Directory has been found */
-          return TRUE;
-        }
-    }
-
-  return FALSE;
-}
-
 /********
  * User's backend
  */
@@ -221,8 +193,11 @@ action_chown (file_panel_t *__panel)
 
   if (res == ACTION_OK)
     {
-      recursively = is_recursively_able ((const file_panel_item_t**)list,
-                                         count);
+      /* Recursively chown'ing is able if */
+      /* at least one selected item is a directory */
+      recursively =
+        action_is_directory_selected ((const file_panel_item_t**)list,
+                                      count);
 
       /* Show dialog to get new values of uid and git */
       if (action_chown_dialog (&op_data.uid, &op_data.gid,

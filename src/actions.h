@@ -178,6 +178,11 @@ action_operate (const wchar_t *__caption, const wchar_t *__desc,
                 action_operator_t __after_rec_op,
                 void *__user_data);
 
+/* Check are there any selected directories */
+BOOL
+action_is_directory_selected (const file_panel_item_t **__list,
+                              unsigned long __count);
+
 END_HEADER
 
 #endif

@@ -70,25 +70,13 @@ chmod_operation (const wchar_t *__full_name, vfs_stat_t __stat,
 
   mode = __masks->mask;
 
-  /* Get current state information of file or directory */
-  ACTION_REPEAT (res = vfs_stat (__full_name, &stat),
-                 action_error_retryskipcancel_ign,
-                 return ACTION_CANCEL_TO_ABORT (__dlg_res_),
-                 _(L"Cannot stat file or directory \"%ls\":\n%ls"),
-                 __full_name, vfs_get_error (res));
-
-  if (res)
-    {
-      return ACTION_SKIP;
-    }
-
   if (__masks->unknown_mask)
     {
-      mode = (stat.st_mode & __masks->unknown_mask) |
+      mode = (__stat.st_mode & __masks->unknown_mask) |
              (mode & ~__masks->unknown_mask);
     }
 
-  if (mode != (stat.st_mode & PERM_BITS))
+  if (mode != (__stat.st_mode & PERM_BITS))
     {
       /* Call vfs_chmod() only if new mode is differ than */
       /* current mode of file or directory */
@@ -140,7 +128,7 @@ action_chmod (file_panel_t *__panel)
   unsigned long count;
   file_panel_item_t **list = NULL;
   wchar_t *cwd;
-  BOOL recursively = TRUE;
+  BOOL recursively;
 
   /* Get list of items to be chowned */
   count = file_panel_get_selected_items (__panel, &list);
@@ -160,6 +148,12 @@ action_chmod (file_panel_t *__panel)
 
   /* Get initial values of mode mask and mask of unknown bits*/
   get_initial_masks (list, count, &op_data.mask, &op_data.unknown_mask);
+
+  /* Recursively chown'ing is able if */
+  /* at least one selected item is a directory */
+  recursively =
+    action_is_directory_selected ((const file_panel_item_t**)list,
+                                  count);
 
   /* Get new masks from user */
   res = action_chmod_show_dialog (&op_data.mask, &op_data.unknown_mask,

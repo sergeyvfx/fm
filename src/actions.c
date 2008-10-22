@@ -222,3 +222,30 @@ action_create_ok_cancel_btns (w_window_t *__window)
                               __window->position.height - 2, 0);
   btn->modal_result = MR_CANCEL;
 }
+
+/**
+ * Check are there any selected directories
+ *
+ * @param __list - list of selected items
+ * @param __count - count of selected items
+ * @return non-zero in case at least one directory is selected and
+ * zero otherwise
+ */
+BOOL
+action_is_directory_selected (const file_panel_item_t **__list,
+                              unsigned long __count)
+{
+  unsigned int i;
+
+  /* Review all items */
+  for (i = 0; i < __count; ++i)
+    {
+      if (S_ISDIR (__list[i]->file->stat.st_mode))
+        {
+          /* Directory has been found */
+          return TRUE;
+        }
+    }
+
+  return FALSE;
+}

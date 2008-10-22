@@ -334,16 +334,18 @@ get_dialog_dimensions (BOOL __recursively)
           ++i;
         }
 
-      if (__recursively)
-        {
-          height += 3;
-        }
-
       initialized = TRUE;
     }
 
   res.width = width;
   res.height = height;
+
+  /* Ability of recursively chmoding is not constant */
+  /* so we can't use this stuff in pre-calculating */
+  if (__recursively)
+    {
+      res.height += 3;
+    }
 
   return res;
 }

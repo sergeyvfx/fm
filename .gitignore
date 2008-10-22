@@ -34,3 +34,4 @@ Makefile
 TAGS
 tags
 *.tar.gz
+*.orig
