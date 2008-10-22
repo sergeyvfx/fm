@@ -188,7 +188,7 @@ action_chown (file_panel_t *__panel)
                          count, &op_data.uid, &op_data.gid);
 
   /*
-   * TODO: What should we do if there is wrong symbolic ling in selection?
+   * TODO: What should we do if there is wrong symbolic link in selection?
    */
 
   if (res == ACTION_OK)
