@@ -1037,7 +1037,7 @@ file_panel_set_cwd (file_panel_t *__panel, const wchar_t *__cwd)
         dynstruct_create (L"cwd.changed.struct",
                           L"cwd", __cwd,
                           sizeof (wchar_t) * (wcslen(__cwd) + 1), NULL);
-      hook_call (L"cwd.changed", cwd_hook_struct);
+      hook_call (L"cwd-changed-hook", cwd_hook_struct);
       dynstruct_destroy (&cwd_hook_struct);
     }
 

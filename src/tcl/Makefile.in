@@ -1,0 +1,29 @@
+.SILENT:
+
+top_builddir = ../..
+
+include ${top_builddir}/mk/rules.mk
+include ${top_builddir}/mk/init.mk
+
+SUBDIRS = 
+
+OBJECTIVE_LIBS_NOINST = libtcllib.a
+CFLAGS += -I/usr/include/tcl8.5
+LDFLAGS += -Wl,-export-dynamic -ltcl8.5
+
+SOURCES = \
+	util.c \
+	ext.c \
+	tcllib.c \
+	 \
+	commands/commands_list.c \
+	commands/ext_cmd.c \
+	commands/iface_cmd.c \
+	commands/makeensemble.c
+
+OBJECTS = ${SOURCES:.c=.o}
+
+all:
+	rm -f ../fm
+
+include ${top_builddir}/mk/objective.mk

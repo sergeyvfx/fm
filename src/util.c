@@ -331,7 +331,7 @@ int
 run_shell_command (const wchar_t *__command)
 {
   char  *command;
-  int   result, status;
+  int   result = 0, status;
   pid_t pid;
 
   wcs2mbs (&command, __command);
@@ -339,7 +339,7 @@ run_shell_command (const wchar_t *__command)
   iface_screen_lock ();
     if ((pid = fork ()) == 0)
       {
-        result = execl(getenv("SHELL"), "sh", "-c", command, NULL);
+        result = execl (getenv("SHELL"), "sh", "-c", command, NULL);
       }
 
     if (pid != -1)
@@ -363,4 +363,49 @@ void
 do_exit (void)
 {
   hook_call (L"exit-hook", NULL);
+}
+
+/**
+ * Escaped `bad' characters in a string
+ *
+ * @param __source - a source string
+ * @return escaped string
+ */
+wchar_t *
+escape_string (const wchar_t *__source)
+{
+  const wchar_t *special = L" $`\"\\!()[]", *in = __source;
+  wchar_t *out, *result;
+  size_t  escaped_symbol = 0;
+
+  while (*in != L'\0')
+    {
+      if (wcschr (special, *in++))
+        {
+          ++escaped_symbol;
+        }
+    }
+
+  if (escaped_symbol == 0)
+    {
+      return wcsdup (__source);
+    }
+
+  result = malloc (sizeof (wchar_t) * (wcslen(__source) + escaped_symbol));
+
+  in  = __source;
+  out = result;
+
+  while (*in != L'\0')
+    {
+      if (wcschr (special, *in))
+        {
+          *out++ = L'\\';
+        }
+      *out++ = *in++;
+    }
+
+  *out = L'\0';
+
+  return result;
 }

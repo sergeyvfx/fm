@@ -34,6 +34,13 @@ void
 wcsrep (wchar_t *__str, size_t __max_len,
         const wchar_t *__substr, const wchar_t *__newsubstr);
 
+/* Converted wide chararacters string to multibyte characters string */
+size_t
+wcs2mbs (char **__dest, const wchar_t *__source);
+
+size_t
+mbs2wcs (wchar_t **__dest, const char *__source);
+
 /* Get the number of seconds and microseconds since the Epoch */
 timeval_t
 now (void);
@@ -53,5 +60,9 @@ run_shell_command (const wchar_t *__command);
 /* Exit from file manager */
 void
 do_exit (void);
+
+/* Escaped string */
+wchar_t*
+escape_string (const wchar_t *__source);
 
 #endif

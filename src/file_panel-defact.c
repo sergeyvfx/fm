@@ -18,6 +18,9 @@
 #include "i18n.h"
 #include "actions.h"
 
+#include "dynstruct.h"
+#include "hook.h"
+
 #include <time.h>
 
 /********
@@ -887,13 +890,25 @@ set_default_userdata (file_panel_t *__panel)
 static int
 open_file (file_panel_t *__panel, file_panel_item_t *__item)
 {
-  MESSAGE_ERROR (_(L"This feature is not implemented yet"));
+  dynstruct_t *hookdata =
+    dynstruct_create (L"ofh-struct",
 
-  /*
-   * TODO: 1. Call an 'open-file' hook
-   *       2. Grep customized mime database
-   *       3. Grep default mime database
-   */
+                      L"filename", __item->file->name,
+                      sizeof (wchar_t) * (wcslen (__item->file->name) + 1),
+
+                      L"cwd", __panel->cwd.data,
+                      sizeof (wchar_t) * (wcslen (__panel->cwd.data) + 1),
+
+                      NULL);
+
+  if (hook_call (L"open-file-hook", hookdata) != HOOK_SUCCESS)
+    {
+      MESSAGE_ERROR (L"`open-file-hook' hook failure");
+      return -1;
+    }
+
+  dynstruct_destroy (&hookdata);
+  return 0;
 
   /*
    * NOTE: Before running command, call iface_screen_disable() to
@@ -901,8 +916,6 @@ open_file (file_panel_t *__panel, file_panel_item_t *__item)
    *       After command is finished run iface_screen_enable() to
    *       resume screen handling.
    */
-
-  return -1;
 }
 
 /**

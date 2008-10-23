@@ -12,6 +12,8 @@
 
 #include "iface.h"
 #include "i18n.h"
+#include "messages.h"
+#include "tcl/tcllib.h"
 
 #include <stdlib.h>
 
@@ -29,6 +31,8 @@ main (int __argc, char **__argv)
       i18n_release ();
       return EXIT_FAILURE;
     }
+
+  tcllib_init ();
 
   iface_mainloop ();
 

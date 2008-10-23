@@ -5,12 +5,12 @@ top_builddir = ..
 include ${top_builddir}/mk/rules.mk
 include ${top_builddir}/mk/init.mk
 
-SUBDIRS = widgets vfs
+SUBDIRS = widgets vfs tcl
 
 OBJECTIVE_BINS = fm
 
-CFLAGS += -I./widgets
-LIBADD = -ldl @SCREENLIBS@ -lm -Lwidgets -lwidgets -Lvfs -lvfs
+CFLAGS += -I./widgets -I/usr/include/tcl8.5
+LIBADD = -ldl @SCREENLIBS@ -lm -Lwidgets -lwidgets -Lvfs -lvfs -ltcl8.5 -Ltcl -ltcllib
 
 HEADERS =
 SOURCES = \

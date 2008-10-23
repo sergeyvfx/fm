@@ -90,6 +90,12 @@ sig_winch (int sig ATTR_UNUSED)
 }
 #endif
 
+static void
+sig_child (int sig ATTR_UNUSED)
+{
+  iface_screen_unlock();
+}
+
 /********
  * Handlers
  */
@@ -197,6 +203,8 @@ iface_init (void)
   /* For catching terminal resizing */
   signal (SIGWINCH, sig_winch);
 #endif
+
+  signal (SIGCHLD, sig_child);
 
   scr_hide_cursor ();
 
