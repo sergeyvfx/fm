@@ -161,11 +161,13 @@ action_chmod (file_panel_t *__panel)
 
   if (res == ACTION_OK)
     {
-      action_operate (_(L"Permissions"),
-                      _(L"Changing permissions of file or directory"),
-                      __panel, cwd, (const file_panel_item_t**)list, count,
-                      recursively, scan, (action_operator_t)chmod_operation,
-                      NULL, (action_operator_t)chmod_operation, &op_data);
+      res = action_operate (_(L"Permissions"),
+                            _(L"Changing permissions of file or directory"),
+                            __panel, cwd, (const file_panel_item_t**)list,
+                            count, recursively, scan,
+                            (action_operator_t)chmod_operation,
+                            NULL, (action_operator_t)chmod_operation,
+                            &op_data);
     }
 
   /* Free used memory */
@@ -176,5 +178,5 @@ action_chmod (file_panel_t *__panel)
   /* states of files and we need to update them. */
   file_panel_rescan (__panel);
 
-  return 0;
+  return res;
 }
