@@ -391,7 +391,7 @@ escape_string (const wchar_t *__source)
       return wcsdup (__source);
     }
 
-  result = malloc (sizeof (wchar_t) * (wcslen(__source) + escaped_symbol));
+  result = malloc (sizeof (wchar_t) * (wcslen(__source) + escaped_symbol + 1));
 
   in  = __source;
   out = result;
