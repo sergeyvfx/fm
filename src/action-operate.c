@@ -485,10 +485,11 @@ action_operate (const wchar_t *__caption, const wchar_t *__desc,
                                                __count, &listing, FALSE, TRUE);
                      if (res == ACTION_ABORT)
                        {
-                         return 0;
+                         destroy_proc_wnd (proc_wnd);
+                         return ACTION_ABORT;
                        },
                      action_error_retryskipcancel_ign,
-                     return 0,
+                     destroy_proc_wnd (proc_wnd); return ACTION_ABORT,
                      _(L"Cannot get listing of items:\n%ls"),
                      vfs_get_error (res));
 

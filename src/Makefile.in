@@ -44,7 +44,6 @@ SOURCES = \
 	action-copymove-iface.c \
 	action-copy.c \
 	action-delete.c \
-	action-delete-iface.c \
 	action-editsymlink.c \
 	action-move.c \
 	action-mkdir.c \
