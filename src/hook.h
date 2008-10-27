@@ -44,9 +44,6 @@ hook_unhook (const wchar_t *__name, hook_callback_proc __callback);
 int
 hooks_destroy (void);
 
-int
-hooks_init (void);
-
 END_HEADER
 
 #endif

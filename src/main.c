@@ -14,12 +14,16 @@
 #include "i18n.h"
 #include "messages.h"
 #include "tcl/tcllib.h"
+#include "signals.h"
 
 #include <stdlib.h>
 
 int
 main (int __argc, char **__argv)
 {
+  /* Hook signals */
+  signals_hook ();
+
   i18n_init ();
 
   if (iface_init ())

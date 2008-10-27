@@ -14,6 +14,7 @@
 #include "dir.h"
 #include "iface.h"
 #include "hook.h"
+#include "signals.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -339,7 +340,7 @@ run_shell_command (const wchar_t *__command)
   iface_screen_lock ();
     if ((pid = fork ()) == 0)
       {
-        result = execl (getenv("SHELL"), "sh", "-c", command, NULL);
+        result = execl (getenv ("SHELL"), "sh", "-c", command, NULL);
       }
 
     if (pid != -1)
@@ -350,6 +351,12 @@ run_shell_command (const wchar_t *__command)
       {
         result = -1;
       }
+
+    /*
+     * FIXME: execl() replaces my handlers of signals
+     */
+    signals_hook ();
+
   iface_screen_unlock ();
 
   free (command);

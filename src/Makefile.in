@@ -50,7 +50,8 @@ SOURCES = \
 	action-operate.c \
 	action-symlink.c \
 	shared.c \
-	usergroup.c
+	usergroup.c \
+	signals.c
 
 OBJECTS = ${SOURCES:.c=.o}
 
