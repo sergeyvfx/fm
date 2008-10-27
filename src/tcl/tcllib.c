@@ -109,12 +109,15 @@ _file_associations_hook (dynstruct_t *__callData)
           return HOOK_FAILURE;
         }
 
+      cwd = escape_string (cwd);
+
       slength = wcslen (ext->viewer) + wcslen (filename) + wcslen (cwd) + 3;
       executecmd = malloc (sizeof (wchar_t) * (slength + 1));
 
       swprintf (executecmd, slength,
                 L"%ls %ls/%ls", ext->viewer, cwd, filename);
       SAFE_FREE (filename);
+      SAFE_FREE (cwd);
     }
 
   if (run_shell_command (executecmd) == -1)
