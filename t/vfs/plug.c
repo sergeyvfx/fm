@@ -28,3 +28,8 @@ hook_call (wchar_t *__unused_name ATTR_UNUSED,
 {
   return 0;
 }
+
+void
+signals_hook ()
+{
+}
