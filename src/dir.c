@@ -317,15 +317,27 @@ wcscandir_alphasort_sep (const void *__a, const void *__b)
  * Checks is specified URL is a directory
  *
  * @param __url - URL to check
+ * @param __follow_symlinks - follow symbolic links (use vfs_stat instead
+ * of vfs_lstat)
  * @return non-zero if specified URL is a directory and zero otherwise
  */
 BOOL
-isdir (const wchar_t *__url)
+isdir (const wchar_t *__url, BOOL __follow_symlinks)
 {
   int res;
   vfs_stat_t st;
+  vfs_stat_proc proc;
 
-  if ((res = vfs_lstat (__url, &st)))
+  if (__follow_symlinks)
+    {
+      proc = vfs_stat;
+    }
+  else
+    {
+      proc = vfs_lstat;
+    }
+
+  if ((res = proc (__url, &st)))
     {
       if (res == VFS_ERR_PLUGIN_NOT_FOUND && __url[0]=='/')
         {

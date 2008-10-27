@@ -64,7 +64,7 @@ get_shared_files_iter (wchar_t *__path, long *__count, wchar_t ***__list)
       if (!IS_MBPSEUDODIR (dirent[i]->d_name))
         {
           swprintf (s, len, L"%ls/%s", __path, dirent[i]->d_name);
-          if (!isdir (s))
+          if (!isdir (s, FALSE))
             {
               (*__list) = realloc ((*__list),
                                    ((*__count) + 1) * sizeof (wchar_t*));

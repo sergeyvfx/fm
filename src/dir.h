@@ -72,7 +72,7 @@ wcscandir_alphasort_sep (const void *__a, const void *__b);
 
 /* Is URL points to a directory? */
 BOOL
-isdir (const wchar_t *__url);
+isdir (const wchar_t *__url, BOOL __follow_symlinks);
 
 END_HEADER
 

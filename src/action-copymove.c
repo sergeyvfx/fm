@@ -1118,7 +1118,7 @@ copy_dir (const wchar_t *__src, const wchar_t *__dst,
                     eps[i]->name);
 
           /* Make copying/moving */
-          if (!isdir (full_name))
+          if (!isdir (full_name, FALSE))
             {
               int s_strategy;
 
@@ -1248,7 +1248,7 @@ make_copy_iter (const wchar_t *__src, const wchar_t *__dst,
   /*
    * TODO: Nay be we should use ACTION_REPEAT(...) instead of stupid isdir?
    */
-  if (isdir (__src))
+  if (isdir (__src, FALSE))
     {
       vfs_stat_t stat;
 
@@ -1259,7 +1259,7 @@ make_copy_iter (const wchar_t *__src, const wchar_t *__dst,
         }
       else
         {
-          if (isdir (__dst))
+          if (isdir (__dst, TRUE))
             {
               rdst = get_real_dst (__src, __dst);
             }
@@ -1278,7 +1278,7 @@ make_copy_iter (const wchar_t *__src, const wchar_t *__dst,
   else
     {
       /* Get full destination filename */
-      if (isdir (__dst))
+      if (isdir (__dst, FALSE))
         {
           rdst = get_real_dst (__src, __dst);
         }
@@ -1334,7 +1334,7 @@ make_unlink (copy_process_window_t *__proc_wnd)
     w_text_set (wnd->file, fit_path);
 
     /* Get format for error and unlinking function */
-    if (isdir (path))
+    if (isdir (path, FALSE))
       {
         format = _(L"Cannot unlink source directory \"%ls\":\n%ls");
         proc = vfs_rmdir;

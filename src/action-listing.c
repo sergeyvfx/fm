@@ -138,7 +138,7 @@ get_listing_iter (const wchar_t *__path, action_listing_tree_t **__res,
                   __u64_t *__count, __u64_t *__size, BOOL __ignore_errors,
                   BOOL __count_dirs)
 {
-  if (isdir (__path))
+  if (isdir (__path, FALSE))
     {
       long i, count;
       vfs_dirent_t **dirent;

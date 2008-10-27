@@ -204,6 +204,12 @@ w_progress_set_pos (w_progress_t *__progress, unsigned long __pos)
       return;
     }
 
+  /* Fit current position */
+  if (__progress->max_pos < __pos)
+    {
+      return;
+    }
+
   __progress->cur_pos = __pos;
   WIDGET_SET_FLAG (__progress, WFPB_UPDATEONLY);
   widget_redraw (WIDGET (__progress));
@@ -224,6 +230,13 @@ w_progress_set_max (w_progress_t *__progress, unsigned long __max)
     }
 
   __progress->max_pos = __max;
+
+  /* Fit current position */
+  if (__progress->cur_pos > __max)
+    {
+      __progress->cur_pos = __max;
+    }
+
   WIDGET_SET_FLAG (__progress, WFPB_UPDATEONLY);
   widget_redraw (WIDGET (__progress));
 }
