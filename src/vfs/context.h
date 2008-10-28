@@ -24,7 +24,7 @@ vfs_context_done (void);
 void
 vfs_context_save (wchar_t *__optname1, ...);
 
-void
-vfs_context_format (wchar_t *__format);
+wchar_t*
+vfs_context_format (const wchar_t *__format);
 
 #endif

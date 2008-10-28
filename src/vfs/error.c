@@ -41,6 +41,10 @@ static error_t errors[] = {
   {VFS_ERR_INVALID_URL,        L"URL is invalid"}
 };
 
+/*
+ * FIXME: We'd better not use such stupid static buffer
+ */
+
 #define MAX_ERROR_LENGTH 1024
 
 /*  Maybe big troubles with this */
@@ -131,7 +135,9 @@ vfs_get_error (int __errcode)
 
   if (found)
     {
-      vfs_context_format (current_error);
+      wchar_t *dummy = vfs_context_format (current_error);
+      wcsncpy (current_error, dummy, MAX_ERROR_LENGTH);
+      free (dummy);
       return current_error;
     }
 

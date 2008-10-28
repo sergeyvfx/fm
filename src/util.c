@@ -162,21 +162,21 @@ mbs2wcs (wchar_t **__dest, const char *__source)
  * Replace substring of string
  *
  * @param __str - string for which replacing will be applied
- * @param __max_len - maximum length of string
  * @param __substr - substring to be replaced
  * @param __newsubstr - substring will be replaced with this string
+ * @return string with replaced sub-strings
+ * @sideeffect allocate memory for result
  */
 
 #define S(_k) \
   ((_k<m)?(__substr[_k]):( (_k==m)?(0):(__str[_k-m-1]) ))
 
-void
-wcsrep (wchar_t *__str, size_t __max_len,
-        const wchar_t *__substr, const wchar_t *__newsubstr)
+wchar_t*
+wcsrep (wchar_t *__str, const wchar_t *__substr, const wchar_t *__newsubstr)
 {
   if (!__str || !__substr || !__newsubstr)
     {
-      return;
+      return NULL;
     }
 
   size_t i, n = wcslen (__str), m = wcslen (__substr), k;
@@ -184,11 +184,10 @@ wcsrep (wchar_t *__str, size_t __max_len,
   size_t *f, occur,
           prev = 0;
 
-  /* Result will be stroed in the same string as input */
-  /* So, we need a temporary buffer with length equal to */
-  /* length of input string */
-  wchar_t *res = malloc (sizeof (wchar_t)*(__max_len));
-  size_t len_remain = __max_len;
+  /* Assume result's length is equal to length of input string */
+  /* It would be enlarged if needed */
+  size_t alloc_len = wcslen (__str), res_len = 0;
+  wchar_t *res = malloc ((alloc_len + 1) * sizeof (wchar_t));
 
   f = malloc ((n + m + 2) * sizeof (size_t));
   f[1] = k = 0;
@@ -214,13 +213,20 @@ wcsrep (wchar_t *__str, size_t __max_len,
           /* Substring has been found */
           occur = i - 2 * m - 1;
 
+          res_len += (occur - prev) + l;
+
+          /* Enlarge buffer if needed */
+          if (res_len >= alloc_len)
+            {
+              alloc_len += res_len;
+              res = realloc (res, (alloc_len + 1) * sizeof (wchar_t));
+            }
+
           /* Append buffer before occurance */
-          wcsncat (res, __str + prev, MIN (occur - prev, len_remain));
-          len_remain -= occur - prev;
+          wcsncat (res, __str + prev, occur - prev);
 
           /* Append new substring */
-          wcsncat (res, __newsubstr, MIN (l, len_remain));
-          len_remain -= l;
+          wcscat (res, __newsubstr);
 
           /* To start searching new substring */
           k = f[i] = 0;
@@ -230,13 +236,19 @@ wcsrep (wchar_t *__str, size_t __max_len,
         }
     }
 
-  /* Append buffer after last occurandce up to the end of string */
-  wcsncat (res, __str + prev, MIN (i - prev, len_remain));
+  /* Enlarge buffer */
+  res_len += i - prev;
+  if (res_len >= alloc_len)
+    {
+      res = realloc (res, (res_len + 1) * sizeof (wchar_t));
+    }
 
-  wcscpy (__str, res);
+  /* Append buffer after last occurrence up to the end of string */
+  wcscat (res, __str + prev);
 
   free (f);
-  free (res);
+
+  return res;
 }
 #undef S
 

@@ -129,15 +129,20 @@ vfs_context_save (wchar_t *__optname1, ...)
 /**
  * Format string with saved context
  *
- * @param __str - string to be formated
+ * @param __str - string to be formatted
+ * @return formatted string
+ * @sideeffect allocate memory for result
  */
-void
-vfs_context_format (wchar_t *__str)
+wchar_t*
+vfs_context_format (const wchar_t *__format)
 {
   int i = 0;
 
   /* 3=three special characters+NULL-terminator */
   wchar_t dummy[MAX_VARIABLE_LEBGTH + 4];
+  wchar_t *result, *new_result;
+
+  result = wcsdup (__format);
 
   while (context && context[i].name)
     {
@@ -145,9 +150,14 @@ vfs_context_format (wchar_t *__str)
       swprintf (dummy, MAX_VARIABLE_LEBGTH + 4, L"${%ls}", context[i].name);
 
       /* Replace variable in string */
-      wcsrep (__str, MAX_VARIABLE_LEBGTH + 4, dummy,
-              context[i].value ? context[i].value : L"");
+      new_result = wcsrep (result, dummy,
+                           context[i].value ? context[i].value : L"");
+
+      free (result);
+      result = new_result;
 
       i++;
     }
+
+  return result;
 }

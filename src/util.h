@@ -30,9 +30,8 @@ wchar_t*
 wcsndup (const wchar_t *__s, size_t __n);
 
 /* Replace substrings of string */
-void
-wcsrep (wchar_t *__str, size_t __max_len,
-        const wchar_t *__substr, const wchar_t *__newsubstr);
+wchar_t*
+wcsrep (wchar_t *__str, const wchar_t *__substr, const wchar_t *__newsubstr);
 
 /* Converted wide chararacters string to multibyte characters string */
 size_t
