@@ -237,8 +237,6 @@ get_shared_files_iter (const wchar_t *__relative_name, const wchar_t *__dir,
   char *mb_full_name;
   struct stat s;
 
-  printf ("Trying %ls\n", full_name);
-
   wcs2mbs (&mb_full_name, full_name);
 
   if (!stat (mb_full_name, &s))
