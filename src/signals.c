@@ -78,10 +78,18 @@ void
 signals_hook (void)
 {
   int i = 0;
+  sighandler_t dummy;
 
   while (signals[i].signum >= 0)
     {
-      signals[i].def_handler = signal (signals[i].signum, signal_handler);
+      dummy = signal (signals[i].signum, signal_handler);
+
+      /* Signals may be already have been hooked */
+      /* and we shouldn't forgot their original handlers */
+      if (dummy != signal_handler)
+        {
+          signals[i].def_handler = dummy;
+        }
       ++i;
     }
 }
