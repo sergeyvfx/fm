@@ -156,7 +156,7 @@ init_vfs (void)
 
   _INIT_ITERATOR (vfs_init);
 
-  count = get_shared_files (L"plugins/vfs", L"VFS_PLUGINS", &list);
+  count = get_shared_listing (L"plugins/vfs", L"VFS_PLUGINS", &list);
 
   /* Load VFS plugins */
   for (i = 0; i < count; ++i)

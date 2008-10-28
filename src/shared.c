@@ -22,8 +22,10 @@
 #include <ctype.h>
 #include <ncursesw/curses.h>
 
+#define FAKE_HOME L"../fakehome"
+
 /**
- * Iterator for get_shared_files
+ * Iterator for get_shared_listing
  * Reads file from specified path
  *
  * @param __path - directory to scan
@@ -32,7 +34,7 @@
  * @return zero on success, non-zero otherwise
  */
 static int
-get_shared_files_iter (wchar_t *__path, long *__count, wchar_t ***__list)
+get_shared_listing_iter (wchar_t *__path, long *__count, wchar_t ***__list)
 {
   int i, count;
   size_t len;
@@ -86,20 +88,18 @@ get_shared_files_iter (wchar_t *__path, long *__count, wchar_t ***__list)
 #ifndef NOINST_DEBUG
 
 /**
- * Get listing of directory inside user's home
+ * Get home directory
  *
- * @param __dir - name of shared directory
- * @param __count - count of elements in list
- * @param __list - list of files
- * @return zero on success, non-zero otherwise
+ * @return home directory
+ * @sideeffect allocate memory for return value
  */
-static int
-listing_of_user_home (wchar_t *__dir, long *__count, wchar_t ***__list)
+static wchar_t*
+get_home_directory (void)
 {
   size_t i, len;
   passwd_t *user_info;
   char env_home_name[64];
-  wchar_t *home, *dir;
+  wchar_t *home;
 
   /* Get name of environment variable */
   snprintf (env_home_name, BUF_LEN (env_home_name), "%s_HOME", PACKAGE);
@@ -147,6 +147,25 @@ listing_of_user_home (wchar_t *__dir, long *__count, wchar_t ***__list)
       MBS2WCS (home, getenv (env_home_name));
     }
 
+  return home;
+}
+
+/**
+ * Get listing of directory inside user's home
+ *
+ * @param __dir - name of shared directory
+ * @param __count - count of elements in list
+ * @param __list - list of files
+ * @return zero on success, non-zero otherwise
+ */
+static int
+listing_of_user_home (wchar_t *__dir, long *__count, wchar_t ***__list)
+{
+  size_t len;
+  wchar_t *home, *dir;
+
+  home = get_home_directory ();
+
   if (home)
     {
       /* Get listing of ~/.${package} */
@@ -155,7 +174,7 @@ listing_of_user_home (wchar_t *__dir, long *__count, wchar_t ***__list)
       swprintf (dir, len + 1, L"%ls/%ls", home, __dir);
 
       /* Get listing */
-      get_shared_files_iter (dir, __count, __list);
+      get_shared_listing_iter (dir, __count, __list);
 
       /* Free used info */
       free (dir);
@@ -192,7 +211,7 @@ listing_of_env_path (char *__env, wchar_t *__dir,
   /* Get full directory name to be scanned */
   MBS2WCS (full_dir, getenv (__env));
 
-  res = get_shared_files_iter (full_dir, __count, __list);
+  res = get_shared_listing_iter (full_dir, __count, __list);
 
   free (full_dir);
 
@@ -200,6 +219,41 @@ listing_of_env_path (char *__env, wchar_t *__dir,
 }
 
 #endif
+
+/**
+ * Iterator for get_shared_files(). Checks file's existence and appends
+ * it to list.
+ *
+ * @param __relative_name - relative file name inside shared directory
+ * @param __dir - shared directory
+ * @param __count - count of found files
+ * @param __list - list of found files' names
+ */
+static void
+get_shared_files_iter (const wchar_t *__relative_name, const wchar_t *__dir,
+                       int *__count, wchar_t ***__list)
+{
+  wchar_t *full_name = wcdircatsubdir (__dir, __relative_name);
+  char *mb_full_name;
+  struct stat s;
+
+  printf ("Trying %ls\n", full_name);
+
+  wcs2mbs (&mb_full_name, full_name);
+
+  if (!stat (mb_full_name, &s))
+    {
+      (*__list) = realloc (*__list, ((*__count) + 1) * sizeof (wchar_t*));
+      (*__list)[(*__count)] = full_name;
+      ++(*__count);
+    }
+  else
+    {
+      free (full_name);
+    }
+
+  free (mb_full_name);
+}
 
 /********
  * Use's backend
@@ -214,7 +268,8 @@ listing_of_env_path (char *__env, wchar_t *__dir,
  * @return count of files or value less than zero if failed
  */
 long
-get_shared_files (wchar_t *__dir, wchar_t *__home_replacer, wchar_t ***__list)
+get_shared_listing (const wchar_t *__dir, const wchar_t *__home_replacer,
+                    wchar_t ***__list)
 {
   long count = 0;
 
@@ -230,7 +285,7 @@ get_shared_files (wchar_t *__dir, wchar_t *__home_replacer, wchar_t ***__list)
   /*       we whould use it instead of ~ */
 
   /* Get listing of ${data_dir} */
-  get_shared_files_iter (WC_DATA_DIR, &count, __list);
+  get_shared_listing_iter (WC_DATA_DIR, &count, __list);
 
   /* Get variable name for replacer */
   if (__home_replacer)
@@ -265,7 +320,7 @@ get_shared_files (wchar_t *__dir, wchar_t *__home_replacer, wchar_t ***__list)
   /* If NOINST_DEBUG is defined, we should get listing */
   /* only of fake home */
 
-  wchar_t fake_home[] = L"../fakehome";
+  wchar_t fake_home[] = FAKE_HOME;
   wchar_t *dir;
   size_t len;
 
@@ -273,9 +328,90 @@ get_shared_files (wchar_t *__dir, wchar_t *__home_replacer, wchar_t ***__list)
   dir = malloc ((len + 1) * sizeof (wchar_t));
   swprintf (dir, len + 1, L"%ls/%ls", fake_home, __dir);
 
-  get_shared_files_iter (dir, &count, __list);
+  get_shared_listing_iter (dir, &count, __list);
 
   free (dir);
+#endif
+
+  return count;
+}
+
+/**
+ * Get list of shared files
+ *
+ * @param __relative_name - relative file name inside shared directories
+ * @param __home_replacer - replacer for directory inside HOME
+ * @param __list - list of files (with absolutely pathes)
+ * @return count of files or value less than zero if failed
+ */
+int
+get_shared_files (const wchar_t *__relative_name,
+                  const wchar_t *__home_replacer, wchar_t ***__list)
+{
+  int count = 0;
+
+  (*__list) = NULL;
+
+#ifndef NOINST_DEBUG
+  char *mbreplacer = NULL, *varname = NULL;
+
+  /* We need to get files from ${data_dir} first */
+  /* and after this from ~/.{$packacge} */
+
+  /* NOTE: If "${PACKAGE}_HOME" environment variable is set */
+  /*       we whould use it instead of ~ */
+
+  /* Get listing of ${data_dir} */
+  get_shared_files_iter (__relative_name, WC_DATA_DIR, &count, __list);
+
+  /* Get variable name for replacer */
+  if (__home_replacer)
+    {
+      size_t i, len;
+      WCS2MBS (mbreplacer, __home_replacer);
+      len = strlen (mbreplacer) + strlen (PACKAGE) + 1;
+      varname = malloc (len + 1);
+      snprintf (varname, len + 1, "%s_%s", PACKAGE, mbreplacer);
+
+      /* Convert ot upper case */
+      for (i = 0; varname[i]; i++)
+        {
+          varname[i] = toupper (varname[i]);
+        }
+    }
+
+  if (!varname || !getenv (varname))
+    {
+      wchar_t *home = get_home_directory ();
+      if (home)
+        {
+          get_shared_files_iter (__relative_name, home, &count, __list);
+          free (home);
+        }
+    }
+  else
+    {
+      /* We should get files from getenv(varname) */
+      char *env = getenv (varname);
+      if (env)
+        {
+          wchar_t *dir;
+          mbs2wcs (&dir, env);
+          get_shared_files_iter (__relative_name, dir, &count, __list);
+          free (dir);
+        }
+    }
+
+  SAFE_FREE (mbreplacer);
+  SAFE_FREE (varname);
+
+#else
+  /* If NOINST_DEBUG is defined, we should get files */
+  /* only from fake home */
+
+  get_shared_files_iter (__relative_name, FAKE_HOME,
+                         &count, __list);
+
 #endif
 
   return count;
