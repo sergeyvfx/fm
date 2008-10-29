@@ -1,3 +1,19 @@
+#
+# ${project-name} - a GNU/Linux console-based file manager
+#
+# Main configuration file
+#
+# Copyright 2008 Sergey I. Sharybin <g.ulairi@gmail.com>
+# Copyright 2008 Alex A. Smirnov <sceptic13@gmail.com>
+#
+# This program can be distributed under the terms of the GNU GPL.
+# See the file COPYING.
+#
+
+#
+# Edit this file on your own risk
+#
+
 set escdelay 2000
 
 #::iface::message_box -title "Это просто Title" \

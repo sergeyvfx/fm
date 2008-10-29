@@ -97,7 +97,7 @@ TCL_DEFUN(_tcl_message_box_cmd)
       }
     }
 
-  result = retvals[message_box (title, message, flags)];
+  result = (char*)retvals[message_box (title, message, flags)];
   Tcl_SetObjResult (interp, Tcl_NewStringObj (result, -1));
 
   return TCL_OK;
