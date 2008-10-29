@@ -20,7 +20,7 @@
  * @return TCL_OK if successeful, TCL_ERROR otherwise
  */
 int
-tcl_init_commands (Tcl_Interp *__interp)
+tcllib_init_commands (Tcl_Interp *__interp)
 {
   if (_tcl_ext_init_commands (__interp) != TCL_OK)
     {

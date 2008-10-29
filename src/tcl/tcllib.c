@@ -45,7 +45,7 @@ static Tcl_Interp *interpreter = NULL;
  * @return TCL_OK if successful, TCL_ERROR otherwise
  */
 int
-_get_file_associations (wchar_t *__filename, extension_t **__extcmd)
+_get_file_associations (wchar_t *__filename, extension_action_t **__extcmd)
 {
   Tcl_Obj *value, *associate =
     Tcl_GetVar2Ex (interpreter, "association", NULL, TCL_GLOBAL_ONLY);
@@ -58,14 +58,14 @@ _get_file_associations (wchar_t *__filename, extension_t **__extcmd)
 
   wcs2mbs(&filename, __filename);
 
-  if (tcl_fa_get_object (interpreter,
-                         associate,
-                         Tcl_NewStringObj (filename, -1), &value) != TCL_OK)
+  if (tcllib_fa_get_object (interpreter,
+                            associate,
+                            Tcl_NewStringObj (filename, -1), &value) != TCL_OK)
       {
         return TCL_ERROR;
       }
 
-  *__extcmd = tcl_extcmd_from_object (value);
+  *__extcmd = tcllib_extcmd_from_object (value);
   SAFE_FREE (filename);
 
   return TCL_OK;
@@ -79,9 +79,9 @@ _get_file_associations (wchar_t *__filename, extension_t **__extcmd)
 int
 _file_associations_hook (dynstruct_t *__callData)
 {
-  extension_t *ext;
-  wchar_t     *executecmd, *filename, *cwd;
-  size_t      slength;
+  extension_action_t *ext;
+  wchar_t *executecmd, *filename, *cwd;
+  size_t slength;
 
   if (dynstruct_get_field_val (__callData,
                                L"filename", (void *) &filename) != DYNST_OK)
@@ -111,11 +111,11 @@ _file_associations_hook (dynstruct_t *__callData)
 
       cwd = escape_string (cwd);
 
-      slength = wcslen (ext->viewer) + wcslen (filename) + wcslen (cwd) + 3;
+      slength = wcslen (ext->opener) + wcslen (filename) + wcslen (cwd) + 3;
       executecmd = malloc (sizeof (wchar_t) * (slength + 1));
 
       swprintf (executecmd, slength,
-                L"%ls %ls/%ls", ext->viewer, cwd, filename);
+                L"%ls %ls/%ls", ext->opener, cwd, filename);
       SAFE_FREE (filename);
       SAFE_FREE (cwd);
     }
@@ -173,7 +173,7 @@ tcllib_init (void)
       return TCL_ERROR;
     }
 
-  if (tcl_init_commands (interpreter) != TCL_OK)
+  if (tcllib_init_commands (interpreter) != TCL_OK)
     {
       return TCL_ERROR;
     }

@@ -27,7 +27,7 @@ TCL_DEFUN(_tcl_create_ext_cmd)
 {
   Tcl_Obj *faobject;
 
-  faobject = tcl_fa_new_object();
+  faobject = tcllib_fa_new_object();
 
   Tcl_SetObjResult (interp, faobject);
   return TCL_OK;
@@ -41,18 +41,19 @@ TCL_DEFUN(_tcl_set_ext_cmd)
 {
   int     index, i = 1, allocated = 0;
   char    *pattern;
-  wchar_t *viewer = NULL, *editor = NULL;
+  wchar_t *viewer = NULL, *editor = NULL, *opener = NULL;
   Tcl_Obj *faobject, *result;
 
   static const char *options[] = {
-      "-view", "-edit", NULL
+      "-view", "-edit", "-open", NULL
   };
 
   if (objc < 3)
     {
 wrongargs:
       Tcl_WrongNumArgs(interp, 1, objv,
-                       "varName ?-view viewer? ?-edit editor? pattern");
+                       "varName ?-open opener?"
+                       "?-view viewer? ?-edit editor? pattern");
       return TCL_ERROR;
     }
 
@@ -62,7 +63,7 @@ wrongargs:
   if (faobject == NULL)
     {
       allocated = 1;
-      faobject = tcl_fa_new_object();
+      faobject = tcllib_fa_new_object();
     }
   else if (Tcl_IsShared(faobject))
     {
@@ -79,6 +80,7 @@ wrongargs:
             {
               Tcl_DecrRefCount(faobject);
             }
+
           return TCL_ERROR;
         }
 
@@ -89,18 +91,21 @@ wrongargs:
 
       switch (index)
         {
-        case 0:
-          mbs2wcs (&viewer, Tcl_GetString(objv[i]));
+        case 0: /* -view */
+          mbs2wcs (&viewer, Tcl_GetString (objv[i]));
           break;
-        case 1:
-          mbs2wcs (&editor, Tcl_GetString(objv[i]));
+        case 1: /* -edit */
+          mbs2wcs (&editor, Tcl_GetString (objv[i]));
+          break;
+        case 2: /* -open */
+          mbs2wcs (&opener, Tcl_GetString (objv[i]));
           break;
         }
     }
 
   pattern = Tcl_GetString(objv[i]);
-  tcl_fa_put_object(interp, faobject,
-      tcl_fa_new_extobject(pattern, viewer, editor));
+  tcllib_fa_put_object(interp, faobject,
+      tcllib_fa_new_extobject(pattern, viewer, editor, opener));
 
 /* INFO: can be optimized */
   result = Tcl_ObjSetVar2 (interp, objv[1], NULL, faobject, TCL_LEAVE_ERR_MSG);
@@ -133,6 +138,6 @@ _tcl_ext_init_commands (Tcl_Interp *__interp)
       return TCL_ERROR;
     }
 
-  tcl_make_ensemble (__interp, "ext", subcommands);
+  tcllib_make_ensemble (__interp, "ext", subcommands);
   return TCL_OK;
 }

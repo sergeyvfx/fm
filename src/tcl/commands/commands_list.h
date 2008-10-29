@@ -52,7 +52,7 @@ BEGIN_HEADER
   }
 
 int
-tcl_init_commands (Tcl_Interp *);
+tcllib_init_commands (Tcl_Interp *);
 
 /* Private function */
 int

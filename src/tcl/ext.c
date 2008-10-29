@@ -22,8 +22,8 @@ typedef struct extobj_t
   int epoch;    /* Epoch counter */
   int refcount; /* Reference counter */
 
-  Tcl_Obj       *pattern;   /* Tcl string representation pattern */
-  extension_t   extension;  /* Incapsulate extenstion command */
+  Tcl_Obj              *pattern;   /* Tcl string representation pattern */
+  extension_action_t   extension;  /* Incapsulate extenstion command */
 } extobj_t;
 
 typedef struct extension_list_t
@@ -44,7 +44,7 @@ static void
 dup_extobj_internal_rep (Tcl_Obj *, Tcl_Obj *);
 
 static int
-set_extobj_from_any (Tcl_Interp *interp, Tcl_Obj *anyobj);
+set_extobj_from_any (Tcl_Interp *, Tcl_Obj *);
 
 /*
  * The following structure defines the implementation of the `extension'
@@ -73,7 +73,7 @@ static void
 dup_extlistobj_internal_rep (Tcl_Obj *, Tcl_Obj *);
 
 static int
-set_extlistobj_from_any (Tcl_Interp *interp, Tcl_Obj *anyobj);
+set_extlistobj_from_any (Tcl_Interp *, Tcl_Obj *);
 
 /*
  * The following structure defines the implementation of the `extensions list'
@@ -99,7 +99,7 @@ static Tcl_ObjType tcl_extlistobj_type = {
  * @return a pointer on new FA object
  */
 Tcl_Obj *
-tcl_fa_new_object(void)
+tcllib_fa_new_object(void)
 {
   extension_list_t  *extlist;
   Tcl_Obj           *newobject;
@@ -129,8 +129,10 @@ tcl_fa_new_object(void)
  * @return a pointer on new `extension' object
  */
 Tcl_Obj *
-tcl_fa_new_extobject (const char *__pattern,
-                      const wchar_t *__viewer, const wchar_t *__editor)
+tcllib_fa_new_extobject (const char    *__pattern,
+                         const wchar_t *__viewer,
+                         const wchar_t *__editor,
+                         const wchar_t *__opener)
 {
   Tcl_Obj       *newobject;
   extobj_t      *extobj;
@@ -143,7 +145,8 @@ tcl_fa_new_extobject (const char *__pattern,
   extobj->refcount  = 1;
 
   extobj->pattern          = Tcl_NewStringObj (__pattern, -1);
-  extobj->extension.viewer = extobj->extension.editor = NULL;
+  extobj->extension.viewer =
+    extobj->extension.editor = extobj->extension.opener = NULL;
 
   if (__viewer != NULL)
     {
@@ -153,6 +156,11 @@ tcl_fa_new_extobject (const char *__pattern,
   if (__editor != NULL)
     {
       extobj->extension.editor  = wcsdup (__editor);
+    }
+
+  if (__opener != NULL)
+    {
+      extobj->extension.opener  = wcsdup (__opener);
     }
 
   newobject->internalRep.otherValuePtr = extobj;
@@ -171,11 +179,11 @@ tcl_fa_new_extobject (const char *__pattern,
  * @return TCL_OK if successful, otherwise TCL_ERROR
  */
 int
-tcl_fa_put_object(Tcl_Interp *__interp, Tcl_Obj *__extlistobj,
+tcllib_fa_put_object(Tcl_Interp *__interp, Tcl_Obj *__extlistobj,
                   Tcl_Obj *__extobj)
 {
-  extension_list_t *extlist;
-  extension_t      *ext;
+  extension_list_t        *extlist;
+  extension_action_t      *ext;
 
   if (__extlistobj->typePtr != &tcl_extlistobj_type)
     {
@@ -250,6 +258,7 @@ update_string_of_extobj (Tcl_Obj *extobjobj)
   Tcl_DStringInit (&buf);
     Tcl_DStringStartSublist (&buf);
       Tcl_DStringAppendElement (&buf, Tcl_GetString (extobj->pattern));
+
       if (extobj->extension.editor)
         {
           char *editor = NULL;
@@ -262,6 +271,7 @@ update_string_of_extobj (Tcl_Obj *extobjobj)
 
           free (editor);
         }
+
       if (extobj->extension.viewer)
         {
           char *viewer = NULL;
@@ -274,6 +284,18 @@ update_string_of_extobj (Tcl_Obj *extobjobj)
 
           free (viewer);
         }
+
+      if (extobj->extension.opener)
+        {
+          char *opener = NULL;
+          wcs2mbs (&opener, extobj->extension.opener);
+
+          Tcl_DStringStartSublist (&buf);
+            Tcl_DStringAppendElement (&buf, "v");
+            Tcl_DStringAppendElement (&buf, opener);
+          Tcl_DStringEndSublist (&buf);
+        }
+
     Tcl_DStringEndSublist (&buf);
 
     extobjobj->bytes  = ckstrdup (Tcl_DStringValue(&buf));
@@ -292,15 +314,23 @@ free_extobj_internal_rep (Tcl_Obj *extobjobj)
   if (extobj->refcount < 1)
     {
       Tcl_DecrRefCount (extobj->pattern);
+
       if (extobj->extension.editor)
         {
           ckfree ((void *) extobj->extension.editor);
           extobj->extension.editor = NULL;
         }
+
       if (extobj->extension.viewer)
         {
           ckfree ((void *) extobj->extension.viewer);
           extobj->extension.viewer = NULL;
+        }
+
+      if (extobj->extension.opener)
+        {
+          ckfree ((void *) extobj->extension.opener);
+          extobj->extension.opener = NULL;
         }
 
       ckfree ((char *) extobj);
@@ -322,6 +352,7 @@ free_extlistobj_internal_rep (Tcl_Obj *extlistobj)
       Tcl_DecrRefCount (extlist->extslist);
       ckfree ((char *) extlist);
     }
+
   extlistobj->internalRep.otherValuePtr = NULL;
 }
 
@@ -356,10 +387,10 @@ dup_extlistobj_internal_rep (Tcl_Obj *sourceobj, Tcl_Obj *copyobj)
  * @param __extobj - a pointer on `extension' Tcl object
  * @return a pointer on file extension structures if successful, otherwise NULL
  */
-extension_t *
-tcl_extcmd_from_object (Tcl_Obj *__extobj)
+extension_action_t *
+tcllib_extcmd_from_object (Tcl_Obj *__extobj)
 {
-  extension_t *ext = malloc (sizeof (extension_t));
+  extension_action_t *ext = malloc (sizeof (extension_action_t));
   /* TODO: check Tcl_Obj ptrType */
   extobj_t    *fromobject = __extobj->internalRep.otherValuePtr;
 
@@ -373,6 +404,11 @@ tcl_extcmd_from_object (Tcl_Obj *__extobj)
   if (fromobject->extension.viewer != NULL)
     {
       ext->viewer = wcsdup (fromobject->extension.viewer);
+    }
+
+  if (fromobject->extension.opener != NULL)
+    {
+      ext->opener = wcsdup (fromobject->extension.opener);
     }
 
   return ext;
@@ -389,8 +425,8 @@ tcl_extcmd_from_object (Tcl_Obj *__extobj)
  * @return TCL_OK if successful, otherwise TCL_ERROR
  */
 int
-tcl_fa_get_object (Tcl_Interp *__interp, Tcl_Obj *__faobject,
-                   Tcl_Obj *__textobj, Tcl_Obj **__value)
+tcllib_fa_get_object (Tcl_Interp *__interp, Tcl_Obj *__faobject,
+                      Tcl_Obj *__textobj, Tcl_Obj **__value)
 {
   extension_list_t *extlist;
   extobj_t         *extobj;

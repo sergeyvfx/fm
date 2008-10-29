@@ -24,9 +24,9 @@ typedef struct ensemblecmd_t
 } ensemblecmd_t;
 
 Tcl_Command
-tcl_make_ensemble (Tcl_Interp *interp,
-                   const char *cmdname,
-                   const ensemblecmd_t *subcommand);
+tcllib_make_ensemble (Tcl_Interp *interp,
+                      const char *cmdname,
+                      const ensemblecmd_t *subcommand);
 
 END_HEADER
 

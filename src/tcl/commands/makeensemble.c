@@ -22,9 +22,9 @@
  * return handle for the ensemble or NULL if creation of it fails
  */
 Tcl_Command
-tcl_make_ensemble (Tcl_Interp *__interp,
-                   const char *__cmdname,
-                   const ensemblecmd_t *__subcommand)
+tcllib_make_ensemble (Tcl_Interp *__interp,
+                      const char *__cmdname,
+                      const ensemblecmd_t *__subcommand)
 {
   Tcl_Command   ensemble;
   Tcl_Namespace *ns;

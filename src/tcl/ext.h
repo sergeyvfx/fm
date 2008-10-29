@@ -18,28 +18,31 @@
 
 BEGIN_HEADER
 
-typedef struct extension_t
+typedef struct extension_action_t
 {
   wchar_t *editor;
   wchar_t *viewer;
+  wchar_t *opener;
 
-} extension_t;
-
-Tcl_Obj *
-tcl_fa_new_object(void);
+} extension_action_t;
 
 Tcl_Obj *
-tcl_fa_new_extobject (const char *__pattern,
-                      const wchar_t *__viewer, const wchar_t *__editor);
+tcllib_fa_new_object(void);
+
+Tcl_Obj *
+tcllib_fa_new_extobject (const char    *__pattern,
+                         const wchar_t *__viewer,
+                         const wchar_t *__editor,
+                         const wchar_t *__opener);
 
 int
-tcl_fa_get_object (Tcl_Interp *, Tcl_Obj *, Tcl_Obj *, Tcl_Obj **);
+tcllib_fa_get_object (Tcl_Interp *, Tcl_Obj *, Tcl_Obj *, Tcl_Obj **);
 
-extension_t *
-tcl_extcmd_from_object (Tcl_Obj *);
+extension_action_t *
+tcllib_extcmd_from_object (Tcl_Obj *);
 
 int
-tcl_fa_put_object(Tcl_Interp *, Tcl_Obj *, Tcl_Obj *);
+tcllib_fa_put_object(Tcl_Interp *, Tcl_Obj *, Tcl_Obj *);
 
 END_HEADER
 
