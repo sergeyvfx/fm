@@ -11,10 +11,13 @@
  */
 
 #include "dir.h"
+#include "util.h"
 
 #include <wchar.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <limits.h>
+#include <unistd.h>
 
 /**
  * Wrapper of VFS function vfs_scandir()
@@ -365,4 +368,44 @@ isdir (const wchar_t *__url, BOOL __follow_symlinks)
     }
 
   return S_ISDIR (st.st_mode);
+}
+
+/**
+ * Wide-char version of chdir()
+ *
+ * @param __dir - directory to change cwd to
+ * @return zero on success, non-zero otherwise
+ */
+int
+wcchdir (const wchar_t *__dir)
+{
+  char *mbs;
+
+  if (wcs2mbs (&mbs, __dir) > 0)
+    {
+      int res = chdir (mbs);
+      free (mbs);
+      return res;
+    }
+
+  return -1;
+}
+
+/**
+ * Get current working directory
+ *
+ * @return current working directory
+ * @sideeffect allocate memory for return value
+ */
+wchar_t*
+wcgetcwd (void)
+{
+  wchar_t *res;
+  char buf[PATH_MAX];
+
+  getcwd (buf, PATH_MAX);
+
+  mbs2wcs (&res, buf);
+
+  return res;
 }

@@ -1037,6 +1037,27 @@ file_panel_set_cwd (file_panel_t *__panel, const wchar_t *__cwd)
         dynstruct_create (L"cwd.changed.struct",
                           L"cwd", __cwd,
                           sizeof (wchar_t) * (wcslen(__cwd) + 1), NULL);
+
+      if (wcscmp (__panel->vfs, VFS_LOCALFS_PLUGIN) == 0)
+        {
+          /* CWD may be changed only in case of working */
+          /* with local file system */
+
+          wchar_t *dummy = (wchar_t*)__cwd;
+
+          if (dummy[0] != '/')
+            {
+              /* If the first character of CWD is not a slash, */
+              /* CWD contains a plug-in name and delimiter, which */
+              /* should be avoided */
+
+              dummy += wcslen (VFS_LOCALFS_PLUGIN) +
+                wcslen (VFS_PLUGIN_DELIMETER);
+            }
+
+          wcchdir (dummy);
+        }
+
       hook_call (L"cwd-changed-hook", cwd_hook_struct);
       dynstruct_destroy (&cwd_hook_struct);
     }

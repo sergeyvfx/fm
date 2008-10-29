@@ -74,6 +74,14 @@ wcscandir_alphasort_sep (const void *__a, const void *__b);
 BOOL
 isdir (const wchar_t *__url, BOOL __follow_symlinks);
 
+/* Wide-char version of chdir() */
+int
+wcchdir (const wchar_t *__dir);
+
+/* Get current working directory */
+wchar_t*
+wcgetcwd (void);
+
 END_HEADER
 
 #endif

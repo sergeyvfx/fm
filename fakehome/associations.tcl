@@ -21,9 +21,9 @@
 #   %fn  - full (absolutely) file name
 #
 
-ext set association -open "xpdf %fn" {\.pdf$}
-ext set association -edit "mcedit %fn" -open "emacs %fn" {\.txt$}
-ext set association -edit "vim %fn" -open "vim %fn" {\.pl$}
-ext set association -edit "gvim %fn" -open "gvim %fn" {\.tcl$}
-ext set association -open "feh %fn" -edit "gimp %fn" {\.jpg|gif|png$}
-ext set association -open "mplayer %fn" {\.mp3|ogg|flac|avi$}
+ext set association -open "xpdf %n" {\.pdf$}
+ext set association -edit "mcedit %n" -open "emacs %n" {\.txt$}
+ext set association -edit "vim %n" -open "vim %n" {\.pl$}
+ext set association -edit "gvim %n" -open "gvim %n" {\.tcl$}
+ext set association -open "feh %n" -edit "gimp %n" {\.jpg|gif|png$}
+ext set association -open "mplayer %n" {\.mp3|ogg|flac|avi$}
