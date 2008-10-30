@@ -209,10 +209,10 @@ widget_create_checkbox (w_container_t *__parent, const wchar_t *__caption,
 
   widget->caption = wcsdup (__caption);
 
-  widget->font = &FONT (CID_BLACK, CID_WHITE);
-  widget->font_focus = &FONT (CID_BLACK, CID_CYAN);
-  widget->hotkey_font = &FONT (CID_YELLOW, CID_WHITE);
-  widget->hotkey_focus = &FONT (CID_YELLOW, CID_CYAN);
+  widget->font         = FONT (CID_BLACK, CID_GREY);
+  widget->font_focus   = FONT (CID_BLACK, CID_CYAN);
+  widget->hotkey_font  = FONT (CID_YELLOW, CID_GREY);
+  widget->hotkey_focus = FONT (CID_YELLOW, CID_CYAN);
 
   widget->ischeck = __check;
 

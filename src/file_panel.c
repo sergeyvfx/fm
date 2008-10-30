@@ -928,10 +928,10 @@ file_panel_create (int __width, unsigned int __params)
                0, 0, 1, 0, 0);
 
   /* Set up panels fonts */
-  res->widget->font             = &FONT (CID_CYAN, CID_BLUE);
-  res->widget->border_font      = &FONT (CID_CYAN, CID_BLUE);
-  res->widget->focused_dir_font = &FONT (CID_BLACK, CID_CYAN);
-  res->widget->caption_font     = &FONT (CID_YELLOW, CID_BLUE);
+  res->widget->font             = FONT (CID_LCYAN, CID_BLUE);
+  res->widget->border_font      = FONT (CID_LCYAN, CID_BLUE);
+  res->widget->focused_dir_font = FONT (CID_BLACK, CID_CYAN);
+  res->widget->caption_font     = FONT (CID_YELLOW, CID_BLUE);
 
   /* Save pointer to file panel descriptor in userdata in widget */
   WIDGET_USER_DATA (WIDGET (res->widget)) = res;

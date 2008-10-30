@@ -110,25 +110,25 @@ extern BOOL curs_wis;
 
 #define CID_LIGHT(_c) ((_c)+0x08)
 #define CID(_f, _b)   (((_b)<<0x03)+(_f)+1)
-#define FONT(_f, _b)  (screen_fonts[CID(_f, _b)])
+#define FONT(_f, _b)  (screen_get_font (_f, _b))
 
 #define CID_BLACK     COLOR_BLACK
 #define CID_RED       COLOR_RED
 #define CID_GREEN     COLOR_GREEN
-#define CID_YELLOW    COLOR_YELLOW
+#define CID_BROWN     COLOR_YELLOW
 #define CID_BLUE      COLOR_BLUE
 #define CID_MAGENTA   COLOR_MAGENTA
 #define CID_CYAN      COLOR_CYAN
-#define CID_WHITE     COLOR_WHITE
+#define CID_GREY      COLOR_WHITE
 
 #define CID_LBLACK     CID_LIGHT(CID_BLACK)
 #define CID_LRED       CID_LIGHT(CID_RED)
 #define CID_LGREEN     CID_LIGHT(CID_GREEN)
-#define CID_LYELLOW    CID_LIGHT(CID_YELLOW)
+#define CID_YELLOW     CID_LIGHT(CID_BROWN)
 #define CID_LBLUE      CID_LIGHT(CID_BLUE)
 #define CID_LMAGENTA   CID_LIGHT(CID_MAGENTA)
 #define CID_LCYAN      CID_LIGHT(CID_CYAN)
-#define CID_LWHITE     CID_LIGHT(CID_WHITE)
+#define CID_WHITE      CID_LIGHT(CID_GREY)
 
 #define COLOR_MIN 0x00
 #define COLOR_MAX 0x07
@@ -182,7 +182,7 @@ extern BOOL curs_wis;
 #endif
 
 /****
- * Tpyes
+ * Types
  */
 
 /* Screen font */
@@ -192,6 +192,8 @@ typedef struct
   scr_color_pair_t color_pair;
 
   BOOL bold;
+
+  BOOL initialized;
 } scr_font_t;
 
 /********
@@ -232,6 +234,12 @@ scr_window_t
 scr_create_sub_window (scr_window_t __parent,
                        int __x, int __y,
                        int __w, int __h);
+
+scr_font_t*
+screen_init_font (int __fg, int __bg);
+
+scr_font_t*
+screen_get_font (int __fg, int __bg);
 
 #ifdef SCREEN_NCURSESW
 

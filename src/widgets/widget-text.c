@@ -129,7 +129,7 @@ widget_create_text                (w_container_t *__parent,
 
   res->text = wcsdup (__text);
 
-  res->font = &FONT (CID_BLACK, CID_WHITE);
+  res->font = FONT (CID_BLACK, CID_GREY);
 
   WIDGET_POST_INIT (res);
 

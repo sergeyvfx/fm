@@ -427,8 +427,8 @@ widget_create_window (const wchar_t *__caption,
   res->style = __style;
 
   /* Layout parameters */
-  res->font = &FONT (CID_BLACK, CID_WHITE);
-  res->caption.font = &FONT (CID_BLUE, CID_WHITE);
+  res->font         = FONT (CID_BLACK, CID_GREY);
+  res->caption.font = FONT (CID_BLUE,  CID_GREY);
 
   WIDGET_CALLBACK (res, keydown) = (widget_keydown_proc) window_keydown;
   WIDGET_CALLBACK (res, onresize) = (widget_action) window_onresize;

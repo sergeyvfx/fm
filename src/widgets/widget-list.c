@@ -286,10 +286,10 @@ widget_create_list (w_container_t *__parent, const wchar_t *__caption,
                                             __x + __w - 1,
                                             __y + 1, __h - 2, 0);
 
-  res->font = &FONT (CID_BLACK, CID_WHITE);
-  res->cursor_font = &FONT (CID_BLACK, CID_CYAN);
-  res->cursor_unfocused_font = &FONT (CID_BLUE, CID_CYAN);
-  res->caption_font = &FONT (CID_BLUE, CID_WHITE);
+  res->font         = FONT (CID_BLACK, CID_GREY);
+  res->cursor_font  = FONT (CID_BLACK, CID_CYAN);
+  res->cursor_unfocused_font = FONT (CID_BLUE, CID_CYAN);
+  res->caption_font = FONT (CID_BLUE, CID_GREY);
 
   WIDGET_POST_INIT (res);
 

@@ -166,8 +166,8 @@ widget_create_scrollbar (widget_t *__parent, unsigned long __size,
   res->size = __size;
   res->style = __style;
 
-  res->font = &FONT (CID_BLACK, CID_WHITE);
-  res->button_font = &FONT (CID_WHITE, CID_BLACK);
+  res->font        = FONT (CID_BLACK, CID_GREY);
+  res->button_font = FONT (CID_WHITE, CID_BLACK);
 
   WIDGET_POST_INIT (res);
 

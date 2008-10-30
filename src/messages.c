@@ -249,8 +249,8 @@ message_box (const wchar_t *__caption, const wchar_t *__text,
   if ((critical = __flags & MB_CRITICAL))
     {
       w_window_set_fonts (wnd,
-                          &FONT (CID_WHITE, CID_RED),
-                          &FONT (CID_YELLOW, CID_RED));
+                          FONT (CID_WHITE, CID_RED),
+                          FONT (CID_YELLOW, CID_RED));
     }
 
   /* Use USER_DATA to tell window its text */
@@ -282,10 +282,10 @@ message_box (const wchar_t *__caption, const wchar_t *__text,
       /* If message is critical we should set another fonts to buttons */
       if (critical)
         w_button_set_fonts (cur_btn,
-                            &FONT (CID_WHITE, CID_RED),
-                            &FONT (CID_BLACK, CID_WHITE),
-                            &FONT (CID_YELLOW, CID_RED),
-                            &FONT (CID_YELLOW, CID_WHITE));
+                            FONT (CID_WHITE, CID_RED),
+                            FONT (CID_BLACK, CID_GREY),
+                            FONT (CID_YELLOW, CID_RED),
+                            FONT (CID_YELLOW, CID_GREY));
 
       x += btn_arr.buttons[i].width + 1;
     }

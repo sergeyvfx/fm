@@ -13,6 +13,10 @@
 #include "screen.h"
 #include "hotkeys.h"
 
+/*
+ * TODO: Make to work in monochrome mode
+ */
+
 /********
  *
  */
@@ -33,67 +37,33 @@ scr_font_t screen_fonts[SCREEN_MAX_FONTS];
 #  include <time.h>
 
 #  define INIT_COLOR(__font,__pair_no,__fore,__back,__bold) \
-  init_pair (__pair_no,  __fore,  __back); \
-  __font.color_pair  = __pair_no; \
-__font.bold          = __bold;
+  { \
+    init_pair (__pair_no,  __fore,  __back); \
+    (__font).color_pair  = __pair_no; \
+    (__font).bold        = __bold; \
+    (__font).initialized = TRUE; \
+  }
 
 #  define _INIT_COLOR(__fore, __back, __bold) \
   { \
-    INIT_COLOR (screen_fonts[CID (__fore, __back)],\
-      pair_no,__fore,__back,__bold);\
-    pair_no++;\
+    scr_font_t *font = &screen_fonts[CID (__fore, __back)]; \
+    if (!font->initialized) \
+      { \
+        INIT_COLOR (*font, pair_no,__fore,__back, __bold);\
+        pair_no++; \
+      } \
   }
 
 #  define DELAY (0.2*1000*10)
 
 #endif
 
+/* Number of color pair */
+static int pair_no = 1;
+
 /********
  *
  */
-
-/**
- *  Initializes default fonts
- */
-static void
-define_default_fonts              (void)
-{
-#ifdef SCREEN_NCURSESW
-
-  int colors[][3]=
-   {
-     {CID_BLACK,  CID_WHITE, FALSE},
-     {CID_BLUE,   CID_WHITE, FALSE},
-     {CID_YELLOW, CID_WHITE, TRUE},
-
-     {CID_CYAN,   CID_BLUE,  TRUE},
-     {CID_YELLOW, CID_BLUE,  TRUE},
-     {CID_WHITE,  CID_BLUE,  TRUE},
-
-     {CID_BLACK,  CID_CYAN,  FALSE},
-     {CID_BLUE,   CID_CYAN,  FALSE},
-     {CID_YELLOW, CID_CYAN,  TRUE},
-
-     {CID_YELLOW, CID_BLACK,  TRUE},
-
-     {CID_WHITE,   CID_RED,  TRUE},
-     {CID_YELLOW,  CID_RED,  TRUE},
-
-     {CID_WHITE,   CID_BLACK, FALSE},
-
-     {-1, -1, -1}
-   };
-
-  int i=0, pair_no=1;
-
-  while (colors[i][0]>=0)
-    {
-      _INIT_COLOR (colors[i][0], colors[i][1], colors[i][2]);
-      i++;
-    }
-
-#endif
-}
 
 /**
  * Initialize smart handling of escaped characters (i.e. Esc-^[)
@@ -141,7 +111,9 @@ init_escape_keys                  (void)
 int
 screen_init                       (int __mode)
 {
-  mode=__mode;
+  mode = __mode;
+
+  memset (screen_fonts, sizeof (screen_fonts), 0);
 
 #ifdef SCREEN_NCURSESW
   root_wnd=initscr ();
@@ -164,11 +136,6 @@ screen_init                       (int __mode)
    */
   init_escape_keys ();
 #endif
-
-  if (__mode&SM_COLOR)
-    {
-      define_default_fonts ();
-    }
 
   return 0;
 }
@@ -343,4 +310,50 @@ scr_create_sub_window             (scr_window_t __parent,
   scr_wnd_erase (res);
 
   return res;
+}
+
+/**
+ * Initialize new screen font
+ *
+ * @param __fg - number of foreground color
+ * @param __bg - number of background color
+ * @return descriptor of font on success, NULL otherwise
+ */
+scr_font_t*
+screen_init_font (int __fg, int __bg)
+{
+  scr_font_t *res = NULL;
+
+#ifdef SCREEN_NCURSESW
+  BOOL bold;
+
+  bold = __fg > COLOR_MAX;
+  if (bold)
+    {
+      __fg -= 0x08;
+    }
+
+  /*
+   * TODO: Add decreasing light background to dark
+   */
+
+  _INIT_COLOR (__fg, __bg, bold);
+
+  res = &screen_fonts[CID (__fg, __bg)];
+#endif
+
+  return res;
+}
+
+/**
+ * Get screen font
+ *
+ * @param __fg - number of foreground color
+ * @param __bg - number of background color
+ * @return descriptor of font on success, NULL otherwise
+ */
+scr_font_t*
+screen_get_font (int __fg, int __bg)
+{
+  return screen_init_font (__fg, __bg);
 }

@@ -154,9 +154,9 @@ widget_create_progress (w_container_t *__parent, unsigned long __max_pos,
   res->max_pos = __max_pos;
   res->style = __style;
 
-  res->font = &FONT (CID_BLUE, CID_WHITE);
-  res->background_font = &FONT (CID_BLACK, CID_WHITE);
-  res->progress_font = &FONT (CID_WHITE, CID_BLACK);
+  res->font            = FONT (CID_BLUE, CID_GREY);
+  res->background_font = FONT (CID_BLACK, CID_GREY);
+  res->progress_font   = FONT (CID_WHITE, CID_BLACK);
 
   res->prev_count = -1;
 

@@ -697,9 +697,9 @@ widget_create_edit (w_container_t *__parent,
   WIDGET_CALLBACK (res, focused) = (widget_action) edit_focused;
   WIDGET_CALLBACK (res, blured) = (widget_action) edit_blured;
 
-  res->font        = &FONT (CID_BLACK, CID_CYAN);
-  res->shaded_font = &FONT (CID_BLUE, CID_CYAN);
-  res->suffix_font = &FONT (CID_CYAN, CID_BLUE);
+  res->font        = FONT (CID_BLACK, CID_CYAN);
+  res->shaded_font = FONT (CID_BLUE, CID_CYAN);
+  res->suffix_font = FONT (CID_CYAN, CID_BLUE);
 
   w_edit_set_text (res, L"");
 

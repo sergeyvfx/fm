@@ -779,11 +779,11 @@ widget_create_menu (unsigned int __style)
   WIDGET_CALLBACK (res, keydown) = (widget_keydown_proc) menu_keydown;
 
   /* Look&feel */
-  res->font = &FONT (CID_BLACK, CID_CYAN);
-  res->focused_font = &FONT (CID_WHITE, CID_BLACK);
+  res->font         = FONT (CID_BLACK, CID_CYAN);
+  res->focused_font = FONT (CID_WHITE, CID_BLACK);
 
-  res->hot_font = &FONT (CID_YELLOW, CID_CYAN);
-  res->hot_focused_font = &FONT (CID_YELLOW, CID_BLACK);
+  res->hot_font         = FONT (CID_YELLOW, CID_CYAN);
+  res->hot_focused_font = FONT (CID_YELLOW, CID_BLACK);
 
   res->style = __style;
 

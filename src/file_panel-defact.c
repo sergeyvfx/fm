@@ -89,7 +89,7 @@ get_file_panel_item_font (const file_panel_t *__panel, unsigned long __index)
 {
   if (__index >= __panel->items.length)
     {
-      return &FONT (CID_WHITE, CID_RED);
+      return FONT (CID_WHITE, CID_RED);
     }
 
   file_panel_item_t item = __panel->items.data[__index];
@@ -101,23 +101,23 @@ get_file_panel_item_font (const file_panel_t *__panel, unsigned long __index)
       if (item.selected)
         {
           /* Selected item under cursor */
-          return &FONT (CID_YELLOW, CID_CYAN);
+          return FONT (CID_YELLOW, CID_CYAN);
         }
       else
         {
-          return &FONT (CID_BLACK, CID_CYAN);
+          return FONT (CID_BLACK, CID_CYAN);
         }
     }
 
   /* Selected item not under cursor */
   if (item.selected)
     {
-      return &FONT (CID_YELLOW, CID_BLUE);
+      return FONT (CID_YELLOW, CID_BLUE);
     }
 
   if (S_ISDIR (item.file->stat.st_mode) && wcscmp (item.file->name, L".."))
     {
-      return &FONT (CID_WHITE, CID_BLUE);
+      return FONT (CID_WHITE, CID_BLUE);
     }
 
   return __panel->widget->font;

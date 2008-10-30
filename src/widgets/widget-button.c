@@ -183,11 +183,11 @@ widget_create_button              (w_container_t *__parent,
 
   res->style=__style;
 
-  res->font         = &FONT (CID_BLACK, CID_WHITE);
-  res->focused_font = &FONT (CID_BLACK, CID_CYAN);
+  res->font         = FONT (CID_BLACK, CID_GREY);
+  res->focused_font = FONT (CID_BLACK, CID_CYAN);
 
-  res->hot_font         = &FONT (CID_BLUE, CID_WHITE);
-  res->hot_focused_font = &FONT (CID_BLUE, CID_CYAN);
+  res->hot_font         = FONT (CID_BLUE, CID_GREY);
+  res->hot_focused_font = FONT (CID_BLUE, CID_CYAN);
 
   WIDGET_POST_INIT (res);
 

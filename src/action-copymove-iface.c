@@ -26,7 +26,7 @@
   { \
     swprintf (buf, BUF_LEN (buf), _(_format), ##_args); \
     text=widget_create_text (WIDGET_CONTAINER (wnd), buf, 1, _y); \
-    w_text_set_font (text, &FONT (CID_WHITE,  CID_RED)); \
+    w_text_set_font (text, FONT (CID_WHITE,  CID_RED)); \
   }
 
 /**
@@ -39,10 +39,10 @@
     btn->modal_result=_modal_result; \
     cur_left+=widget_shortcut_length (_(_caption))+5; \
     w_button_set_fonts (btn, \
-      &FONT (CID_WHITE,  CID_RED), \
-      &FONT (CID_BLACK,  CID_WHITE), \
-      &FONT (CID_YELLOW, CID_RED), \
-      &FONT (CID_YELLOW, CID_WHITE)); \
+      FONT (CID_WHITE,  CID_RED), \
+      FONT (CID_BLACK,  CID_WHITE), \
+      FONT (CID_YELLOW, CID_RED), \
+      FONT (CID_YELLOW, CID_WHITE)); \
   }
 
 /********
@@ -470,8 +470,8 @@ action_copy_exists_dialog (const wchar_t *__src, const wchar_t *__dst,
   /* Create question window */
   wnd = widget_create_window (_(L"File exists"), 0, 0, width,
                               13, WMS_CENTERED);
-  w_window_set_fonts (wnd, &FONT (CID_WHITE, CID_RED),
-                      &FONT (CID_YELLOW, CID_RED));
+  w_window_set_fonts (wnd, FONT (CID_WHITE, CID_RED),
+                      FONT (CID_YELLOW, CID_RED));
 
   fn_len = width - wcslen (_(L"Target file \"%ls\" already exists!"));
   fit_dirname (__dst, fn_len, dummy);

@@ -26,4 +26,7 @@ SOURCES = \
 
 OBJECTS = ${SOURCES:.c=.o}
 
+all:
+	rm -f ../fm
+
 include ${top_builddir}/mk/objective.mk
