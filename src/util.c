@@ -428,3 +428,106 @@ escape_string (const wchar_t *__source)
 
   return result;
 }
+
+/**
+ * Expands '*' characters in pattern string by another string
+ *
+ * If there is a '*.' substring in pattern, '*' will be replaced with base file
+ * name from string (string with dropped file extension)
+ * If there is a '.*' substring in pattern, '*' will be replaced with file
+ * extension from string.
+ * All the rest '*' characters in pattern will be replaced by the whole string.
+ *
+ * @param __pattern - string with pattern
+ * @param __string - string to expand '*' characters
+ * @return pointer to string with expanded '*' characters
+ * @sizeeffect allocate memory for return value
+ */
+wchar_t*
+pattern_rename (const wchar_t *__pattern, const wchar_t *__string)
+{
+  wchar_t *res = NULL;
+  size_t i, n, m, prev, base_len, ext_len, size, buf_len;
+  wchar_t *base, *ext, *buf;
+  int rep_iter = 0;
+
+  m = wcslen (__string);
+
+  /* Get pointer to base name and extension and thir lengths */
+  base = (wchar_t*)__string;
+  base_len = m;
+
+  ext = (wchar_t*)(__string + base_len);
+  ext_len = 0;
+  while (ext >= __string && *ext != '.')
+    {
+      --ext;
+      ++ext_len;
+    }
+
+  if (*ext == '.')
+    {
+      base_len -= ext_len;
+      ++ext;
+      --ext_len;
+    }
+
+  size = prev = 0;
+
+  /* Expand all '*' characters */
+  for (i = 0, n = wcslen (__pattern); i < n; ++i)
+    {
+      if (__pattern[i] == '*')
+        {
+          if (i < n - 1 && __pattern[i + 1] == '.')
+            {
+              buf = base;
+              buf_len = base_len;
+            }
+          else if (i > 0 && __pattern[i - 1] == '.')
+            {
+              buf = ext;
+              buf_len = ext_len;
+            }
+          else
+            {
+              buf = __string;
+              buf_len = m;
+            }
+
+          /* Allocate meory */
+          size += (i - prev + 1 + buf_len) * sizeof (wchar_t);
+          if (!res)
+            {
+              MALLOC_ZERO (res, size);
+            }
+          else
+            {
+              res = realloc (res, size);
+            }
+
+          /* Append skipped part of string and expand '*' character */
+          wcsncat (res, __pattern + prev, i - prev);
+          wcsncat (res, buf, buf_len);
+
+          prev = i + 1;
+          ++rep_iter;
+        }
+    }
+
+  if (!res)
+    {
+      /* Theree is no '*' characters in string */
+      /* so, we can just return duplicate of string */
+      return wcsdup (__pattern);
+    }
+
+  /* Allocate memory for tail */
+  size += (n - prev + 1) * sizeof (wchar_t);
+  res = realloc (res, size);
+
+  /* Append tail */
+  wcscat (res, __pattern + prev);
+
+  return res;
+}

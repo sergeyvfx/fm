@@ -1483,11 +1483,15 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
           item_name = item->file->name;
         }
 
+      /* Expand posibile '*' characters */
+      dummy = pattern_rename (dst, item_name);
+
       /* Make copy iteration */
       src = wcdircatsubdir (__base_dir, item_name);
-      res = make_copy_iter (src, dst, &owr_all_rule, wnd,
+      res = make_copy_iter (src, dummy, &owr_all_rule, wnd,
                             scan_allowed ? listing.tree->items[i] : NULL);
       free (src);
+      free (dummy);
 
       if (res == 0)
         {

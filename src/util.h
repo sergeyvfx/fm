@@ -64,4 +64,8 @@ do_exit (void);
 wchar_t*
 escape_string (const wchar_t *__source);
 
+/* Expands '*' characters in pattern string by another string */
+wchar_t*
+pattern_rename (const wchar_t *__string, const wchar_t *__source);
+
 #endif
