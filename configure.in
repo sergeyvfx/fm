@@ -85,8 +85,6 @@ if test "x${localedir}" = "x"; then
   localedir="${datadir}/locale"
 fi
 
-AC_DEFINE_UNQUOTED(LOCALEDIR, "$localedir", [Directory of i18n files])
-
 AC_DEFINE_UNQUOTED(WC_PACKAGE, L"$PACKAGE", [Directory of data files])
 
 # Host
@@ -108,8 +106,19 @@ AC_SUBST(SCREENLIBS)
 
 if test "x${noinst_debug}" = 'xyes'; then
   AC_DEFINE_UNQUOTED(NOINST_DEBUG,1,[Debugging in source tree only])
+
+  project_path="`pwd`/`dirname $0`"
+
+  AC_DEFINE_UNQUOTED(PROJECT_PATH,"$project_path",[Absolutely project path])
+  AC_DEFINE_UNQUOTED(WC_PROJECT_PATH,L"$project_path",[Absolutely project path])
+
+  localedir="$project_path/po/locale"
+
 	debug="yes"
 fi
+
+AC_DEFINE_UNQUOTED(LOCALEDIR, "$localedir", [Directory with i18n files])
+AC_DEFINE_UNQUOTED(WC_LOCALEDIR, L"$localedir", [Directory with i18n files])
 
 str_debug="no"
 if test "x${debug}" = 'xyes'; then

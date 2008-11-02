@@ -42,7 +42,7 @@
 /* definition of HOST */
 #undef HOST
 
-/* Directory of i18n files */
+/* Directory with i18n files */
 #undef LOCALEDIR
 
 /* Debugging in source tree only */
@@ -69,6 +69,9 @@
 /* definition of PREFIX */
 #undef PREFIX
 
+/* Absolutely project path */
+#undef PROJECT_PATH
+
 /* Library for terminal handling */
 #undef SCREEN_NCURSESW
 
@@ -84,5 +87,11 @@
 /* Directory of data files */
 #undef WC_DATA_DIR
 
+/* Directory with i18n files */
+#undef WC_LOCALEDIR
+
 /* Directory of data files */
 #undef WC_PACKAGE
+
+/* Absolutely project path */
+#undef WC_PROJECT_PATH

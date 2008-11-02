@@ -34,12 +34,6 @@ i18n_localization_deleter (void *__data)
 void
 i18n_init (void)
 {
-
-#ifdef NOINST_DEBUG
-#  undef LOCALEDIR
-#  define LOCALEDIR "../po/locale/"
-#endif
-
   /* Use the default locale set in the environment */
   setlocale (LC_ALL, "");
 
