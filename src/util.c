@@ -491,7 +491,7 @@ pattern_rename (const wchar_t *__pattern, const wchar_t *__string)
             }
           else
             {
-              buf = __string;
+              buf = (wchar_t*)__string;
               buf_len = m;
             }
 
