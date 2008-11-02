@@ -10,8 +10,8 @@
  * See the file COPYING.
  */
 
-#ifndef _i18n_h_
-#define _i18n_h_
+#ifndef _I18N_H_
+#define _I18N_H_
 
 #include "smartinclude.h"
 
@@ -30,4 +30,4 @@ i18n_text (const wchar_t *);
 
 END_HEADER
 
-#endif
+#endif /* _I18N_H_ */
