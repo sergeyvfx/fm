@@ -14,7 +14,11 @@
 #define _widget_h_
 
 #include <smartinclude.h>
+
+BEGIN_HEADER
+
 #include <screen.h>
+#include <hotkeys.h>
 
 #include <wctype.h>
 #include <wchar.h>
@@ -115,6 +119,9 @@
       return res; \
   }
 
+#define WIDGET_CLASS_CONTEXT(_w) ((WIDGET (_w))->class_context)
+#define WIDGET_USER_CONTEXT(_w)  ((WIDGET (_w))->user_context)
+
 /****
  * Some automatization
  */
@@ -131,6 +138,7 @@
  */
 #define WIDGET_INIT(_widget, _datatype, _type, _parent, \
                     _flags, \
+                    _class_context, \
                     _destructor, _drawer, \
                     _x, _y, _z, _w, _h) \
   /* Allocate and free memory for new widget */ \
@@ -160,7 +168,13 @@
   WIDGET_CALLBACK (_widget, blured)   = (widget_action)widget_blured; \
   WIDGET_CALLBACK (_widget, shortcut) = (widget_action)widget_shortcut; \
   WIDGET_CALLBACK (_widget, keydown)  = (widget_keydown_proc)widget_keydown; \
-  WIDGET_CALLBACK (_widget, onresize) = (widget_action)widget_onresize;
+  WIDGET_CALLBACK (_widget, onresize) = (widget_action)widget_onresize; \
+\
+  (_widget)->class_context = _class_context; \
+  if (!((_flags) & WF_UNFOCUSABE)) \
+    { \
+      (_widget)->user_context  = hotkey_create_context (NULL, 0); \
+    }
 
 /* Post-initializing stuff */
 #define WIDGET_POST_INIT(_widget) \
@@ -293,7 +307,11 @@ typedef struct
   struct _widget_t   *parent;         /* Parent widget */ \
   int                tab_order;       /* Tab order */ \
   wchar_t            shortcut_key;    /* Shortcut key of widget */ \
-  void               *user_data;      /* To keep user-specified data */
+  void               *user_data;      /* To keep user-specified data */ \
+  hotkey_context_t   *class_context;  /* Descriptor of class-specified */ \
+                                      /* hotkey context */ \
+  hotkey_context_t   *user_context;   /* Descriptor of user-specified */ \
+                                      /* hotkey context */
 
 #define WIDGET_CONTAINER_MEMBERS \
   WIDGET_MEMBERS \
@@ -433,6 +451,22 @@ widget_first_focusable (const w_container_t* __parent);
 BOOL
 widget_visible (widget_t *__widget);
 
+/* Replace widget class context */
+void
+widget_replace_class_context (widget_t *__widget, hotkey_context_t *__context);
+
+/* Replace widget user context */
+void
+widget_replace_user_context (widget_t *__widget, hotkey_context_t *__context);
+
+/* Push widget's contexts */
+void
+widget_push_context (widget_t *__widget);
+
+/* Pop widget's contexts*/
+int
+widget_pop_context (widget_t *__widget);
+
 /****
  * Deep-core common stuff
  */
@@ -471,5 +505,7 @@ w_container_drop (w_container_t *__widget, widget_t *__child);
 widget_t*
 w_container_widget_by_tab_order (const w_container_t *__container,
                                  int __tab_order);
+
+END_HEADER
 
 #endif

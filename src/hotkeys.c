@@ -59,6 +59,8 @@ typedef struct
 
 struct hotkey_context
 {
+  wchar_t *name;
+
   /* List of hotkeys' descriptors */
   hotkey_t *hotkeys;
 
@@ -240,6 +242,29 @@ parse_sequence (const wchar_t *__sequence, wchar_t *__res)
   return len;
 }
 
+/**
+ * Destroyer of context
+ *
+ * @param __context - context to be destroyed
+ */
+static void
+context_destroyer (hotkey_context_t *__context)
+{
+  int i;
+
+  SAFE_FREE (__context->name);
+
+  /* Destroy list of hotkeys */
+  for (i = 0; i < __context->count; ++i)
+    {
+      SAFE_FREE (__context->hotkeys[i].sequence);
+    }
+  SAFE_FREE (__context->hotkeys);
+
+  /* Free momory used by context descriptor */
+  SAFE_FREE (__context);
+}
+
 /********
  * User's backend
  */
@@ -256,7 +281,7 @@ hotkeys_init (void)
   contexts = deque_create ();
 
   /* Create global context */
-  hotkey_root_context = hotkey_create_context (HKCF_ACTIVE);
+  hotkey_root_context = hotkey_create_context (L".", HKCF_ACTIVE);
 
   return 0;
 }
@@ -267,8 +292,12 @@ hotkeys_init (void)
 void
 hotkeys_done (void)
 {
+  hotkey_context_t *context;
+
   /* Destroy contexts */
-  deque_destroy (contexts, (destroyer)hotkey_destroy_context);
+  deque_foreach (contexts, context);
+    hotkey_destroy_context (context);
+  deque_foreach_done;
 }
 
 /**
@@ -278,11 +307,16 @@ hotkeys_done (void)
  * @return descriptor of new context
  */
 hotkey_context_t*
-hotkey_create_context (unsigned int __flags)
+hotkey_create_context (const wchar_t *__name, unsigned int __flags)
 {
   hotkey_context_t *result;
 
   MALLOC_ZERO (result, sizeof (hotkey_context_t));
+
+  if (__name)
+    {
+      result->name = wcsdup (__name);
+    }
 
   result->flags = __flags;
 
@@ -304,22 +338,16 @@ hotkey_create_context (unsigned int __flags)
 void
 hotkey_destroy_context (hotkey_context_t *__context)
 {
-  int i;
-
   if (!__context)
     {
       return;
     }
 
-  /* Destroy list of hotkeys */
-  for (i = 0; i < __context->count; ++i)
-    {
-      free (__context->hotkeys[i].sequence);
-    }
-  free (__context->hotkeys);
+  /* Make shure context is not used */
+  hotkey_drop_context (__context, FALSE);
 
-  /* Free momory used by context descriptor */
-  free (__context);
+  /* Destroy context */
+  context_destroyer (__context);
 }
 
 /**
@@ -398,8 +426,7 @@ hotkey_drop_context (hotkey_context_t *__context, BOOL __destroy)
     if (context == __context)
       {
         deque_remove (contexts, deque_foreach_iterator,
-                      __destroy ? (destroyer)hotkey_destroy_context : 0);
-        deque_foreach_break;
+                      __destroy ? (destroyer)context_destroyer : 0);
       }
   deque_foreach_done
 }
@@ -626,4 +653,15 @@ hotkey_push_character (wchar_t __ch)
   queue[queue_ptr++] = __ch;
 
   return check ();
+}
+
+/**
+ * Get current hotkey context
+ *
+ * @return current hotkey context's descriptor
+ */
+hotkey_context_t*
+hotkey_current_context (void)
+{
+  return deque_head (contexts) ? deque_data (deque_head (contexts)) : NULL;
 }

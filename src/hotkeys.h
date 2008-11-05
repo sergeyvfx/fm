@@ -58,7 +58,7 @@ hotkeys_done (void);
 
 /* Create context of hotkeys */
 hotkey_context_t*
-hotkey_create_context (unsigned int __flags);
+hotkey_create_context (const wchar_t *__name, unsigned int __flags);
 
 /* Destroy context of hotkeys */
 void
@@ -114,6 +114,10 @@ hotkey_release (const wchar_t *__sequence);
 /* Put new character to sequence */
 short
 hotkey_push_character (wchar_t __ch);
+
+/* Get current hotkey context */
+hotkey_context_t*
+hotkey_current_context (void);
 
 END_HEADER
 

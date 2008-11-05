@@ -45,6 +45,9 @@
  *
  */
 
+/* Hotkey context for all menu widgets */
+static hotkey_context_t *menu_context = NULL;
+
 static void
 hide_menu (w_menu_t *__menu);
 
@@ -119,8 +122,6 @@ menu_destructor (w_menu_t *__menu)
     }
 
   SAFE_FREE (__menu->sub_menus.data);
-
-  free (__menu);
 
   return 0;
 }
@@ -768,7 +769,14 @@ widget_create_menu (unsigned int __style)
 {
   w_menu_t *res;
 
+  /* Create context for box widgets */
+  if (!menu_context)
+    {
+      menu_context = hotkey_create_context (L"menu-class-context", 0);
+    }
+
   WIDGET_INIT (res, w_menu_t, WT_MENU, 0, WF_ONTOP,
+               menu_context,
                menu_destructor, menu_drawer,
                0, 0, 1, SCREEN_WIDTH, 1);
 

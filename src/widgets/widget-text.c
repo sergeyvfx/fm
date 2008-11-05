@@ -28,7 +28,6 @@ text_destructor                   (w_text_t *__text)
 
   SAFE_FREE (__text->text);
 
-  free (__text);
   return 0;
 }
 
@@ -125,6 +124,7 @@ widget_create_text                (w_container_t *__parent,
   w=wcslen (__text);
 
   WIDGET_INIT (res, w_text_t, WT_TEXT, __parent, WF_NOLAYOUT | WF_UNFOCUSABE,
+               NULL,
                text_destructor, text_drawer, __x, __y, 1, w, 1);
 
   res->text = wcsdup (__text);

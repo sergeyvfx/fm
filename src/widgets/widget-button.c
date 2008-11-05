@@ -12,9 +12,8 @@
 
 #include "widget.h"
 
-/********
- *
- */
+/* Hotkey context for all button widgets */
+static hotkey_context_t *button_context = NULL;
 
 /**
  * Destroy a button widget
@@ -32,7 +31,6 @@ button_destructor                 (w_button_t *__button)
 
   SAFE_FREE (__button->caption);
 
-  free (__button);
   return 0;
 }
 
@@ -136,6 +134,13 @@ button_shortcut                   (w_button_t *__button)
   return button_keydown (__button, KEY_RETURN);
 }
 
+static int
+test (void *__data)
+{
+  message_box (L"Test", L"Button's only callback", 0);
+  return 0;
+}
+
 /********
  * User's backend
  */
@@ -164,12 +169,20 @@ widget_create_button              (w_container_t *__parent,
       return 0;
     }
 
+  /* Create context for buttons widgets */
+  if (!button_context)
+    {
+      button_context = hotkey_create_context (L"button-class-context", 0);
+      hotkey_register_at_context (button_context, L"C-x", test);
+    }
+
   unsigned int w;
 
-  w=(__caption?widget_shortcut_length (__caption):0)+
-    4+(__style&WBS_DEFAULT?2:0);
+  w = (__caption ? widget_shortcut_length (__caption) : 0) +
+          4 + (__style & WBS_DEFAULT ? 2 : 0);
 
   WIDGET_INIT (res, w_button_t, WT_BUTTON, __parent, WF_NOLAYOUT,
+               button_context,
                button_destructor, button_drawer,
                __x, __y, 1, w, 1);
 

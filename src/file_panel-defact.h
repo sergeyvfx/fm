@@ -41,8 +41,6 @@ typedef struct
     widget_action blured;
   } s_widget_callbacks;
 
-  hotkey_context_t *hotkey_context;
-
   struct
   {
     unsigned long count;

@@ -16,6 +16,9 @@
 
 #include <wchar.h>
 
+/* Hotkey context for all checkboxbox widgets */
+static hotkey_context_t *checkbox_context = NULL;
+
 /**
  * Destroys a checkbox widget
  *
@@ -196,7 +199,14 @@ widget_create_checkbox (w_container_t *__parent, const wchar_t *__caption,
       return NULL;
     }
 
+  /* Create context for checkbox widgets */
+  if (!checkbox_context)
+    {
+      checkbox_context = hotkey_create_context (L"checkbox-class-context", 0);
+    }
+
   WIDGET_INIT (widget, w_checkbox_t, WT_CHECKBOX, __parent, WF_NOLAYOUT,
+               checkbox_context,
                checkbox_destructor, checkbox_drawer,
                __x, __y, 1, wcslen(__caption) + 4, 1);
 

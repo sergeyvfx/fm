@@ -17,6 +17,8 @@
 
 BEGIN_HEADER
 
+#define PROFILE_DEQUE_LENGTH DEBUG
+
 typedef struct _Iter iterator_t;
 
 struct _Iter

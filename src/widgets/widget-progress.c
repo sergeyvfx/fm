@@ -26,7 +26,6 @@ progress_destructor (w_progress_t *__progress)
       return -1;
     }
 
-  free (__progress);
   return 0;
 }
 
@@ -149,6 +148,7 @@ widget_create_progress (w_container_t *__parent, unsigned long __max_pos,
 
   WIDGET_INIT (res, w_progress_t, WT_PROGRESS, __parent,
                WF_NOLAYOUT | WF_UNFOCUSABE,
+               FALSE,
                progress_destructor, progress_drawer, __x, __y, 1, __w, 1);
 
   res->max_pos = __max_pos;

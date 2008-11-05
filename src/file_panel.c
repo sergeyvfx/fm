@@ -922,7 +922,7 @@ file_panel_create (int __width, unsigned int __params)
   /****
    * General widget initialization
    */
-  WIDGET_INIT (res->widget, file_panel_widget_t, WT_SINGLE, parent, 0,
+  WIDGET_INIT (res->widget, file_panel_widget_t, WT_SINGLE, parent, 0, NULL,
                fpd_widget_destructor,
                fpd_draw_widget,
                0, 0, 1, 0, 0);

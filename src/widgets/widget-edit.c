@@ -21,6 +21,9 @@
   (WIDGET_CALL_USER_CALLBACK (_edit, property_changed, \
                               _edit, W_EDIT_CHECKVALIDNESS_PROP))
 
+/* Hotkey context for all edit widgets */
+static hotkey_context_t *edit_context = NULL;
+
 /**
  * Destroy list of variants
  *
@@ -64,7 +67,6 @@ edit_destructor (w_edit_t *__edit)
 
   free_variants (__edit);
 
-  free (__edit);
   return 0;
 }
 
@@ -689,7 +691,14 @@ widget_create_edit (w_container_t *__parent,
       return 0;
     }
 
+  /* Create context for edit widgets */
+  if (!edit_context)
+    {
+      edit_context = hotkey_create_context (L"exit-class-context", 0);
+    }
+
   WIDGET_INIT (res, w_edit_t, WT_EDIT, __parent, WF_NOLAYOUT,
+               edit_context,
                edit_destructor, edit_drawer,
                __x, __y, 1, __width, 1);
 

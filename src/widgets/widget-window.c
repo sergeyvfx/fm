@@ -28,6 +28,9 @@
 #define CENTRE_X(_width)    ((SCREEN_WIDTH-_width)/2)
 #define CENTRE_Y(_height)   ((SCREEN_HEIGHT-_height)/2)
 
+/* Hotkey context for all window widgets */
+static hotkey_context_t *window_context = NULL;
+
 /********
  *
  */
@@ -68,8 +71,6 @@ window_destructor (w_window_t *__window)
     {
       free (__window->caption.text);
     }
-
-  free (__window);
 
   return 0;
 }
@@ -270,10 +271,12 @@ window_show_entry (w_window_t *__window, int __show_mode)
 
   /* Window is now visible */
   WIDGET_POSITION (__window).z = 1;
+  __window->focused = TRUE;
 
   panel_show (__window->panel);
 
   widget_add_root (WIDGET (__window));
+  widget_push_context (WIDGET (__window));
 
   __window->show_mode = __show_mode;
   __window->modal_result = MR_NONE;
@@ -285,11 +288,19 @@ window_show_entry (w_window_t *__window, int __show_mode)
   WIDGET_CALL_CALLBACK (__window, focused, __window);
 
   /* Set focus to first widget in window */
-  if (WIDGET_CONTAINER_LENGTH (__window) &&
-      !WIDGET_CONTAINER_FOCUSED (__window))
+  if (WIDGET_CONTAINER_LENGTH (__window))
     {
       widget_t *w;
-      w=widget_first_focusable (WIDGET_CONTAINER (__window));
+
+      if (!WIDGET_CONTAINER_FOCUSED (__window))
+        {
+          w = widget_first_focusable (WIDGET_CONTAINER (__window));
+        }
+      else
+        {
+          w = WIDGET_CONTAINER_FOCUSED (__window);
+          w->focused = FALSE;
+        }
 
       if (w)
         {
@@ -407,6 +418,12 @@ widget_create_window (const wchar_t *__caption,
 {
   w_window_t *res;
 
+  if (!window_context)
+    {
+      window_context = hotkey_create_context (L"window-class-context",
+                                             HKCF_OPAQUE);
+    }
+
   if (__style & WMS_CENTERED)
     {
       __x = CENTRE_X (__w);
@@ -414,7 +431,8 @@ widget_create_window (const wchar_t *__caption,
     }
 
   WIDGET_INIT (res, w_window_t, WT_WINDOW, 0, 0,
-               window_destructor, window_drawer,  \
+               window_context,
+               window_destructor, window_drawer,
                __x, __y, 0, __w, __h);
 
   if (__caption)
@@ -471,6 +489,15 @@ w_window_hide (w_window_t *__window)
     {
       return;
     }
+
+  if (__window->focused_widget)
+    {
+      widget_pop_context (__window->focused_widget);
+      __window->focused_widget->focused = FALSE;
+    }
+
+  widget_pop_context (WIDGET (__window));
+  __window->focused = FALSE;
 
   if (__window->show_mode != WSM_MODAL)
     {

@@ -17,6 +17,9 @@
 #define ITEMS_PER_PAGE(__list) \
   (__list->position.height - 2)
 
+/* Hotkey context for all list widgets */
+static hotkey_context_t *list_context = NULL;
+
 /**
  * Destroy a list widget
  *
@@ -35,7 +38,6 @@ list_destructor (w_list_t *__list)
 
   SAFE_FREE (__list->items.data);
 
-  free (__list);
   return 0;
 }
 
@@ -271,7 +273,14 @@ widget_create_list (w_container_t *__parent, const wchar_t *__caption,
       return 0;
     }
 
+  /* Create context for list widgets */
+  if (!list_context)
+    {
+      list_context = hotkey_create_context (L"box-class-context", 0);
+    }
+
   WIDGET_INIT (res, w_list_t, WT_LIST, __parent, WF_NOLAYOUT,
+               list_context,
                list_destructor, list_drawer, __x, __y, 1, __w, __h);
 
   WIDGET_CALLBACK (res, keydown)  = (widget_keydown_proc)list_keydown;

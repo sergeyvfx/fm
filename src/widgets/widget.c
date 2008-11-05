@@ -13,6 +13,7 @@
 #include "widget.h"
 #include "deque.h"
 #include "hook.h"
+#include "messages.h"
 
 #include <malloc.h>
 #include <time.h>
@@ -629,11 +630,23 @@ widget_destroy (widget_t *__widget)
       return;
     }
 
+   /* Pop widget's contexts */
+   widget_pop_context (__widget);
+
   /* Call destructor from object */
   if (__widget->methods.destroy)
     {
       __widget->methods.destroy (__widget);
     }
+
+   /* Destroy user's context */
+   if (__widget->user_context)
+     {
+       hotkey_destroy_context (__widget->user_context);
+     }
+
+   /* Free allocated memory */
+   SAFE_FREE (__widget);
 }
 
 /**
@@ -738,11 +751,16 @@ widget_set_focus (widget_t *__widget)
       /* Zerolize focused widgets in previously focused branch */
       reset_focused_widget (focused_cnt, 0);
 
-      /* Redraw widget */
+      /* Remove widget's contexts because it is unfocused */
+      widget_pop_context (old_focused);
+
+      /* Mark widget as unfocused */
       old_focused->focused = FALSE;
 
+      /* Call `blured` callback */
       WIDGET_CALL_CALLBACK (old_focused, blured, old_focused);
 
+      /* Redraw widget */
       widget_redraw (old_focused);
     }
 
@@ -757,6 +775,9 @@ widget_set_focus (widget_t *__widget)
 
   /* Set focus to new widget and redraw */
   __widget->focused = TRUE;
+
+  /* Set widget's class context as current context */
+  widget_push_context (__widget);
 
   if (!WIDGET_CALL_CALLBACK (__widget, focused, __widget))
     {
@@ -1195,7 +1216,7 @@ widget_blured (widget_t *__widget)
       if (cnt->focused_widget)
         {
           return WIDGET_CALL_CALLBACK (cnt->focused_widget, blured,
-                                      cnt->focused_widget);
+                                       cnt->focused_widget);
         }
     }
 
@@ -1357,4 +1378,91 @@ widget_visible (widget_t *__widget)
     }
 
   return TRUE;
+}
+
+/**
+ * Replace widget class context
+ *
+ * @param __widget - widget for which context will be replaced
+ * @param __context - descriptor of new context
+ */
+void
+widget_replace_class_context (widget_t *__widget, hotkey_context_t *__context)
+{
+  if (!__widget || __widget->class_context == __context)
+    {
+      return;
+    }
+
+  widget_pop_context (__widget);
+  __widget->class_context = __context;
+  widget_push_context (__widget);
+}
+
+/**
+ * Replace widget user context
+ *
+ * @param __widget - widget for which context will be replaced
+ * @param __context - descriptor of new context
+ */
+void
+widget_replace_user_context (widget_t *__widget, hotkey_context_t *__context)
+{
+
+}
+
+/**
+ * Push widget's contexts
+ *
+ * @param __widget - widget which contexts will be push-ed
+ */
+void
+widget_push_context (widget_t *__widget)
+{
+  if (!__widget || !__widget->focused || !WIDGET_VISIBLE (__widget))
+    {
+      return;
+    }
+
+  if (__widget->class_context)
+    {
+      hotkey_push_context (__widget->class_context);
+    }
+}
+
+/**
+ * Pop widget's contexts
+ *
+ * @param __widget - widget which contexts will be pop-ed
+ * @return zero on success, non-zero otherwise
+ */
+int
+widget_pop_context (widget_t *__widget)
+{
+  if (!__widget || !__widget->focused || !WIDGET_VISIBLE (__widget))
+    {
+      return -1;
+    }
+
+  if (__widget->class_context)
+    {
+      if (hotkey_current_context () == __widget->class_context)
+        {
+          hotkey_pop_context (FALSE);
+          return 0;
+        }
+      else
+        {
+          hotkeys_done ();
+#ifdef DEBUG
+          MESSAGE_ERROR (L"Error in pop_widget_context: unable to "
+                         "pop widget's context.\n"
+                         "Widget's class context is not on top of "
+                         "context's stack.");
+#endif
+          return -1;
+        }
+    }
+
+  return 0;
 }

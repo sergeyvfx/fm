@@ -37,6 +37,9 @@
  *
  */
 
+/* Hotkey context for all box widgets */
+static hotkey_context_t *box_context = NULL;
+
 static void
 eval_sizes (w_box_t *__box);
 
@@ -73,8 +76,6 @@ box_destructor (w_box_t *__box)
   /*  Destroy all items */
   WIDGET_CONTAINER_DELETER (__box);
 
-  free (__box);
-
   return 0;
 }
 
@@ -100,8 +101,6 @@ box_item_destructor (w_box_item_t *__box_item)
     {
       scr_destroy_window (WIDGET_LAYOUT (__box_item));
     }
-
-  free (__box_item);
 
   return 0;
 }
@@ -450,8 +449,15 @@ widget_create_box (w_container_t *__parent,
   int i;
   w_box_t *res;
 
+  /* Create context for box widgets */
+  if (!box_context)
+    {
+      box_context = hotkey_create_context (L"box-class-context", 0);
+    }
+
   /* General widget initialization */
   WIDGET_INIT (res, w_box_t, WT_BOX, __parent, 0,
+               box_context,
                box_destructor, box_drawer,
                __x, __y, 1, __w, __h);
 

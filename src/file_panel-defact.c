@@ -10,6 +10,9 @@
  * See the file COPYING.
  */
 
+#include "hotkeys.h"
+
+
 #include "file_panel.h"
 #include "file_panel-defact.h"
 #include "dir.h"
@@ -62,7 +65,7 @@
     }
 
 #define _REGISTER_HOTKEY(_sequence, _callback) \
-  hotkey_register_at_context_full (data->hotkey_context, _sequence, \
+  hotkey_register_at_context_full (class_hotkey_context, _sequence, \
                                    (hotkey_callback)_callback, __panel);
 
 /********
@@ -71,6 +74,7 @@
 
 /* Move cursor after selection? */
 static BOOL move_after_selection = TRUE;
+static hotkey_context_t *class_hotkey_context = NULL;
 
 /********
  * Internal stuff
@@ -1097,8 +1101,6 @@ panel_focused (file_panel_widget_t *__widget)
       return FALSE;
     }
 
-  hotkey_set_current_context (data->hotkey_context);
-
   return data->s_widget_callbacks.focused (__widget);
 }
 
@@ -1128,8 +1130,6 @@ panel_blured (file_panel_widget_t *__widget)
     {
       return FALSE;
     }
-
-  hotkey_drop_context (data->hotkey_context, FALSE);
 
   return data->s_widget_callbacks.blured (__widget);
 }
@@ -1206,9 +1206,6 @@ fpd_create (file_panel_t *__panel)
   WIDGET_CALLBACK (__panel->widget, focused) = (widget_action) panel_focused;
   WIDGET_CALLBACK (__panel->widget, blured) = (widget_action) panel_blured;
 
-  /* Create hotkeys context and register hotkeys */
-  data->hotkey_context = hotkey_create_context (0);
-
   /*
    * Small hack: action_* is not a native hotkey's callbacks,
    *             they simply have the same format as hotkey_callback
@@ -1218,16 +1215,24 @@ fpd_create (file_panel_t *__panel)
    * TODO: Replace this static string with something from config file
    */
 
-  _REGISTER_HOTKEY (L"C-r",     file_panel_rescan);
-  _REGISTER_HOTKEY (L"C-l",     hotkey_listing);
-  _REGISTER_HOTKEY (L"F5",      action_copy);
-  _REGISTER_HOTKEY (L"F6",      action_move);
-  _REGISTER_HOTKEY (L"F7",      action_mkdir);
-  _REGISTER_HOTKEY (L"F8",      action_delete);
-  _REGISTER_HOTKEY (L"C-x s",   action_symlink);
-  _REGISTER_HOTKEY (L"C-x C-s", action_editsymlink);
-  _REGISTER_HOTKEY (L"C-x o",   action_chown);
-  _REGISTER_HOTKEY (L"C-x c",   action_chmod);
+  if (!class_hotkey_context)
+    {
+      class_hotkey_context = hotkey_create_context (L"fpd-context", 0);
+
+      _REGISTER_HOTKEY (L"C-r",     file_panel_rescan);
+      _REGISTER_HOTKEY (L"C-l",     hotkey_listing);
+      _REGISTER_HOTKEY (L"F5",      action_copy);
+      _REGISTER_HOTKEY (L"F6",      action_move);
+      _REGISTER_HOTKEY (L"F7",      action_mkdir);
+      _REGISTER_HOTKEY (L"F8",      action_delete);
+      _REGISTER_HOTKEY (L"C-x s",   action_symlink);
+      _REGISTER_HOTKEY (L"C-x C-s", action_editsymlink);
+      _REGISTER_HOTKEY (L"C-x o",   action_chown);
+      _REGISTER_HOTKEY (L"C-x c",   action_chmod);
+    }
+
+  widget_replace_class_context (WIDGET (__panel->widget),
+                                class_hotkey_context);
 
   return 0;
 }
@@ -1249,9 +1254,6 @@ fpd_destroy (file_panel_t *__panel)
     }
 
   data = __panel->user_data;
-
-  hotkey_drop_context (data->hotkey_context, FALSE);
-  hotkey_destroy_context (data->hotkey_context);
 
   free (data);
 
@@ -1598,8 +1600,6 @@ fpd_widget_destructor (file_panel_widget_t *__widget)
     {
       scr_destroy_window (WIDGET_LAYOUT (__widget));
     }
-
-  free (__widget);
 
   return 0;
 }

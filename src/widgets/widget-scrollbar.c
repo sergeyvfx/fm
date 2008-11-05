@@ -26,7 +26,6 @@ scrollbar_destructor (w_scrollbar_t *__scrollbar)
       return -1;
     }
 
-  free (__scrollbar);
   return 0;
 }
 
@@ -161,6 +160,7 @@ widget_create_scrollbar (widget_t *__parent, unsigned long __size,
 
   WIDGET_INIT (res, w_scrollbar_t, WT_SCROLLBAR, __parent,
                WF_NOLAYOUT | WF_UNFOCUSABE,
+               NULL,
                scrollbar_destructor, scrollbar_drawer, __x, __y, 1, w, h);
 
   res->size = __size;
