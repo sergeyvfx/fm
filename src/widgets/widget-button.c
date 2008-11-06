@@ -134,13 +134,6 @@ button_shortcut                   (w_button_t *__button)
   return button_keydown (__button, KEY_RETURN);
 }
 
-static int
-test (void *__data)
-{
-  message_box (L"Test", L"Button's only callback", 0);
-  return 0;
-}
-
 /********
  * User's backend
  */
@@ -173,7 +166,6 @@ widget_create_button              (w_container_t *__parent,
   if (!button_context)
     {
       button_context = hotkey_create_context (L"button-class-context", 0);
-      hotkey_register_at_context (button_context, L"C-x", test);
     }
 
   unsigned int w;
