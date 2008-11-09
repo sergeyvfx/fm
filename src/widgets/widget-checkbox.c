@@ -200,10 +200,7 @@ widget_create_checkbox (w_container_t *__parent, const wchar_t *__caption,
     }
 
   /* Create context for checkbox widgets */
-  if (!checkbox_context)
-    {
-      checkbox_context = hotkey_create_context (L"checkbox-class-context", 0);
-    }
+  checkbox_context = hotkey_create_context (L"checkbox-class-context", 0);
 
   WIDGET_INIT (widget, w_checkbox_t, WT_CHECKBOX, __parent, WF_NOLAYOUT,
                checkbox_context,

@@ -13,6 +13,7 @@
 #include "hotkeys.h"
 #include "screen.h"
 #include "deque.h"
+#include "hashmap.h"
 
 #include <stdarg.h>
 
@@ -34,11 +35,6 @@
     (_data)=va_arg (args, void*); \
     va_end (args); \
   }
-
-/* Queue of incoming characters */
-static wchar_t queue[MAX_SEQUENCE_LENGTH] = {0};
-static short queue_ptr = 0;
-hotkey_context_t *hotkey_root_context;
 
 /*
  * TODO: We'd better use some type of hashing to make finding a hotkey faster.
@@ -70,6 +66,13 @@ struct hotkey_context
   /* Different flags of context */
   unsigned int flags;
 };
+
+/* Queue of incoming characters */
+static wchar_t queue[MAX_SEQUENCE_LENGTH] = {0};
+
+static short queue_ptr = 0;
+static hotkey_context_t *hotkey_root_context;
+static hashmap_t *contexts_hashmap = NULL;
 
 /* Stack of contexts */
 static deque_t *contexts = NULL;
@@ -251,6 +254,15 @@ static void
 context_destroyer (hotkey_context_t *__context)
 {
   int i;
+  BOOL hashable = __context->name && wcslen (__context->name) > 0 &&
+                   !TEST_FLAG (__context->flags, HKCF_NOTINMAP);
+
+  if (hashable)
+    {
+      /* If context is hashable, we should */
+      /* drop it's descriptor from hashmap */
+      hashmap_unset (contexts_hashmap, __context->name);
+    }
 
   SAFE_FREE (__context->name);
 
@@ -280,6 +292,9 @@ hotkeys_init (void)
   /* Create stack of contexts */
   contexts = deque_create ();
 
+  /* Create hashmap of contexts */
+  contexts_hashmap = hashmap_create_wck (NULL, HM_MAGICK_LEN);
+
   /* Create global context */
   hotkey_root_context = hotkey_create_context (L".", HKCF_ACTIVE);
 
@@ -293,15 +308,31 @@ void
 hotkeys_done (void)
 {
   hotkey_context_t *context;
+  wchar_t *name;
 
-  /* Destroy contexts */
+  /* Destroy contexts from stack */
   deque_foreach (contexts, context);
     hotkey_destroy_context (context);
   deque_foreach_done;
+
+  /* Destroy contexts from hashmap */
+  hashmap_foreach (contexts_hashmap, name, context);
+    /* Set flag `context is not in hash` to make */
+    /* context's descriptor remain in hashmap. */
+    /* If we don't make it, there may be big troubles with */
+    /* hashmap_foreach() macro. */
+    SET_FLAG (context->flags, HKCF_NOTINMAP);
+    hotkey_destroy_context (context);
+  hashmap_foreach_done;
 }
 
 /**
  * Create context of hotkeys
+ * It there is no HKCF_NOTINMAP flag specified and context's name is not empty
+ * or NULL, context will be searched in pool and, if there is context
+ * with specified name, it's descriptor will be returned. And if there is
+ * no context with specified name in pool, new context will be created and
+ * added to pool.
  *
  * @param __flags - flags of context
  * @return descriptor of new context
@@ -310,6 +341,18 @@ hotkey_context_t*
 hotkey_create_context (const wchar_t *__name, unsigned int __flags)
 {
   hotkey_context_t *result;
+  BOOL hashable = __name && wcslen (__name) > 0 &&
+                   !TEST_FLAG (__flags, HKCF_NOTINMAP);
+
+  if (hashable)
+    {
+      /* If hashing is allowed, try to find context in hashmap */
+      result = hashmap_get (contexts_hashmap, __name);
+      if (result)
+        {
+          return result;
+        }
+    }
 
   MALLOC_ZERO (result, sizeof (hotkey_context_t));
 
@@ -320,11 +363,17 @@ hotkey_create_context (const wchar_t *__name, unsigned int __flags)
 
   result->flags = __flags;
 
-  if (__flags & HKCF_ACTIVE)
+  if (TEST_FLAG (__flags, HKCF_ACTIVE))
     {
       /* If context is active, we should */
       /* push it into stack */
       hotkey_push_context (result);
+    }
+
+  if (hashable)
+    {
+      /* If hashing is allowed, add context to hash map */
+      hashmap_set (contexts_hashmap, __name, result);
     }
 
   return result;
@@ -664,4 +713,48 @@ hotkey_context_t*
 hotkey_current_context (void)
 {
   return deque_head (contexts) ? deque_data (deque_head (contexts)) : NULL;
+}
+
+/**
+ * Bind a hot-key at specified context
+ *
+ * @param __context_name - name of context where hotkey will be binded
+ * @param __sequence - hot-key sequence
+ * @param __callback - callback to be called when hot-key sequence is pressed
+ * @return zero on success, non-zero otherwise
+ */
+int
+hotkey_bind (const wchar_t *__context_name,
+             const wchar_t *__sequence, hotkey_callback __callback)
+{
+  return hotkey_bind_full (__context_name, __sequence, __callback, NULL);
+}
+
+/**
+ * Bind a hot-key at specified context
+ * If there is no context with given name in pool, it will be created
+ * with zero flags.
+ *
+ * @param __context_name - name of context where hotkey will be binded
+ * @param __sequence - hot-key sequence
+ * @param __callback - callback to be called when hot-key sequence is pressed
+ * @param __reg_data - registration data
+ * @return zero on success, non-zero otherwise
+ */
+int
+hotkey_bind_full (const wchar_t *__context_name,
+                  const wchar_t *__sequence, hotkey_callback __callback,
+                  void *__reg_data)
+{
+  hotkey_context_t *context;
+
+  context = hotkey_create_context (__context_name, 0);
+
+  if (context)
+    {
+      return hotkey_register_at_context_full (context, __sequence,
+                                              __callback, __reg_data);
+    }
+
+  return -1;
 }

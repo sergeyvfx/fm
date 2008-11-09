@@ -418,11 +418,8 @@ widget_create_window (const wchar_t *__caption,
 {
   w_window_t *res;
 
-  if (!window_context)
-    {
-      window_context = hotkey_create_context (L"window-class-context",
-                                             HKCF_OPAQUE);
-    }
+  window_context = hotkey_create_context (L"window-class-context",
+                                         HKCF_OPAQUE);
 
   if (__style & WMS_CENTERED)
     {

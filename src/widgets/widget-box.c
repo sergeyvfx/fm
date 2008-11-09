@@ -450,10 +450,7 @@ widget_create_box (w_container_t *__parent,
   w_box_t *res;
 
   /* Create context for box widgets */
-  if (!box_context)
-    {
-      box_context = hotkey_create_context (L"box-class-context", 0);
-    }
+  box_context = hotkey_create_context (L"box-class-context", 0);
 
   /* General widget initialization */
   WIDGET_INIT (res, w_box_t, WT_BOX, __parent, 0,

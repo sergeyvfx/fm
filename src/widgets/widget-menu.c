@@ -770,10 +770,7 @@ widget_create_menu (unsigned int __style)
   w_menu_t *res;
 
   /* Create context for box widgets */
-  if (!menu_context)
-    {
-      menu_context = hotkey_create_context (L"menu-class-context", 0);
-    }
+  menu_context = hotkey_create_context (L"menu-class-context", 0);
 
   WIDGET_INIT (res, w_menu_t, WT_MENU, 0, WF_ONTOP,
                menu_context,

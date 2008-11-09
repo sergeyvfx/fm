@@ -274,10 +274,7 @@ widget_create_list (w_container_t *__parent, const wchar_t *__caption,
     }
 
   /* Create context for list widgets */
-  if (!list_context)
-    {
-      list_context = hotkey_create_context (L"box-class-context", 0);
-    }
+  list_context = hotkey_create_context (L"box-class-context", 0);
 
   WIDGET_INIT (res, w_list_t, WT_LIST, __parent, WF_NOLAYOUT,
                list_context,

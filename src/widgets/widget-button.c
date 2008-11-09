@@ -163,10 +163,7 @@ widget_create_button              (w_container_t *__parent,
     }
 
   /* Create context for buttons widgets */
-  if (!button_context)
-    {
-      button_context = hotkey_create_context (L"button-class-context", 0);
-    }
+  button_context = hotkey_create_context (L"button-class-context", 0);
 
   unsigned int w;
 

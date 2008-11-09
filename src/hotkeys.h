@@ -30,6 +30,9 @@ BEGIN_HEADER
 /* it will be the last reviewing context */
 #define HKCF_OPAQUE 0x0002
 
+/* Do not append context to hashmap of contexts */
+#define HKCF_NOTINMAP 0x0004
+
 /********
  * Type definitions
  */
@@ -37,12 +40,6 @@ typedef int (*hotkey_callback) (void *__reg_data);
 
 struct hotkey_context;
 typedef struct hotkey_context hotkey_context_t;
-
-/********
- *
- */
-
-extern hotkey_context_t *hotkey_root_context;
 
 /********
  *
@@ -118,6 +115,17 @@ hotkey_push_character (wchar_t __ch);
 /* Get current hotkey context */
 hotkey_context_t*
 hotkey_current_context (void);
+
+/* Bind a hotkey at context */
+int
+hotkey_bind (const wchar_t *__context_name,
+             const wchar_t *__sequence, hotkey_callback __callback);
+
+/* Bind a hotkey at context */
+int
+hotkey_bind_full (const wchar_t *__context_name,
+                  const wchar_t *__sequence, hotkey_callback __callback,
+                  void *__reg_data);
 
 END_HEADER
 
