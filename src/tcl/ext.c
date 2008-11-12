@@ -269,7 +269,7 @@ update_string_of_extobj (Tcl_Obj *extobjobj)
             Tcl_DStringAppendElement (&buf, editor);
           Tcl_DStringEndSublist (&buf);
 
-          free (editor);
+          SAFE_FREE (editor);
         }
 
       if (extobj->extension.viewer)
@@ -282,7 +282,7 @@ update_string_of_extobj (Tcl_Obj *extobjobj)
             Tcl_DStringAppendElement (&buf, viewer);
           Tcl_DStringEndSublist (&buf);
 
-          free (viewer);
+          SAFE_FREE (viewer);
         }
 
       if (extobj->extension.opener)

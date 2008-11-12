@@ -94,7 +94,7 @@ deque_remove (deque_t *__this, iterator_t *__item, destroyer __destroyer)
   --__this->length;
 #endif
 
-  free (__item);
+  SAFE_FREE (__item);
   return 0;
 }
 
@@ -142,7 +142,7 @@ deque_destroy (deque_t *__this, destroyer __destroyer)
     }
 
   deque_clear (__this, __destroyer);
-  free (__this);
+  SAFE_FREE (__this);
 
   return 0;
 }
@@ -260,7 +260,7 @@ deque_pop_back (deque_t *__this)
   --__this->length;
 #endif
 
-  free (iter);
+  SAFE_FREE (iter);
 
   return data;
 }
@@ -295,7 +295,7 @@ deque_pop_front (deque_t *__this)
   --__this->length;
 #endif
 
-  free (iter);
+  SAFE_FREE (iter);
 
   return data;
 }

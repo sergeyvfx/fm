@@ -88,7 +88,7 @@ hook_destroy (void *__h)
   hook_t *hook = HOOK (__h);
 
   deque_destroy (hook->actions_list, NULL);
-  free (hook->name);
+  SAFE_FREE (hook->name);
 }
 
 /**

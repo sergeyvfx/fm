@@ -89,6 +89,7 @@ msgstr "_Файл"
 
 msgid "_Exit"
 msgstr "_Выход"
+
 msgid "_Command"
 msgstr "_Команда"
 

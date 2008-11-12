@@ -36,10 +36,9 @@ void
 dynstruct_field_deleter (void *__data)
 {
   field_t *field = (field_t *) __data;
-  free (field->value);
 
-  free(field);
-  field = NULL;
+  SAFE_FREE (field->value);
+  SAFE_FREE (field);
 }
 
 /**
@@ -75,7 +74,7 @@ dynstruct_create (const wchar_t *__struct_name, ...)
         name = va_arg(argv, wchar_t *);
         if (name == NULL)
           {
-            free(field);
+            SAFE_FREE (field);
             break;
           }
         field->name = wcsdup (name);
@@ -104,9 +103,8 @@ void
 dynstruct_destroy (dynstruct_t **__dstruct)
 {
   hashmap_destroy ((*__dstruct)->fields);
-  free ((*__dstruct)->name);
-  free ((*__dstruct));
-  *__dstruct = NULL;
+  SAFE_FREE ((*__dstruct)->name);
+  SAFE_FREE ((*__dstruct));
 }
 
 /**
@@ -136,7 +134,7 @@ dynstruct_add_field (dynstruct_t *__dstruct,
 
   if (value == NULL)
     {
-      free (field);
+      SAFE_FREE (field);
       return DYNST_FAILURE;
     }
 

@@ -33,7 +33,7 @@
   wchar_t *errmsg;\
   mbs2wcs (&errmsg, Tcl_GetStringResult(interpreter));\
   message_box (L"Tcl Runtime Error", errmsg, MB_OK|MB_CRITICAL);\
-  free (errmsg);\
+  SAFE_FREE (errmsg);\
 }
 
 static Tcl_Interp *interpreter = NULL;
@@ -73,14 +73,14 @@ prepare_exec_command (const wchar_t *__format, const wchar_t *__file_name,
       dummy = wcsrep ((wchar_t*)__format, L"%n", __file_name);
 
       res   = wcsrep (dummy, L"%fn", full_name);
-      free (dummy);
+      SAFE_FREE (dummy);
       dummy = res;
 
       res   = wcsrep (dummy, L"%cwd", __cwd);
-      free (dummy);
+      SAFE_FREE (dummy);
     }
 
-  free (full_name);
+  SAFE_FREE (full_name);
 
   return res;
 }
@@ -259,14 +259,14 @@ tcllib_init (void)
               /* Free memory used by unseen items */
               while (j < count)
                 {
-                  free (list[j]);
+                  SAFE_FREE (list[j]);
                   ++j;
                 }
-              free (list);
+              SAFE_FREE (list);
 
               return TCL_ERROR;
             }
-          free (list[j]);
+          SAFE_FREE (list[j]);
         }
 
       SAFE_FREE (list);
