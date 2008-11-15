@@ -99,7 +99,7 @@ wcsfit (const wchar_t *__str, size_t __width, const wchar_t *__suffix)
 }
 
 /**
- * Copy at most n characters of string. If s is longer than n, only
+ * Duplicate at most n characters of string. If s is longer than n, only
  * n characters are copied, and a terminating null byte (’\0’) is added.
  *
  * @param __s - string to be duplicated
@@ -125,6 +125,52 @@ wcsndup (const wchar_t *__s, size_t __n)
     {
       return NULL;
     }
+}
+
+/**
+ * Get sub-string of string
+ *
+ * @param __src - source string
+ * @param __from - from character
+ * @param __len - length of sub-string
+ */
+void
+wcssubstr (wchar_t *__dst, const wchar_t *__src, size_t __from, size_t __len)
+{
+  if (!__src || !__len)
+    {
+      return;
+    }
+
+  /*
+   * TODO: Are we need any checking here?
+   */
+
+  wcsncpy (__dst, __src + __from, __len);
+  __dst[__len] = 0;
+}
+
+/**
+ * Get sub-string of string
+ *
+ * @param __src - source string
+ * @param __from - from character
+ * @param __len - length of sub-string
+ */
+void
+substr (char *__dst, const char *__src, size_t __from, size_t __len)
+{
+  if (!__src || !__len)
+    {
+      return;
+    }
+
+  /*
+   * TODO: Are we need any checking here?
+   */
+
+  strncpy (__dst, __src + __from, __len);
+  __dst[__len] = 0;
 }
 
 /**
@@ -528,6 +574,23 @@ pattern_rename (const wchar_t *__pattern, const wchar_t *__string)
 
   /* Append tail */
   wcscat (res, __pattern + prev);
+
+  return res;
+}
+
+/**
+ * Convert a string to an integer
+ *
+ * @param __str - string to be converted
+ * @return long integer value
+ */
+long
+wtol (const wchar_t *__str)
+{
+  long res;
+  wchar_t *stopwcs;
+
+  res = wcstol (__str, &stopwcs, 10);
 
   return res;
 }

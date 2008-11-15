@@ -22,8 +22,7 @@ dnl ===================
 dnl Check for libraries
 dnl ===================
 
-dnl plugin stuff
-dnl ========================
+PCRE_REQ=6.7
 
 dnl Ok, first we find out what flags we need to use.
 AC_MSG_CHECKING([for what extension and flags to use for plugin compilation])
@@ -44,6 +43,34 @@ AC_SUBST(AUDLDFLAGS)
 AC_SUBST(SHARED_SUFFIX)
 AC_DEFINE_UNQUOTED(SHARED_SUFFIX, "${SHARED_SUFFIX}",
 	[Define the shared module suffix extension on your platform.])
+
+dnl Check libpcre
+AC_MSG_CHECKING(if libpcre >= ${PCRE_REQ} exists)
+if pkg-config --exists libpcre ; then
+    PCRE_CFLAGS=`pkg-config --cflags libpcre`
+    PCRE_LIBS=`pkg-config --libs libpcre`
+    PCRE_PREFIX=`pkg-config --variable=prefix libpcre`
+    PCRE_VERSION=`pkg-config --modversion libpcre`
+    AC_SUBST(PCRE_VERSION)
+    AC_SUBST(PCRE_PREFIX)
+    AC_SUBST(PCRE_CFLAGS)
+    AC_SUBST(PCRE_LIBS)
+
+    if pkg-config --exists libpcre '>=' ${PCRE_REQ} ; then
+        AC_MSG_RESULT(yes)
+    else
+        AC_MSG_ERROR("only ${PCRE_VERSION} found")
+    fi
+
+    AC_DEFINE_UNQUOTED(USE_PCRE,"1",[Library for terminal handling])
+
+    USE_PCRE=true
+else
+    AC_MSG_ERROR(no)
+    USE_PCRE=false
+fi
+
+AC_SUBST(USE_PCRE)
 
 dnl =============================
 dnl Checks for library functions

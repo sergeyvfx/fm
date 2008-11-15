@@ -25,9 +25,17 @@
 wchar_t*
 wcsfit (const wchar_t *__str, size_t __width, const wchar_t *__suffix);
 
-/* Copy at most n characters of string */
+/* Duplicate at most n characters of string */
 wchar_t*
 wcsndup (const wchar_t *__s, size_t __n);
+
+/* Get sub-string of string */
+void
+wcssubstr (wchar_t *__dst, const wchar_t *__src, size_t __from, size_t __len);
+
+/* Get sub-string of string */
+void
+substr (char *__dst, const char *__src, size_t __from, size_t __len);
 
 /* Replace substrings of string */
 wchar_t*
@@ -67,5 +75,9 @@ escape_string (const wchar_t *__source);
 /* Expands '*' characters in pattern string by another string */
 wchar_t*
 pattern_rename (const wchar_t *__string, const wchar_t *__source);
+
+/* Convert a string to an integer */
+long
+wtol (const wchar_t *__str);
 
 #endif

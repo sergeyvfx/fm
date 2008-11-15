@@ -12,6 +12,13 @@ OBJECTIVE_BINS = fm
 CFLAGS += -I./widgets -I/usr/include/tcl8.5
 LIBADD = -ldl @SCREENLIBS@ -lm -Lwidgets -lwidgets -Lvfs -lvfs -ltcl8.5 -Ltcl -ltcllib
 
+# Check for PCRE's usage and append compiler's and
+# linker's attributes if needed
+ifeq (@USE_PCRE@,true)
+	CFLAGS += @PCRE_CFLAGS@
+	LIBADD += @PCRE_LIBS@
+endif
+
 HEADERS =
 SOURCES = \
 	main.c \
@@ -50,6 +57,7 @@ SOURCES = \
 	action-operate.c \
 	action-symlink.c \
 	shared.c \
+	regexp.c \
 	usergroup.c \
 	signals.c
 
