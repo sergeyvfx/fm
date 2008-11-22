@@ -1490,6 +1490,7 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
       src = wcdircatsubdir (__base_dir, item_name);
       res = make_copy_iter (src, dummy, &owr_all_rule, wnd,
                             scan_allowed ? listing.tree->items[i] : NULL);
+      res = 0;
       free (src);
       free (dummy);
 

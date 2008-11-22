@@ -1461,3 +1461,45 @@ file_panel_get_selected_items (file_panel_t *__panel,
       return 1;
     }
 }
+
+/**
+ * Make action on specified file panel.
+ * If specified file panel is NULL, action will be applied
+ * to current file panel.
+ *
+ * @param __panel - descriptor of action for which action will be applied
+ * @param __action - action to be applied
+ * @return zeo on success, non-zero otherwise
+ */
+int
+file_panel_make_action (file_panel_t *__panel,
+                        file_panel_action __action)
+{
+  if (!__action)
+    {
+      return -1;
+    }
+
+  if (!__panel)
+    {
+      if (!current_panel)
+        {
+          return -1;
+        }
+      __panel = current_panel;
+    }
+
+  return __action (__panel);
+}
+
+/**
+ * Make action on current file panel.
+ *
+ * @param __action - action to be applied
+ * @return zeo on success, non-zero otherwise
+ */
+int
+file_panel_cur_make_action (file_panel_action __action)
+{
+  return file_panel_make_action (NULL, __action);
+}

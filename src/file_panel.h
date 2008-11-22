@@ -384,6 +384,15 @@ unsigned long
 file_panel_get_selected_items (file_panel_t *__panel,
                                file_panel_item_t *** __items);
 
+/* Make action on specified file pane; */
+int
+file_panel_make_action (file_panel_t *__panel,
+                        file_panel_action __action);
+
+/* Make action on current file pane; */
+int
+file_panel_cur_make_action (file_panel_action __action);
+
 END_HEADER
 
 #endif

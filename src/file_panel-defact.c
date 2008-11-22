@@ -66,7 +66,8 @@
 
 #define _REGISTER_HOTKEY(_sequence, _callback) \
   hotkey_register_at_context_full (class_hotkey_context, _sequence, \
-                                   (hotkey_callback)_callback, __panel);
+                                (hotkey_callback)file_panel_cur_make_action, \
+                                (void*)_callback);
 
 /********
  *
