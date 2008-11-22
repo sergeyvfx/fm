@@ -55,18 +55,35 @@ typedef struct
 static regexp_modifier_t modifiers[] = {
 
 #ifdef USE_PCRE
-  /*  {'', PCRE_DOLLAR_ENDONLY},  /* $ matches only at end */
-  /*  {'', PCRE_EXTRA},           /* strict escape parsing */
-  /*  {'', PCRE_UTF8},            /* handles UTF-8 chars */
-  /*  {'', PCRE_UNGREEDY},        /* reverses * and *? */
-  /*  {'', PCRE_NO_AUTO_CAPTURE}, /* disables capturing parents */
+  /* $ matches only at end */
+  /*  {'', PCRE_DOLLAR_ENDONLY}, */
 
-  {'i', PCRE_CASELESS},       /* case insensitive match */
-  {'m', PCRE_MULTILINE},      /* multiple lines match */
-  {'s', PCRE_DOTALL},         /* dot matches newlines */
-  {'x', PCRE_EXTENDED},       /* ignore white spaces */
+  /* strict escape parsing */
+  /*  {'', PCRE_EXTRA}, */
 
-  {'g', REGEXP_REPLACE_GLOBAL}, /* all occurrences will be replaced */
+  /* handles UTF-8 chars */
+  /*  {'', PCRE_UTF8}, */
+
+  /* reverses * and *? */
+  /*  {'', PCRE_UNGREEDY}, */
+
+  /* disables capturing parents */
+  /*  {'', PCRE_NO_AUTO_CAPTURE}, */
+
+  /* case insensitive match */
+  {'i', PCRE_CASELESS},
+
+  /* multiple lines match */
+  {'m', PCRE_MULTILINE},
+
+  /* dot matches newlines */
+  {'s', PCRE_DOTALL},
+
+  /* ignore white spaces */
+  {'x', PCRE_EXTENDED},
+
+  /* all occurrences will be replaced */
+  {'g', REGEXP_REPLACE_GLOBAL},
 #endif
 
   {0,0}
