@@ -630,8 +630,9 @@ widget_destroy (widget_t *__widget)
       return;
     }
 
-   /* Pop widget's contexts */
-   widget_pop_context (__widget);
+  /*
+   * TODO: Maybe we should do something with widget's hotkey context here
+   */
 
   /* Call destructor from object */
   if (__widget->methods.destroy)
@@ -1453,7 +1454,6 @@ widget_pop_context (widget_t *__widget)
         }
       else
         {
-          hotkeys_done ();
 #ifdef DEBUG
           MESSAGE_ERROR (L"Error in pop_widget_context: unable to "
                          "pop widget's context.\n"

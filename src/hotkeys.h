@@ -127,6 +127,11 @@ hotkey_bind_full (const wchar_t *__context_name,
                   const wchar_t *__sequence, hotkey_callback __callback,
                   void *__reg_data);
 
+#ifdef DEBUG
+void
+hotkey_contexts_dump (void);
+#endif
+
 END_HEADER
 
 #endif

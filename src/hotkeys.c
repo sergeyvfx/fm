@@ -758,3 +758,23 @@ hotkey_bind_full (const wchar_t *__context_name,
 
   return -1;
 }
+
+#ifdef DEBUG
+/**
+ * Dump names of contexts from stack
+ */
+void
+hotkey_contexts_dump (void)
+{
+  hotkey_context_t *context;
+
+  endwin ();
+  printf ("Dump of hotkey contexts:\n");
+
+  deque_foreach (contexts, context);
+    printf ("  [name: `%ls`]\n", context->name);
+  deque_foreach_done;
+
+  exit (0);
+}
+#endif

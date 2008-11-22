@@ -692,7 +692,7 @@ widget_create_edit (w_container_t *__parent,
     }
 
   /* Create context for edit widgets */
-  edit_context = hotkey_create_context (L"exit-class-context", 0);
+  edit_context = hotkey_create_context (L"edit-class-context", 0);
 
   WIDGET_INIT (res, w_edit_t, WT_EDIT, __parent, WF_NOLAYOUT,
                edit_context,
