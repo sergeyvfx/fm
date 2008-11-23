@@ -40,9 +40,9 @@
     cur_left+=widget_shortcut_length (_(_caption))+5; \
     w_button_set_fonts (btn, \
       FONT (CID_WHITE,  CID_RED), \
-      FONT (CID_BLACK,  CID_WHITE), \
+      FONT (CID_BLACK,  CID_GREY), \
       FONT (CID_YELLOW, CID_RED), \
-      FONT (CID_YELLOW, CID_WHITE)); \
+      FONT (CID_YELLOW, CID_GREY)); \
   }
 
 /********
