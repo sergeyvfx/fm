@@ -1099,14 +1099,11 @@ file_panel_set_focus (file_panel_t *__panel)
   /* Focus new panel and redraw it */
   __panel->focused = TRUE;
 
-  if (__panel->actions.onrefresh)
-    {
-      __panel->actions.onrefresh (__panel);
-    }
-
   widget_set_focus (WIDGET (__panel->widget));
 
   current_panel = __panel;
+
+  file_panel_redraw (__panel);
 
   /* Store last focused panel */
   last_focused = __panel;

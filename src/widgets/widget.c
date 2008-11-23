@@ -739,6 +739,12 @@ widget_set_focus (widget_t *__widget)
       return;
     }
 
+  /* If widget is already focused, we should do nothing */
+  if (__widget->focused)
+    {
+      return;
+    }
+
   w_container_t *top_level = get_toplevel (__widget),
                 *cnt = WIDGET_CONTAINER (__widget->parent);
 
