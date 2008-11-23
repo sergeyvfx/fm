@@ -14,6 +14,8 @@
 #include "url.h"
 #include "context.h"
 
+#include <dir.h>
+
 #include <wchar.h>
 
 /********
@@ -586,4 +588,41 @@ vfs_move_strategy (const wchar_t *__src_url, const wchar_t *__dst_url)
   free (n_dst);
 
   return res;
+}
+
+/**
+ * Get absolutely path by relative and current working directory
+ *
+ * @param __rel_path - relative path. If it is an absolutely path
+ * it will be duplicated and returned.
+ * @param __cxwd - current working directory
+ * @return absolutely path
+ * @sideeffect allocate memory for output value
+ */
+wchar_t*
+vfs_abs_path (const wchar_t *__rel_path, const wchar_t *__cwd)
+{
+  wchar_t *s;
+
+#ifdef VFS_USE_DEFAULT_PLUGIN
+  if (__rel_path[0] == VFS_DEFAULT_PLUGIN_IDENT)
+    {
+      /* __rel_path is an absolutely path in localfs */
+      return wcsdup (__rel_path);
+    }
+#endif
+
+  /* Check if __rel_path is already absolute */
+  s = wcsstr (__rel_path, VFS_PLUGIN_DELIMETER);
+  if (s)
+    {
+      /* In correct URL plugin delimiter should be followed  */
+      /* by '/' character */
+      if (__rel_path[s - __rel_path + wcslen (VFS_PLUGIN_DELIMETER)] == '/')
+        {
+          return wcsdup (__rel_path);
+        }
+    }
+
+  return wcdircatsubdir (__cwd, __rel_path);
 }

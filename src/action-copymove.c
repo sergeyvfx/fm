@@ -1447,15 +1447,8 @@ make_copy (BOOL __move, const wchar_t *__base_dir,
     }
 
   /* Get absolute destination path */
-  if (dummy[0] == '/')
-    {
-      dst = dummy;
-    }
-  else
-    {
-      dst = wcdircatsubdir (__base_dir, dummy);
-      free (dummy);
-    }
+  dst = vfs_abs_path (dummy, __base_dir);
+  free (dummy);
 
   wnd = action_copy_create_proc_wnd (__move, scan_allowed, &listing);
 

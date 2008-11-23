@@ -169,6 +169,9 @@ vfs_alphasort (const void *__a, const void *__b);
 wchar_t*
 vfs_normalize (const wchar_t *__fn);
 
+wchar_t*
+vfs_abs_path (const wchar_t *__rel_path, const wchar_t *__cwd);
+
 /********
  *
  */
