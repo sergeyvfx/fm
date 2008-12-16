@@ -459,6 +459,12 @@ msgstr "Невозможно сменить режим файла \"%ls\":\n%ls"
 msgid "Cannot change mode of directory \"%ls\":\n%ls"
 msgstr "Невозможно сменить режим директории \"%ls\":\n%ls"
 
+msgid "Invalid regular expression in file mask"
+msgstr "Неправильное регулярное выражение для маски файла"
+
+msgid "Invalid regular expression in file content"
+msgstr "Неправильное регулярное выражение для содержимого файла"
+
 ##
 # POSIX errors
 

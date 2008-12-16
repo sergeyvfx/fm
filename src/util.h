@@ -80,4 +80,16 @@ pattern_rename (const wchar_t *__string, const wchar_t *__source);
 long
 wtol (const wchar_t *__str);
 
+/* Convert file mask to regular expression */
+wchar_t*
+file_mask_to_regexp (wchar_t *__mask, BOOL __case_insens);
+
+/* Split string by separator */
+long
+explode (const wchar_t *__s, const wchar_t *__sep, wchar_t ***__out);
+
+/* Free memory used by result of explode() function */
+void
+free_explode_array (wchar_t **__self);
+
 #endif

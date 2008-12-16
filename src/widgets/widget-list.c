@@ -176,7 +176,11 @@ list_keydown (w_list_t *__list, wint_t __ch)
       break;
     case KEY_END:
       __list->items.current = __list->items.count - 1;
-      __list->scroll_top = __list->items.count - ITEMS_PER_PAGE (__list);
+
+      if (ITEMS_PER_PAGE (__list) <= __list->items.count)
+        {
+          __list->scroll_top = __list->items.count - ITEMS_PER_PAGE (__list);
+        }
       break;
     case KEY_NPAGE:
       __list->items.current += ITEMS_PER_PAGE (__list);

@@ -52,6 +52,8 @@ SOURCES = \
 	action-copy.c \
 	action-delete.c \
 	action-editsymlink.c \
+	action-find.c \
+	action-find-iface.c \
 	action-move.c \
 	action-mkdir.c \
 	action-operate.c \

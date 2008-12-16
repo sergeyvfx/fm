@@ -78,6 +78,14 @@ wchar_t*
 wpreg_replace (const wchar_t *__regexp,
                const wchar_t *__s, const wchar_t *__mask);
 
+/* Escape regexp special characters in string */
+char*
+regexp_escape (const char *__str);
+
+/* Escape regexp special characters in string */
+wchar_t*
+wregexp_escape (const wchar_t *__str);
+
 END_HEADER
 
 #endif

@@ -21,6 +21,13 @@
 #include <vfs/vfs.h>
 #include <unistd.h>
 
+#define EXPLODE_APPEND_STRING(__s) \
+  { \
+    (*__out) = realloc (*__out, (count + 1) * sizeof (wchar_t*)); \
+    (*__out)[count] = __s ? wcsdup (__s) : NULL; \
+     ++count; \
+  }
+
 /**
  * Fit string to specified width.
  * If width of string is greater than with to which this string is
@@ -593,4 +600,173 @@ wtol (const wchar_t *__str)
   res = wcstol (__str, &stopwcs, 10);
 
   return res;
+}
+
+/**
+ * Convert file mask to regular expression
+ *
+ * @param __mask - file mask to be converted
+ * @return non-compiled regular expression on success, NULL otherwise
+ * @sideeffect allocate memory for return value
+ */
+wchar_t*
+file_mask_to_regexp (wchar_t *__mask, BOOL __case_insens)
+{
+  wchar_t *regexp;
+  size_t regexp_len;
+  const wchar_t *special = L"^$+[]()/.";
+  wchar_t *in = __mask, *out;
+  wchar_t modifiers[8] = {0};
+
+  /* Calculate how much memory we should allocate for regexp */
+
+  /* 4 because of starting and finishing slashes and */
+  /* string beginning and finishing matchers */
+  regexp_len = 4;
+  while (*in != L'\0')
+    {
+      /* `*` will be replaced with `.*` */
+      if (*in == '*')
+        {
+          regexp_len += 2;
+          ++in;
+          continue;
+        }
+
+      if (wcschr (special, *in))
+        {
+          ++regexp_len;
+        }
+
+      ++regexp_len;
+      ++in;
+    }
+
+  if (__case_insens)
+    {
+      wcscat (modifiers, L"i");
+      ++regexp_len;
+    }
+
+  /* Build regexp string */
+  regexp = malloc ((regexp_len + 1) * sizeof (wchar_t));
+  wcscpy (regexp, L"/^");
+
+  in  = __mask;
+  out = regexp + 2;
+
+  while (*in != L'\0')
+    {
+      /* Replace `*` with `.*` */
+      if (*in == '*')
+        {
+          *out++ = L'.';
+          *out++ = L'*';
+          ++in;
+          continue;
+        }
+
+      /* Replace `?` with `.` */
+      if (*in == '?')
+        {
+          *out++ = L'.';
+          ++in;
+          continue;
+        }
+
+      /* Escape regexp special characters */
+      if (wcschr (special, *in))
+        {
+          *out++ = L'\\';
+        }
+      *out++ = *in++;
+    }
+
+  *out = L'\0';
+  wcscat (out, L"$/");
+  wcscat (out, modifiers);
+
+  return regexp;
+}
+
+/**
+ * Split string by separator
+ *
+ * @param __s - source string
+ * @param __sep - separator string
+ * @param __out - pointer to array of string
+ * @sideeffect allocate memory for return value.
+ * Use free_explode_array to free it.
+ */
+long
+explode (const wchar_t *__s, const wchar_t *__sep, wchar_t ***__out)
+{
+  wchar_t *token;
+  size_t i, n, count, token_len, sep_len;
+
+  (*__out) = 0;
+
+  token = malloc ((wcslen (__s) + 1) * sizeof (wchar_t));
+
+  count = 0;
+  token_len = 0;
+  sep_len = wcslen (__sep);
+
+  i = 0;
+  n = wcslen (__s);
+  while (i < n)
+    {
+      if (wcsncmp (__s + i, __sep, sep_len) == 0)
+        {
+          /* Current token is a separator */
+          /* We should append gotten token to array and skip separator */
+
+          /* Set null-terminator */
+          token[token_len] = 0;
+
+          /* Append string to array */
+          EXPLODE_APPEND_STRING (token);
+
+          token_len = 0;
+          i += sep_len;
+        }
+      else
+        {
+          token[token_len++] = __s[i++];
+        }
+    }
+
+  if (token_len > 0)
+    {
+      /* Set null-terminator */
+      token[token_len] = 0;
+
+      /* Append string to array */
+      EXPLODE_APPEND_STRING (token);
+    }
+
+  free (token);
+
+  /* Append null-terminator of array */
+  EXPLODE_APPEND_STRING (NULL);
+
+  return count - 1;
+}
+
+/**
+ * Free memory used by result of explode() function
+ *
+ * @param __self - array to be freed
+ */
+void
+free_explode_array (wchar_t **__self)
+{
+  int i = 0;
+
+  while (__self[i])
+    {
+      free (__self[i++]);
+    }
+
+  free (__self);
 }

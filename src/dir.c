@@ -107,7 +107,7 @@ wcdircatsubdir (const wchar_t *__name, const wchar_t *__subname)
 
   if (!wcscmp (__subname, L"."))
     {
-      return wcsdup (L"/");
+      return wcsdup (__name);
     }
 
   if (!wcscmp (__subname, L".."))

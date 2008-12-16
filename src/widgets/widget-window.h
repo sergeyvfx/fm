@@ -70,6 +70,7 @@ typedef struct
   /* Some deep-core info */
   unsigned short show_mode;
   int modal_result;
+  BOOL mode_changing;
 } w_window_t;
 
 /********
@@ -100,5 +101,9 @@ w_window_hide (w_window_t *__window);
 void
 w_window_set_fonts (w_window_t *__window, scr_font_t *__font,
                     scr_font_t *__caption_font);
+
+/* Set window modalness */
+void
+w_window_set_modal (w_window_t *__window, BOOL __modal);
 
 #endif

@@ -68,10 +68,10 @@ umasktowcs (mode_t __mask, wchar_t *__res);
 /* Convert file size to human-readable format */
 #ifdef __USE_FILE_OFFSET64
 __u64_t
-fsizetohuman (__u64_t __size, char *__suffix);
+fsizetohuman (__u64_t __size, wchar_t *__suffix);
 #else
 __u32_t
-fsizetohuman (__u32_t __size, char *__suffix);
+fsizetohuman (__u32_t __size, wchar_t *__suffix);
 #endif
 
 void

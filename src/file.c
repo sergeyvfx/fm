@@ -34,6 +34,31 @@
 #define DEFAULT_RECENT_PAST     (24*30*6)
 #define DEFAULT_RECENT_FUTURE   (24*30*6)
 
+#define CHECK_PERM_PREFIX(_func, _ch) \
+  if (_func (__mode)) \
+    { \
+      return _ch; \
+    }
+
+/**
+ * Get prefix character for permission string
+ *
+ * @param __mode - mode of item
+ * @return refix of perm string
+ */
+static wchar_t
+perm_prefix (vfs_mode_t __mode)
+{
+  CHECK_PERM_PREFIX (S_ISDIR,  'd');
+  CHECK_PERM_PREFIX (S_ISLNK,  'l');
+  CHECK_PERM_PREFIX (S_ISBLK,  'b');
+  CHECK_PERM_PREFIX (S_ISCHR,  'c');
+  CHECK_PERM_PREFIX (S_ISSOCK, 's');
+  CHECK_PERM_PREFIX (S_ISFIFO, 'p');
+
+  return '-';
+}
+
 /********
  *
  */
@@ -186,20 +211,22 @@ umasktowcs (mode_t __mask, wchar_t *__res)
       return;
     }
 
+  __res[0] = perm_prefix (__mask);
+
   /* Permissions for owner */
-  __res[0] = __mask & S_IRUSR ? 'r' : '-';
-  __res[1] = __mask & S_IWUSR ? 'w' : '-';
-  __res[2] = __mask & S_IXUSR ? 'x' : '-';
+  __res[1] = __mask & S_IRUSR ? 'r' : '-';
+  __res[2] = __mask & S_IWUSR ? 'w' : '-';
+  __res[3] = __mask & S_IXUSR ? 'x' : '-';
 
   /* Permissions for group */
-  __res[3] = __mask & S_IRGRP ? 'r' : '-';
-  __res[4] = __mask & S_IWGRP ? 'w' : '-';
-  __res[5] = __mask & S_IXGRP ? 'x' : '-';
+  __res[4] = __mask & S_IRGRP ? 'r' : '-';
+  __res[5] = __mask & S_IWGRP ? 'w' : '-';
+  __res[6] = __mask & S_IXGRP ? 'x' : '-';
 
   /* Permissions for others */
-  __res[6] = __mask & S_IROTH ? 'r' : '-';
-  __res[7] = __mask & S_IWOTH ? 'w' : '-';
-  __res[8] = __mask & S_IXOTH ? 'x' : '-';
+  __res[7] = __mask & S_IROTH ? 'r' : '-';
+  __res[8] = __mask & S_IWOTH ? 'w' : '-';
+  __res[9] = __mask & S_IXOTH ? 'x' : '-';
 
   /* Null-terminator */
   __res[9] = 0;
@@ -214,14 +241,14 @@ umasktowcs (mode_t __mask, wchar_t *__res)
  */
 #ifdef __USE_FILE_OFFSET64
 __u64_t
-fsizetohuman (__u64_t __size, char *__suffix)
+fsizetohuman (__u64_t __size, wchar_t *__suffix)
 #else
 
 __u32_t
-fsizetohuman (__u32_t __size, char *__suffix)
+fsizetohuman (__u32_t __size, wchar_t *__suffix)
 #endif
 {
-  static char suffixes[] = {'\0', 'K', 'M', 'G', 'T'};
+  static wchar_t suffixes[] = {'\0', 'K', 'M', 'G', 'T'};
   __u64_t res = __size;
   short suff_ptr = 0;
   double log10 = log (10);

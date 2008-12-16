@@ -10,9 +10,6 @@
  * See the file COPYING.
  */
 
-#include "hotkeys.h"
-
-
 #include "file_panel.h"
 #include "file_panel-defact.h"
 #include "dir.h"
@@ -20,7 +17,7 @@
 #include "messages.h"
 #include "i18n.h"
 #include "actions.h"
-
+#include "hotkeys.h"
 #include "dynstruct.h"
 #include "hook.h"
 
@@ -57,12 +54,6 @@
   if (!item) \
     return -1; \
   item->user_data=__panel;
-
-#define CHECK_PERM_PREFIX(_func, _ch) \
-  if (_func (__mode)) \
-    { \
-      return _ch; \
-    }
 
 #define _REGISTER_HOTKEY(_sequence, _callback) \
   hotkey_register_at_context_full (class_hotkey_context, _sequence, \
@@ -246,25 +237,6 @@ draw_columns_headers (const file_panel_t *__panel,
 }
 
 /**
- * Get prefix character for permission string
- *
- * @param __mode - mode of item
- * @return refix of perm string
- */
-static wchar_t
-perm_prefix (vfs_mode_t __mode)
-{
-  CHECK_PERM_PREFIX (S_ISDIR,  'd');
-  CHECK_PERM_PREFIX (S_ISLNK,  'l');
-  CHECK_PERM_PREFIX (S_ISBLK,  'b');
-  CHECK_PERM_PREFIX (S_ISCHR,  'c');
-  CHECK_PERM_PREFIX (S_ISSOCK, 's');
-  CHECK_PERM_PREFIX (S_ISFIFO, 'p');
-
-  return '-';
-}
-
-/**
  * Draw row of full-view table
  *
  * @param __panel - panel for which item is belong to
@@ -342,7 +314,7 @@ draw_full_row (const file_panel_t *__panel, unsigned long __index,
               }
             else
               {
-                char suffix;
+                wchar_t suffix;
 #ifdef __USE_FILE_OFFSET64
                 __u64_t size;
                 static wchar_t format[] = L"%lld%c";
@@ -377,15 +349,7 @@ draw_full_row (const file_panel_t *__panel, unsigned long __index,
             }
           case COLUMN_PERM:
             /* Convert umask to string */
-
-            /*
-             * NOTE: First char of string is reserved for
-             * directory/symlink prefix
-             */
-            umasktowcs (item->file->lstat.st_mode, pchar + 1);
-
-            /* Append directory/symlink prefix to umask string */
-            pchar[0] = perm_prefix (item->file->lstat.st_mode);
+            umasktowcs (item->file->lstat.st_mode, pchar);
             break;
           case COLUMN_OCTPERM:
             {
@@ -1230,6 +1194,7 @@ fpd_create (file_panel_t *__panel)
       _REGISTER_HOTKEY (L"C-x C-s", action_editsymlink);
       _REGISTER_HOTKEY (L"C-x o",   action_chown);
       _REGISTER_HOTKEY (L"C-x c",   action_chmod);
+      _REGISTER_HOTKEY (L"M-?",     action_find);
     }
 
   widget_replace_class_context (WIDGET (__panel->widget),

@@ -208,7 +208,7 @@
             format = _(L"(%lld%c of %lld%c)"); \
           } \
         __u64_t copied, total; \
-        char cs, ts; \
+        wchar_t cs, ts; \
         copied = fsizetohuman (__proc_wnd->bytes_copied, &cs); \
         total = fsizetohuman (__proc_wnd->bytes_total, &ts); \
         cs = !cs ? 'b' : cs; \

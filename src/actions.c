@@ -224,6 +224,68 @@ action_create_ok_cancel_btns (w_window_t *__window)
 }
 
 /**
+ * Create an array of buttons on specified window
+ *
+ * @param __window - descriptor of window where buttons will be created
+ * @param __buttons - array of buttons' descriptions
+ * @param __count - count of buttons to create
+ * @param __out - if is not NULL, pointer to array where
+ * buttons' descriptors where saved
+ */
+void
+action_create_buttons (w_window_t *__window,
+                       const action_button_t *__buttons, int __count,
+                       w_button_t **__out)
+{
+  int i, left, total;
+  wchar_t *pchar;
+  w_button_t *btn;
+
+  if (!__window)
+    {
+      return;
+    }
+
+  left = total = 0;
+
+  /* Get total buttons' width */
+  for (i = 0; i < __count; ++i)
+    {
+      total += widget_shortcut_length (_(__buttons[i].caption)) + 4;
+
+      if (__buttons[i].def)
+        {
+          total += 2;
+        }
+    }
+  total += __count - 1;
+
+  left = (__window->position.width - total) / 2;
+
+  /* Create buttons */
+  for (i = 0; i < __count; ++i)
+    {
+      pchar = _(__buttons[i].caption);
+      btn = widget_create_button (WIDGET_CONTAINER (__window),
+                                  pchar, left,
+                                  __window->position.height - 2,
+                                  __buttons[i].def ? WBS_DEFAULT : 0);
+
+      if (__out)
+        {
+          __out[i] = btn;
+        }
+
+      btn->modal_result = __buttons[i].modal_result;
+      left += widget_shortcut_length (pchar) + 5;
+      if (__buttons[i].def)
+        {
+          left += 2;
+        }
+    }
+}
+
+/**
  * Check are there any selected directories
  *
  * @param __list - list of selected items

@@ -75,7 +75,7 @@ skip_button_clicked (w_button_t *__button)
  * Handler of clicking button 'abort' on process window
  *
  * @param __button - sender button
- * @return non-zero if action has been handled, non-zero otherwise
+ * @return non-zero if action has been handled, zero otherwise
  */
 static int
 abort_button_clicked (w_button_t *__button)

@@ -83,6 +83,13 @@ BEGIN_HEADER
 typedef int (*action_operator_t) (const wchar_t *__name, vfs_stat_t __stat,
                                   void *__user_data, unsigned int __flags);
 
+typedef struct
+{
+  wchar_t *caption;
+  int modal_result;
+  BOOL def;
+} action_button_t;
+
 /********
  *
  */
@@ -138,6 +145,10 @@ action_chown (file_panel_t *__panel);
 int
 action_chmod (file_panel_t *__panel);
 
+/* Find file operation */
+int
+action_find (file_panel_t *__panel);
+
 /* Chooses file panel for action */
 file_panel_t*
 action_choose_file_panel (const wchar_t *__caption,
@@ -166,6 +177,12 @@ action_error_retryskipcancel_ign (const wchar_t *__text, ...);
 /* Create buttons `Ok` and `Cancel` on specified window */
 void
 action_create_ok_cancel_btns (w_window_t *__window);
+
+/* Create an array of buttons on specified window */
+void
+action_create_buttons (w_window_t *__window,
+                       const action_button_t *__buttons, int __count,
+                       w_button_t **__out);
 
 /* Operate on items from specified list */
 int

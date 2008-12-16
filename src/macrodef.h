@@ -41,11 +41,13 @@ BEGIN_HEADER
 #endif
 
 #define PACK_ARGS(__text,__buf,__size) \
-  va_list ap;\
-  wcscpy (__buf, L"");\
-  va_start (ap, __text);\
-  vswprintf (__buf, __size, __text, ap); \
-  va_end (ap);
+  { \
+    va_list ap;\
+    wcscpy (__buf, L"");\
+    va_start (ap, __text);\
+    vswprintf (__buf, __size, __text, ap); \
+    va_end (ap); \
+  }
 
 #define SET_FLAG(__flags, __f)   (__flags)|=(__f)
 #define TEST_FLAG(__flags, __f)  ((__flags)&(__f))

@@ -855,3 +855,107 @@ wpreg_replace (const wchar_t *__regexp,
 
   return dummy;
 }
+
+/**
+ * Escape regexp special characters in string
+ *
+ * @param __str - string to be escaped
+ * @return pointer to escaped string
+ * @sideeffect allocate memory for return value.
+ */
+char*
+regexp_escape (const char *__str)
+{
+  char *regexp;
+  size_t regexp_len;
+  const char *special = "^$+[]()/.";
+  char *in = (char*)__str, *out;
+
+  /* Calculate how much memory we should allocate for regexp */
+
+  /* 2 because of starting and finishing slashes */
+  regexp_len = 2;
+  while (*in != '\0')
+    {
+      if (strchr (special, *in))
+        {
+          ++regexp_len;
+        }
+      ++regexp_len;
+      ++in;
+    }
+
+  /* Build regexp string */
+  regexp = malloc (regexp_len + 1);
+
+  in  = (char*)__str;
+  out = regexp;
+
+  *out = '/';
+
+  while (*in != '\0')
+    {
+      if (strchr (special, *in))
+        {
+          *out++ = '\\';
+        }
+      *out++ = *in++;
+    }
+
+  *out = '/';
+  *out = '\0';
+
+  return regexp;
+}
+
+/**
+ * Escape regexp special characters in string
+ *
+ * @param __str - string to be escaped
+ * @return pointer to escaped string
+ * @sideeffect allocate memory for return value.
+ */
+wchar_t*
+wregexp_escape (const wchar_t *__str)
+{
+  wchar_t *regexp;
+  size_t regexp_len;
+  const wchar_t *special = L"^$+[]()/.";
+  wchar_t *in = (wchar_t*)__str, *out;
+
+  /* Calculate how much memory we should allocate for regexp */
+
+  /* 2 because of starting and finishing slashes */
+  regexp_len = 2;
+  while (*in != L'\0')
+    {
+      if (wcschr (special, *in))
+        {
+          ++regexp_len;
+        }
+      ++regexp_len;
+      ++in;
+    }
+
+  /* Build regexp string */
+  regexp = malloc ((regexp_len + 1) * sizeof (wchar_t));
+  wcscpy (regexp, L"/");
+
+  in  = (wchar_t*)__str;
+  out = regexp;
+
+  *out++ = L'/';
+  while (*in != L'\0')
+    {
+      if (wcschr (special, *in))
+        {
+          *out++ = L'\\';
+        }
+      *out++ = *in++;
+    }
+
+  *out++ = L'/';
+  *out = L'\0';
+
+  return regexp;
+}

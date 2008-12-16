@@ -316,13 +316,16 @@ window_show_entry (w_window_t *__window, int __show_mode)
       widget_t *w;
       window_proc (__window);
 
-      if ((w = __window->focused_widget))
+      if (!__window->mode_changing)
         {
-          WIDGET_CALL_CALLBACK (w, blured, w);
-        }
+          if ((w = __window->focused_widget))
+            {
+              WIDGET_CALL_CALLBACK (w, blured, w);
+            }
 
-      w_window_hide (__window);
-      return __window->modal_result;
+          w_window_hide (__window);
+          return __window->modal_result;
+        }
     }
 
   return 0;
@@ -540,6 +543,49 @@ w_window_set_fonts (w_window_t *__window,
   WIDGET_SAFE_SET_FONT (__window, caption.font, __caption_font);
 
   widget_redraw (WIDGET (__window));
+}
+
+/**
+ * Set window modalness
+ * If __madal is true, this call is blocking
+ *
+ * @param __window - window for which modal state will be changed
+ * @param __modal - new modal state
+ */
+void
+w_window_set_modal (w_window_t *__window, BOOL __modal)
+{
+  if (!__window ||
+      (__modal  && __window->show_mode == WSM_MODAL) ||
+      (!__modal && __window->show_mode == WSM_DEFAULT))
+    {
+      /* Bad window's descriptor or we should do nothing */
+      return;
+    }
+
+  if (__modal)
+    {
+      /* Window should become modal */
+      widget_t *w;
+
+      __window->show_mode = WSM_MODAL;
+
+      window_proc (__window);
+
+      if ((w = __window->focused_widget))
+        {
+          WIDGET_CALL_CALLBACK (w, blured, w);
+        }
+
+      w_window_hide (__window);
+    }
+  else
+    {
+      /* Window should become normal */
+      __window->mode_changing = TRUE;
+      w_window_end_modal (__window, 0);
+      __window->mode_changing = FALSE;
+    }
 }
 
 /********
