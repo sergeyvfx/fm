@@ -1010,7 +1010,7 @@ process_modal_result (file_panel_t *__panel,
   {
     w_list_item_t *item;
     list_item_value_t *value;
-    wchar_t *dir;
+    wchar_t *dir, *dummy;
 
     item = w_list_get_current_item (__res_wnd->list);
 
@@ -1021,7 +1021,9 @@ process_modal_result (file_panel_t *__panel,
 
     value = item->data;
 
-    dir = vfs_abs_path (value->dir, __cwd);
+    dummy = vfs_abs_path (value->dir, __cwd);
+    dir = vfs_normalize_full (dummy, FALSE);
+    free (dummy);
 
     file_panel_set_cwd (__panel, dir);
 

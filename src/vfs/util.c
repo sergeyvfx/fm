@@ -42,10 +42,12 @@ vfs_alphasort (const void *__a, const void *__b)
 /**
  * Normalize file name
  *
+ * @param __fn - file name to be normalized
+ * @param __read_symlinks - need read symlink's content?
  * @return malloc()'ed  normalizedfile name.
  */
 wchar_t*
-vfs_normalize (const wchar_t *__fn)
+vfs_normalize_full (const wchar_t *__fn, BOOL __read_sumlinks)
 {
   size_t i, len, ptr = 0;
   wchar_t *res, *s, *old_s, *item;
@@ -147,7 +149,7 @@ vfs_normalize (const wchar_t *__fn)
         wcscat (res, L"/");
       }
     wcscat (s, item);
-    if (i > 0 || def_plugin)
+    if ((i > 0 || def_plugin) && __read_sumlinks)
       {
         if (vfs_readlink (s, symlink, MAX_FILENAME_LEN) > 0)
           {
@@ -188,7 +190,7 @@ vfs_normalize (const wchar_t *__fn)
   deque_destroy (items, free_ref_data);
   free (s);
 
-  if (wcscmp (__fn, res) == 0)
+  if (wcscmp (__fn, res) == 0 || !__read_sumlinks)
     {
       /* Result is equal to source. We can stop normalization */
     }
@@ -200,7 +202,7 @@ vfs_normalize (const wchar_t *__fn)
       res = s;
     }
 
-  if (res[wcslen (res) - 1] == '/')
+  if (res[wcslen (res) - 1] == '/' && wcslen (res) > 1)
     {
       /* Fix '/' from tail */
       res[wcslen (res) - 1] = 0;
@@ -208,4 +210,16 @@ vfs_normalize (const wchar_t *__fn)
 
   /* To free unused memory */
   return realloc (res, (wcslen (res) + 1) * sizeof (wchar_t));
+}
+
+/**
+ * Normalize file name
+ *
+ * @param __fn - file name to be normalized
+ * @return malloc()'ed  normalizedfile name.
+ */
+wchar_t*
+vfs_normalize (const wchar_t *__fn)
+{
+  return vfs_normalize_full (__fn, TRUE);
 }

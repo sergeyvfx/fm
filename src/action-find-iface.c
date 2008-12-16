@@ -136,6 +136,49 @@ on_button_click (w_button_t *__button)
   return TRUE;
 }
 
+/**
+ * Handler of keydown message for widgets on result window
+ *
+ * @param __widget - widget on which key was pressed
+ * @param __ch - code of pressed key
+ */
+static int
+button_keydown (widget_t *__widget, wint_t __ch)
+{
+  w_window_t *wnd;
+  int modal_result = 0;
+
+  if (!__widget || !WIDGET_USER_DATA (__widget))
+    {
+      return 1;
+    }
+
+  wnd = WIDGET_USER_DATA (__widget);
+
+  if (wnd->show_mode == WSM_MODAL)
+    {
+      return FALSE;
+    }
+
+  if (__ch == KEY_ESC)
+    {
+      modal_result = MR_CANCEL;
+    }
+  else if (__ch == KEY_RETURN)
+    {
+      modal_result = AF_GOTO;
+    }
+
+  if (modal_result)
+    {
+      WIDGET_USER_DATA (__widget) = NULL;
+      w_window_end_modal (wnd, modal_result);
+      return 0;
+    }
+
+  return 0;
+}
+
 /********
  * User's backend
  */
@@ -203,7 +246,7 @@ action_find_show_dialog (action_find_options_t *__options)
   edt_start_at = widget_create_edit (cnt, middle + 1, 6,
                                      wnd->position.width - middle - 2);
 
-  checked = _GET_CHECKED (AFF_FIND_RECURSIVELY, FALSE);
+  checked = _GET_CHECKED (AFF_FIND_RECURSIVELY, TRUE);
   cb_find_recursive = widget_create_checkbox (cnt, _(L"Rec_ursively"),
                                               middle + 1, 7, checked, 0);
   w_edit_set_text (edt_start_at,
@@ -310,6 +353,10 @@ action_find_create_res_wnd (void)
   count = sizeof (buttons) / sizeof (action_button_t);
 
   action_create_buttons (result->window, buttons, count, buttons_desc);
+
+  WIDGET_USER_DATA (result->list) = result->window;
+  WIDGET_USER_CALLBACK (result->list, keydown) =
+    (widget_keydown_proc)button_keydown;
 
   for (i = 0; i < count; ++i)
     {

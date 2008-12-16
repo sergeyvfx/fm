@@ -167,6 +167,9 @@ int
 vfs_alphasort (const void *__a, const void *__b);
 
 wchar_t*
+vfs_normalize_full (const wchar_t *__fn, BOOL __read_sumlinks);
+
+wchar_t*
 vfs_normalize (const wchar_t *__fn);
 
 wchar_t*
