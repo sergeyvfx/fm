@@ -88,6 +88,8 @@ BEGIN_HEADER
 #define WIDGET_LAYOUT(_w)    ((WIDGET (_w))->layout)
 #define WIDGET_POSITION(_w)  ((WIDGET (_w))->position)
 
+#define WIDGET_NAME(_w)      ((WIDGET (_w))->name)
+
 #define WIDGET_SHORTCUT(_w)  ((WIDGET (_w))->shortcut_key)
 #define WIDGET_USER_DATA(_w) ((WIDGET (_w))->user_data)
 
@@ -136,7 +138,7 @@ BEGIN_HEADER
  * @param _x, _y, _z - coordinates of widget
  * @param _w, _h - dimensions of widget
  */
-#define WIDGET_INIT(_widget, _datatype, _type, _parent, \
+#define WIDGET_INIT(_widget, _datatype, _type, _name, _parent, \
                     _flags, \
                     _class_context, \
                     _destructor, _drawer, \
@@ -145,6 +147,7 @@ BEGIN_HEADER
   MALLOC_ZERO (_widget, sizeof (_datatype)); \
 \
   (_widget)->type  = _type; \
+  (_widget)->name  = wcsdup (_name ? _name : L""); \
   (_widget)->flags = _flags; \
 \
   /* Set methods */ \
@@ -295,6 +298,7 @@ typedef struct
 /* Basic widget's members */
 #define WIDGET_MEMBERS \
   unsigned short          type;            /* Type of widget  */ \
+  wchar_t                 *name;           /* Name of widget */ \
   unsigned long           flags;           /* Different flags of widget */ \
   widget_methods_t        methods;         /* Methods of widget */ \
   widget_callbacks_t      callbacks;       /* Callbacks of widget */ \
@@ -505,6 +509,14 @@ w_container_drop (w_container_t *__widget, widget_t *__child);
 widget_t*
 w_container_widget_by_tab_order (const w_container_t *__container,
                                  int __tab_order);
+
+/****
+ * Support
+ */
+
+/* Look-up widget in widget tree */
+widget_t*
+widget_lookup (const widget_t *__root, const wchar_t *__name);
 
 END_HEADER
 

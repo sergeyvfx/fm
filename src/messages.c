@@ -267,7 +267,7 @@ message_box (const wchar_t *__caption, const wchar_t *__text,
   x = (pos.width - btn_arr.width - btn_arr.count + 1) / 2;
   for (i = 0; i < btn_arr.count; i++)
     {
-      cur_btn = widget_create_button (WIDGET_CONTAINER (wnd),
+      cur_btn = widget_create_button (NULL, WIDGET_CONTAINER (wnd),
                                       btn_arr.buttons[i].caption,
                                       x, pos.height - 2, 0);
 

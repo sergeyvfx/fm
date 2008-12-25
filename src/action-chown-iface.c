@@ -402,14 +402,14 @@ action_chown_dialog (int *__user, int *__group, int *__rec)
 
   /* Caption and edit box for user name */
   dummy = (cnt->position.width - 2) / 2 - 1;
-  widget_create_text (cnt, _(L"User name:"), 1, 1);
-  edt_user = widget_create_edit (cnt, 1, 2, dummy);
+  widget_create_text (NULL, cnt, _(L"User name:"), 1, 1);
+  edt_user = widget_create_edit (NULL, cnt, 1, 2, dummy);
   WIDGET_USER_CALLBACK (edt_user, property_changed) = edit_property_changed;
   WIDGET_USER_CALLBACK (edt_user, keydown) = (widget_keydown_proc)edit_keydown;
 
   /* Caption and edit box for group name */
-  widget_create_text (cnt, _(L"Group name:"), dummy + 2, 1);
-  edt_group = widget_create_edit (cnt, dummy + 2, 2,
+  widget_create_text (NULL, cnt, _(L"Group name:"), dummy + 2, 1);
+  edt_group = widget_create_edit (NULL, cnt, dummy + 2, 2,
                                  cnt->position.width - dummy - 3);
   WIDGET_USER_CALLBACK (edt_group, property_changed) = edit_property_changed;
   WIDGET_USER_CALLBACK (edt_group, keydown) = (widget_keydown_proc)edit_keydown;
@@ -418,7 +418,7 @@ action_chown_dialog (int *__user, int *__group, int *__rec)
   editboxes[1] = edt_group;
 
   /* List of users */
-  list = widget_create_list (cnt, _(L"List of users"), 1, 3, dummy,
+  list = widget_create_list (NULL, cnt, _(L"List of users"), 1, 3, dummy,
                              cnt->position.height - 5 - ((*__rec) ? 1 : 0));
   WIDGET_USER_DATA (list) = edt_user;
   WIDGET_USER_DATA (edt_user) = list;
@@ -426,7 +426,7 @@ action_chown_dialog (int *__user, int *__group, int *__rec)
   fill_users_list (list, *__user);
 
   /* List of Groups */
-  list = widget_create_list (cnt, _(L"List of groups"), dummy + 2, 3,
+  list = widget_create_list (NULL, cnt, _(L"List of groups"), dummy + 2, 3,
                              cnt->position.width - dummy - 3,
                              cnt->position.height - 5 - ((*__rec) ? 1 : 0));
   WIDGET_USER_DATA (list) = edt_group;
@@ -437,7 +437,7 @@ action_chown_dialog (int *__user, int *__group, int *__rec)
   if (*__rec)
     {
       /* Recursively chown'ing is able */
-      cb = widget_create_checkbox (cnt, _(L"_Recursively"),
+      cb = widget_create_checkbox (NULL, cnt, _(L"_Recursively"),
                                    1, wnd->position.height - 3, FALSE, 0);
     }
 

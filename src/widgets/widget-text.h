@@ -36,8 +36,8 @@ typedef struct
  */
 
 w_text_t*
-widget_create_text (w_container_t *__parent, const wchar_t *__text,
-                    int __x, int __y);
+widget_create_text (const wchar_t *__name, w_container_t *__parent,
+                    const wchar_t *__text, int __x, int __y);
 
 void
 w_text_set_font (w_text_t *__text, scr_font_t *__font);

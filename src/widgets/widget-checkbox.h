@@ -54,7 +54,8 @@ typedef struct
 
 /* Create new checkbox */
 w_checkbox_t*
-widget_create_checkbox (w_container_t *__parent, const wchar_t *__caption,
+widget_create_checkbox (const wchar_t *__name, w_container_t *__parent,
+                        const wchar_t *__caption,
                         int __x, int __y, BOOL __check, unsigned int __style);
 
 /* Get check state from the checkbox */

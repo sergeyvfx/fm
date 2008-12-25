@@ -432,6 +432,7 @@ init_item (w_box_t *__box, w_box_item_t *__item, int __size)
 /**
  * Create new box
  *
+ * @param __name - name of widget
  * @param __parent - parent of edit. Should be CONTAINER
  * @param __x, __y - coordinates of box
  * @param __w, __h - width and height of box
@@ -440,7 +441,7 @@ init_item (w_box_t *__box, w_box_item_t *__item, int __size)
  * @return pointer to a box object
  */
 w_box_t*
-widget_create_box (w_container_t *__parent,
+widget_create_box (const wchar_t *__name, w_container_t *__parent,
                    int __x, int __y,
                    int __w, int __h,
                    unsigned int __style,
@@ -453,7 +454,7 @@ widget_create_box (w_container_t *__parent,
   box_context = hotkey_create_context (L"box-class-context", 0);
 
   /* General widget initialization */
-  WIDGET_INIT (res, w_box_t, WT_BOX, __parent, 0,
+  WIDGET_INIT (res, w_box_t, WT_BOX, __name, __parent, 0,
                box_context,
                box_destructor, box_drawer,
                __x, __y, 1, __w, __h);

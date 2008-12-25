@@ -646,6 +646,8 @@ widget_destroy (widget_t *__widget)
        hotkey_destroy_context (__widget->user_context);
      }
 
+   SAFE_FREE (__widget->name);
+
    /* Free allocated memory */
    SAFE_FREE (__widget);
 }
@@ -1471,4 +1473,48 @@ widget_pop_context (widget_t *__widget)
     }
 
   return 0;
+}
+
+/**
+ * Look-up widget in widget tree
+ *
+ * @param __root - widget from which looking will be started
+ * @param __name - name of widget to look for
+ * @return descriptor of first found widget or NULL if there is no
+ * widget with given name
+ */
+widget_t*
+widget_lookup (const widget_t *__root, const wchar_t *__name)
+{
+  /* Check validness of input data */
+  if (!__root || !__name)
+    {
+      return NULL;
+    }
+
+  /* Check if root widget is needed widget */
+  if (wcscmp (WIDGET_NAME (__root), __name) == 0)
+    {
+      return WIDGET (__root);
+    }
+
+  if (WIDGET_IS_CONTAINER (__root))
+    {
+      /* If widget is a container, we should check all it's children */
+      unsigned int i, n = WIDGET_CONTAINER_LENGTH (__root);
+      widget_t *w, *res;
+
+      for (i = 0; i < n; ++i)
+        {
+          w = WIDGET_CONTAINER_DATA (__root)[i];
+          res = widget_lookup (w, __name);
+
+          if (res != NULL)
+            {
+              return res;
+            }
+        }
+    }
+
+  return NULL;
 }

@@ -128,6 +128,7 @@ progress_drawer (w_progress_t *__progress)
 /**
  * Create new progress bar
  *
+ * @param __name - name of widget
  * @param __parent - parent of progress bar. Should be CONTAINER
  * @param __max_pos - maximal progress position
  * @param __x, __y - coordinates of progress bar
@@ -135,7 +136,8 @@ progress_drawer (w_progress_t *__progress)
  * @return a pointer to progress bar object
  */
 w_progress_t*
-widget_create_progress (w_container_t *__parent, unsigned long __max_pos,
+widget_create_progress (const wchar_t *__name, w_container_t *__parent,
+                        unsigned long __max_pos,
                         int __x, int __y, int __w, unsigned int __style)
 {
   w_progress_t *res;
@@ -146,7 +148,7 @@ widget_create_progress (w_container_t *__parent, unsigned long __max_pos,
       return 0;
     }
 
-  WIDGET_INIT (res, w_progress_t, WT_PROGRESS, __parent,
+  WIDGET_INIT (res, w_progress_t, WT_PROGRESS, __name, __parent,
                WF_NOLAYOUT | WF_UNFOCUSABE,
                FALSE,
                progress_destructor, progress_drawer, __x, __y, 1, __w, 1);

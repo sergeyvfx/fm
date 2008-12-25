@@ -275,13 +275,15 @@ update_scrollbar_visibility (w_list_t *__list)
 /**
  * Create new list
  *
+ * @param __name - name of widget
  * @param __parent - parent of list. Should be CONTAINER
  * @param __x, __y - coordinates of list
  * @param __w, __h - dimensions of list
  * @return a pointer to list object
  */
 w_list_t*
-widget_create_list (w_container_t *__parent, const wchar_t *__caption,
+widget_create_list (const wchar_t *__name, w_container_t *__parent,
+                    const wchar_t *__caption,
                     int __x, int __y, int __w, int __h)
 {
   w_list_t *res;
@@ -295,7 +297,7 @@ widget_create_list (w_container_t *__parent, const wchar_t *__caption,
   /* Create context for list widgets */
   list_context = hotkey_create_context (L"box-class-context", 0);
 
-  WIDGET_INIT (res, w_list_t, WT_LIST, __parent, WF_NOLAYOUT,
+  WIDGET_INIT (res, w_list_t, WT_LIST, __name, __parent, WF_NOLAYOUT,
                list_context,
                list_destructor, list_drawer, __x, __y, 1, __w, __h);
 
@@ -307,7 +309,7 @@ widget_create_list (w_container_t *__parent, const wchar_t *__caption,
       res->caption = wcsdup (__caption);
     }
 
-  res->scrollbar = (widget_t*)widget_create_scrollbar (WIDGET (res), 0,
+  res->scrollbar = (widget_t*)widget_create_scrollbar (NULL, WIDGET (res), 0,
                                             __x + __w - 1,
                                             __y + 1, __h - 2, 0);
 

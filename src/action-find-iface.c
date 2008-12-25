@@ -215,30 +215,36 @@ action_find_show_dialog (action_find_options_t *__options)
   middle = wnd->position.width / 2 - 2;
 
   /* Create widgets for file masks */
-  widget_create_text (cnt, _(L"A file mask or several file masks:"), 1, 1);
-  edt_file_mask = widget_create_edit (cnt, 1, 2, cnt->position.width - 2);
+  widget_create_text (NULL, cnt,
+                      _(L"A file mask or several file masks:"), 1, 1);
+  edt_file_mask = widget_create_edit (NULL, cnt, 1, 2,
+                                      cnt->position.width - 2);
 
   checked = _GET_CHECKED (AFF_MASK_REGEXP, FALSE);
-  cb_file_mask_regexp = widget_create_checkbox (cnt, _(L"R_egular expression"),
+  cb_file_mask_regexp = widget_create_checkbox (NULL, cnt,
+                                                _(L"R_egular expression"),
                                                 1, 3, checked, 0);
   checked = _GET_CHECKED (AFF_MASK_CASE_SENSITIVE, FALSE);
-  cb_file_mask_case_sens = widget_create_checkbox (cnt, _(L"Case _sensitive"),
+  cb_file_mask_case_sens = widget_create_checkbox (NULL, cnt,
+                                                   _(L"Case _sensitive"),
                                                    middle + 1, 3, checked, 0);
   w_edit_set_text (edt_file_mask,
                    __options->filled ? __options->file_mask :  L"*");
   w_edit_set_shaded (edt_file_mask, TRUE);
 
   /* Create widgets for file content */
-  widget_create_text (cnt, _(L"Containing text:"), 1, 5);
-  edt_file_content = widget_create_edit (cnt, 1, 6,
+  widget_create_text (NULL, cnt, _(L"Containing text:"), 1, 5);
+  edt_file_content = widget_create_edit (NULL, cnt, 1, 6,
                                          middle - 1);
 
   checked = _GET_CHECKED (AFF_CONTENT_REGEXP, FALSE);
-  cb_content_regexp = widget_create_checkbox (cnt, _(L"_Regular expression"),
+  cb_content_regexp = widget_create_checkbox (NULL, cnt,
+                                              _(L"_Regular expression"),
                                               1, 7, checked, 0);
 
   checked = _GET_CHECKED (AFF_CONTENT_CASE_SENSITIVE, FALSE);
-  cb_content_case_sens = widget_create_checkbox (cnt, _(L"_Case sensitive"),
+  cb_content_case_sens = widget_create_checkbox (NULL, cnt,
+                                                 _(L"_Case sensitive"),
                                                  1, 8, checked, 0);
 
   w_edit_set_text (edt_file_content,
@@ -246,26 +252,28 @@ action_find_show_dialog (action_find_options_t *__options)
   w_edit_set_shaded (edt_file_content, TRUE);
 
   /* Create widgets for start directory */
-  widget_create_text (cnt, _(L"Start at:"), middle + 1, 5);
-  edt_start_at = widget_create_edit (cnt, middle + 1, 6,
+  widget_create_text (NULL, cnt, _(L"Start at:"), middle + 1, 5);
+  edt_start_at = widget_create_edit (NULL, cnt, middle + 1, 6,
                                      wnd->position.width - middle - 2);
 
   checked = _GET_CHECKED (AFF_FIND_RECURSIVELY, TRUE);
-  cb_find_recursive = widget_create_checkbox (cnt, _(L"Rec_ursively"),
+  cb_find_recursive = widget_create_checkbox (NULL, cnt, _(L"Rec_ursively"),
                                               middle + 1, 7, checked, 0);
   w_edit_set_text (edt_start_at,
                    __options->start_at ? __options->start_at :  L".");
   w_edit_set_shaded (edt_start_at, TRUE);
 
   /* Misc. options */
-  widget_create_text (cnt, _(L"Options:"), 1, 10);
+  widget_create_text (NULL, cnt, _(L"Options:"), 1, 10);
 
   checked = _GET_CHECKED (AFF_FOLLOW_SYMLINKS, TRUE);
-  cb_follow_symlinks = widget_create_checkbox (cnt, _(L"_Follow symlinks"),
+  cb_follow_symlinks = widget_create_checkbox (NULL, cnt,
+                                               _(L"_Follow symlinks"),
                                                1, 11, checked, 0);
 
   checked = _GET_CHECKED (AFF_FIND_DIRECTORIES, FALSE);
-  cb_find_directories = widget_create_checkbox (cnt, _(L"F_ind directories"),
+  cb_find_directories = widget_create_checkbox (NULL, cnt,
+                                                _(L"F_ind directories"),
                                                 middle + 1, 11, checked, 0);
 
   /* Create buttons */
@@ -347,11 +355,11 @@ action_find_create_res_wnd (void)
                                          WMS_CENTERED);
   cnt = WIDGET_CONTAINER (result->window);
 
-  result->list = widget_create_list (cnt, _(L"Found files"), 1, 1,
+  result->list = widget_create_list (NULL, cnt, _(L"Found files"), 1, 1,
                                      cnt->position.width - 2,
                                      cnt->position.height - 5);
 
-  result->status = widget_create_text (cnt, L"",
+  result->status = widget_create_text (NULL, cnt, L"",
                                        1, cnt->position.height - 4);
 
   count = sizeof (buttons) / sizeof (action_button_t);

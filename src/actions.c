@@ -213,13 +213,14 @@ action_create_ok_cancel_btns (w_window_t *__window)
   left = (__window->position.width - dummy -
           widget_shortcut_length (_(L"_Cancel")) - 11) / 2;
 
-  btn = widget_create_button (WIDGET_CONTAINER (__window), _(L"_Ok"), left,
+  btn = widget_create_button (NULL, WIDGET_CONTAINER (__window),
+                              _(L"_Ok"), left,
                               __window->position.height - 2, WBS_DEFAULT);
   btn->modal_result = MR_OK;
 
   left += dummy + 7;
-  btn = widget_create_button (WIDGET_CONTAINER (__window), _(L"_Cancel"), left,
-                              __window->position.height - 2, 0);
+  btn = widget_create_button (NULL, WIDGET_CONTAINER (__window), _(L"_Cancel"),
+                              left, __window->position.height - 2, 0);
   btn->modal_result = MR_CANCEL;
 }
 
@@ -266,7 +267,7 @@ action_create_buttons (w_window_t *__window,
   for (i = 0; i < __count; ++i)
     {
       pchar = _(__buttons[i].caption);
-      btn = widget_create_button (WIDGET_CONTAINER (__window),
+      btn = widget_create_button (NULL, WIDGET_CONTAINER (__window),
                                   pchar, left,
                                   __window->position.height - 2,
                                   __buttons[i].def ? WBS_DEFAULT : 0);

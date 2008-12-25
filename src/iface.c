@@ -50,7 +50,7 @@ static int
 create_widgets (void)
 {
   /* Create box for basic layout */
-  main_box = widget_create_box (NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
+  main_box = widget_create_box (NULL, NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
                                 WBS_HORISONTAL, 3);
 
   if (!main_box)
