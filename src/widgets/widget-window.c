@@ -569,6 +569,7 @@ w_window_set_modal (w_window_t *__window, BOOL __modal)
       widget_t *w;
 
       __window->show_mode = WSM_MODAL;
+      __window->modal_result = MR_NONE;
 
       window_proc (__window);
 

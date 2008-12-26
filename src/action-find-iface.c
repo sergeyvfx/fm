@@ -162,7 +162,11 @@ button_keydown (widget_t *__widget, wint_t __ch)
 
   if (__ch == KEY_ESC)
     {
-      modal_result = MR_CANCEL;
+      /* We shouldn't use w_window_end_modal() because we'll */
+      /* w_window_set_modal() later */
+      wnd->modal_result = AF_STOP;
+
+      return 0;
     }
   else if (__ch == KEY_RETURN)
     {

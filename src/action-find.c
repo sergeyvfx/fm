@@ -35,6 +35,9 @@
 #define ACTION_PERFORMED(__wnd) \
   (__wnd->window->modal_result != 0)
 
+#define USER_ACTION(__wnd) \
+  (__wnd->window->modal_result)
+
 typedef struct
 {
   int type;
@@ -1074,7 +1077,7 @@ make_find (file_panel_t *__panel,
       set_status (wnd, _(L"Search done. Found %ld file(s)"), wnd->found_files);
     }
 
-  if (!ACTION_PERFORMED (wnd))
+  if (!ACTION_PERFORMED (wnd) || USER_ACTION (wnd) == AF_STOP)
     {
       w_window_set_modal (wnd->window, TRUE);
     }

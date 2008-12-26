@@ -27,6 +27,7 @@ BEGIN_HEADER
 
 #define AF_FIND_AGAIN (MR_CUSTOM + 1)
 #define AF_GOTO       (MR_CUSTOM + 2)
+#define AF_STOP       (MR_CUSTOM + 3)
 
 /********
  * Type definitions
