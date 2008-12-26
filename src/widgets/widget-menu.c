@@ -41,6 +41,12 @@
   (&((__sub_menu)->menu->sub_menus.data[((__sub_menu)->index-1)>=0?\
     ((__sub_menu)->index-1):(__sub_menu)->menu->sub_menus.length-1]))
 
+#define POP_CONTEXT(__context) \
+  if (__context && hotkey_current_context () == __context) \
+    { \
+      hotkey_pop_context (FALSE); \
+    }
+
 /********
  *
  */
@@ -266,8 +272,6 @@ show_menu (w_menu_t *__menu)
       return;
     }
 
-  hotkey_disable ();
-
   WIDGET_POSITION (__menu).z = 1;
 
   panel_show (__menu->panel);
@@ -293,8 +297,6 @@ hide_menu (w_menu_t *__menu)
 
   __menu->unfolded = FALSE;
   __menu->focused  = FALSE;
-
-  hotkey_enable ();
 }
 
 /**
@@ -559,6 +561,12 @@ end_menu (w_menu_t *__menu)
   __menu->unfolded = FALSE;
   __menu->cur_submenu = 0;
   __menu->active = FALSE;
+  __menu->focused = FALSE;
+
+  hotkey_enable ();
+
+  POP_CONTEXT (WIDGET_USER_CONTEXT  (__menu));
+  POP_CONTEXT (WIDGET_CLASS_CONTEXT (__menu));
 
   widget_redraw (WIDGET (__menu));
 }
@@ -714,6 +722,7 @@ menu_focused (w_menu_t *__menu)
   /* IDK what to do if there is no submenus */
   if (__menu->sub_menus.length)
     {
+      hotkey_disable ();
       show_menu (__menu);
       widget_add_root (WIDGET (__menu));
 
@@ -775,7 +784,10 @@ widget_create_menu (unsigned int __style)
   w_menu_t *res;
 
   /* Create context for box widgets */
-  menu_context = hotkey_create_context (L"menu-class-context", 0);
+  if (!menu_context)
+    {
+      menu_context = hotkey_create_context (L"menu-class-context", 0);
+    }
 
   WIDGET_INIT (res, w_menu_t, WT_MENU, 0, WF_ONTOP,
                menu_context,
