@@ -119,11 +119,8 @@ list_drawer (w_list_t *__list)
       free (text);
     }
 
-  if (__list->items.count > ITEMS_PER_PAGE (__list))
-    {
-      /* Draw scrollbar only if items more than lines pre page */
-      widget_draw (__list->scrollbar);
-    }
+  /* Scrollbar's visibility is already handled */
+  widget_draw (__list->scrollbar);
 
   scr_wnd_attr_restore (layout);
 
@@ -253,6 +250,24 @@ list_onresize (w_list_t *__list)
   return TRUE;
 }
 
+/**
+ * Update visibility of scroolbar of list
+ *
+ * @param __list - list for which scrollbar visibility will be updated
+ */
+static void
+update_scrollbar_visibility (w_list_t *__list)
+{
+  int z = 0;
+
+  if (__list->items.count > ITEMS_PER_PAGE (__list))
+    {
+      z = 1;
+    }
+
+  WIDGET_POSITION (__list->scrollbar).z = z;
+}
+
 /********
  * User's backend
  */
@@ -303,6 +318,8 @@ widget_create_list (w_container_t *__parent, const wchar_t *__caption,
 
   WIDGET_POST_INIT (res);
 
+  update_scrollbar_visibility (res);
+
   return res;
 }
 
@@ -342,6 +359,7 @@ w_list_insert_item (w_list_t *__list, __u32_t __pos,
   __list->items.data[__pos].tag = __tag;
 
   /* Update size of scrollbar */
+  update_scrollbar_visibility (__list);
   w_scrollbar_set_size ((w_scrollbar_t*)__list->scrollbar,
                         __list->items.count);
 
