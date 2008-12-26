@@ -465,6 +465,62 @@ msgstr "Неправильное регулярное выражение для 
 msgid "Invalid regular expression in file content"
 msgstr "Неправильное регулярное выражение для содержимого файла"
 
+msgid "Find file"
+msgstr "Поиск файла"
+
+msgid "A file mask or several file masks:"
+msgstr "Одна или несколько масок файла"
+
+msgid "R_egular expression"
+msgstr "Регулярное _выражение"
+
+msgid "Case _sensitive"
+msgstr "С _учетом регистра"
+
+msgid "Containing text:"
+msgstr "Содержащие текст:"
+
+msgid "Start at:"
+msgstr "Искать в:"
+
+msgid "_Regular expression"
+msgstr "Р_егулярное выражение"
+
+msgid "_Case sensitive"
+msgstr "С _учетом регистра"
+
+msgid "Rec_ursively"
+msgstr "_Рекурсивно"
+
+msgid "Options:"
+msgstr "Опции:"
+
+msgid "_Follow symlinks"
+msgstr "_Ходить по ссылкам"
+
+msgid "F_ind directories"
+msgstr "Искать _директории"
+
+msgid "Found files"
+msgstr "Найденные файлы"
+
+msgid "_New search"
+msgstr "_Новый поиск"
+
+msgid "_Go to"
+msgstr "_Перейти"
+
+msgid "Search done. Found %ld file(s)"
+msgstr "Поиск завершен. Найдено %ld файлов"
+
+msgid "Search done. Found %ld file(s) "
+"and %ld directories(s)"
+msgstr "Поиск завершен. Найдено %ld файлов "
+"и %ld директорий"
+
+msgid "Searching in: %ls"
+msgstr "Поиск в: %ls"
+
 ##
 # POSIX errors
 
