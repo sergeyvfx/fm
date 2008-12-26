@@ -266,6 +266,8 @@ show_menu (w_menu_t *__menu)
       return;
     }
 
+  hotkey_disable ();
+
   WIDGET_POSITION (__menu).z = 1;
 
   panel_show (__menu->panel);
@@ -290,6 +292,9 @@ hide_menu (w_menu_t *__menu)
   panel_hide (__menu->panel);
 
   __menu->unfolded = FALSE;
+  __menu->focused  = FALSE;
+
+  hotkey_enable ();
 }
 
 /**

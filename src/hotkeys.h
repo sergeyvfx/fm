@@ -127,6 +127,14 @@ hotkey_bind_full (const wchar_t *__context_name,
                   const wchar_t *__sequence, hotkey_callback __callback,
                   void *__reg_data);
 
+/* Enable hotkeys */
+void
+hotkey_enable (void);
+
+/* Disable hotkeys */
+void
+hotkey_disable (void);
+
 #ifdef DEBUG
 void
 hotkey_contexts_dump (void);

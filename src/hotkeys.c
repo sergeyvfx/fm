@@ -74,6 +74,8 @@ static short queue_ptr = 0;
 static hotkey_context_t *hotkey_root_context;
 static hashmap_t *contexts_hashmap = NULL;
 
+static BOOL enabled = TRUE;
+
 /* Stack of contexts */
 static deque_t *contexts = NULL;
 
@@ -701,6 +703,11 @@ hotkey_push_character (wchar_t __ch)
   /* Store character in queue */
   queue[queue_ptr++] = __ch;
 
+  if (!enabled)
+    {
+      return 0;
+    }
+
   return check ();
 }
 
@@ -757,6 +764,24 @@ hotkey_bind_full (const wchar_t *__context_name,
     }
 
   return -1;
+}
+
+/**
+ * Enable hotkeys
+ */
+void
+hotkey_enable (void)
+{
+  enabled = TRUE;
+}
+
+/**
+ * Disable hotkeys
+ */
+void
+hotkey_disable (void)
+{
+  enabled = FALSE;
 }
 
 #ifdef DEBUG
