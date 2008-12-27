@@ -461,6 +461,7 @@ action_operate (const wchar_t *__caption, const wchar_t *__desc,
                 file_panel_t *__panel,
                 const wchar_t *__base_dir, const file_panel_item_t **__list,
                 unsigned long __count, BOOL __recursively, BOOL __prescan,
+                BOOL __follow_symlinks,
                 action_operator_t __operation,
                 action_operator_t __before_rec_op,
                 action_operator_t __after_rec_op,
@@ -541,14 +542,28 @@ action_operate (const wchar_t *__caption, const wchar_t *__desc,
       /* Get mode of file */
       if (item)
         {
-          stat = item->file->stat;
+          if (__follow_symlinks)
+            {
+              stat = item->file->stat;
+            }
+          else
+            {
+              stat = item->file->lstat;
+            }
         }
       else
         {
           /*
            * TODO: We'd better use ACTION_REPEAT() here
            */
-          vfs_stat (full_name, &stat);
+          if (__follow_symlinks)
+            {
+              vfs_stat (full_name, &stat);
+            }
+          else
+            {
+              vfs_lstat (full_name, &stat);
+            }
         }
 
       if (__recursively)

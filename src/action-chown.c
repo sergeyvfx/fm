@@ -207,7 +207,7 @@ action_chown (file_panel_t *__panel)
           res = action_operate (_(L"Change owner"),
                                 _(L"Changing owner of file or directory:"),
                                 __panel, cwd, (const file_panel_item_t**)list,
-                                count, recursively, scan,
+                                count, recursively, scan, TRUE,
                                 (action_operator_t)chown_operation,
                                 NULL, (action_operator_t)chown_operation,
                                 &op_data);

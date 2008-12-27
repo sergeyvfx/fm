@@ -164,7 +164,7 @@ action_chmod (file_panel_t *__panel)
       res = action_operate (_(L"Permissions"),
                             _(L"Changing permissions of file or directory"),
                             __panel, cwd, (const file_panel_item_t**)list,
-                            count, recursively, scan,
+                            count, recursively, scan, TRUE,
                             (action_operator_t)chmod_operation,
                             NULL, (action_operator_t)chmod_operation,
                             &op_data);

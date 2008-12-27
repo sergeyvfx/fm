@@ -140,7 +140,7 @@ action_delete (file_panel_t *__panel)
       res = action_operate (_(L"Delete"),
                             _(L"Deleting"),
                             __panel, cwd, (const file_panel_item_t**)list,
-                            count, TRUE, scan,
+                            count, TRUE, scan, FALSE,
                             (action_operator_t)delete_operation,
                             NULL, (action_operator_t)delete_operation, NULL);
 
