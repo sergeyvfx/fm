@@ -58,7 +58,8 @@ typedef struct
  */
 
 w_button_t*
-widget_create_button (w_container_t *__parent, const wchar_t *__caption,
+widget_create_button (const wchar_t *name, w_container_t *__parent,
+                      const wchar_t *__caption,
                       int __x, int __y, unsigned int __style);
 
 void

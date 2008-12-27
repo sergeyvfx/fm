@@ -127,6 +127,7 @@ scrollbar_drawer (w_scrollbar_t *__scrollbar)
 /**
  * Create new scrollbar widget
  *
+ * @param __name - name of widget
  * @param __parent - parent of a scrollbar
  * @param __x, __y - coordinates of scrollbar
  * @param __length - length of scrollbar
@@ -135,7 +136,8 @@ scrollbar_drawer (w_scrollbar_t *__scrollbar)
  * @return pointer to scrollbar object
  */
 w_scrollbar_t*
-widget_create_scrollbar (widget_t *__parent, unsigned long __size,
+widget_create_scrollbar (const wchar_t *__name, widget_t *__parent,
+                         unsigned long __size,
                          int __x, int __y, int __length, unsigned int __style)
 {
   w_scrollbar_t *res;
@@ -158,7 +160,7 @@ widget_create_scrollbar (widget_t *__parent, unsigned long __size,
       h = __length;
     }
 
-  WIDGET_INIT (res, w_scrollbar_t, WT_SCROLLBAR, __parent,
+  WIDGET_INIT (res, w_scrollbar_t, WT_SCROLLBAR, __name, __parent,
                WF_NOLAYOUT | WF_UNFOCUSABE,
                NULL,
                scrollbar_destructor, scrollbar_drawer, __x, __y, 1, w, h);

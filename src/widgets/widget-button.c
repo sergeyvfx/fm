@@ -22,7 +22,7 @@ static hotkey_context_t *button_context = NULL;
  * @return zero on success, non-zero on failure
  */
 static int
-button_destructor                 (w_button_t *__button)
+button_destructor (w_button_t *__button)
 {
   if (!__button)
     {
@@ -41,7 +41,7 @@ button_destructor                 (w_button_t *__button)
  * @return zero on success, non-zero on failure
  */
 static int
-button_drawer                     (w_button_t *__button)
+button_drawer (w_button_t *__button)
 {
   scr_window_t layout=WIDGET_LAYOUT (__button);
 
@@ -84,7 +84,7 @@ button_drawer                     (w_button_t *__button)
  * @return zero if callback hasn't handled received character
  */
 static int
-button_keydown                    (w_button_t *__button, wint_t __ch)
+button_keydown (w_button_t *__button, wint_t __ch)
 {
   _WIDGET_CALL_USER_CALLBACK (__button, keydown, __button, __ch);
 
@@ -124,7 +124,7 @@ button_keydown                    (w_button_t *__button, wint_t __ch)
   *   non-zero otherwise
   */
 static int
-button_shortcut                   (w_button_t *__button)
+button_shortcut (w_button_t *__button)
 {
   /* Try to call user's handler of shortcut.. */
   _WIDGET_CALL_USER_CALLBACK (__button, shortcut, __button);
@@ -141,6 +141,7 @@ button_shortcut                   (w_button_t *__button)
 /**
  * Create new button on parent and specified with caption, position and style
  *
+ * @param __name - name of widget
  * @param __parent - parent of button. Should be CONTAINER
  * @param __caption - caption on button
  * @param __x, __y - coordinates of button
@@ -149,10 +150,10 @@ button_shortcut                   (w_button_t *__button)
  * @return a pointer to button object
  */
 w_button_t*
-widget_create_button              (w_container_t *__parent,
-                                   const wchar_t *__caption,
-                                   int __x, int __y,
-                                   unsigned int __style)
+widget_create_button (const wchar_t *__name, w_container_t *__parent,
+                      const wchar_t *__caption,
+                      int __x, int __y,
+                      unsigned int __style)
 {
   w_button_t *res;
 
@@ -170,7 +171,7 @@ widget_create_button              (w_container_t *__parent,
   w = (__caption ? widget_shortcut_length (__caption) : 0) +
           4 + (__style & WBS_DEFAULT ? 2 : 0);
 
-  WIDGET_INIT (res, w_button_t, WT_BUTTON, __parent, WF_NOLAYOUT,
+  WIDGET_INIT (res, w_button_t, WT_BUTTON, __name, __parent, WF_NOLAYOUT,
                button_context,
                button_destructor, button_drawer,
                __x, __y, 1, w, 1);
@@ -207,11 +208,11 @@ widget_create_button              (w_container_t *__parent,
  * (i.e. shortcut) in focused state
  */
 void
-w_button_set_fonts                (w_button_t *__button,
-                                   scr_font_t *__font,
-                                   scr_font_t *__focused_font,
-                                   scr_font_t *__hot_font,
-                                   scr_font_t *__hot_focused_font)
+w_button_set_fonts (w_button_t *__button,
+                    scr_font_t *__font,
+                    scr_font_t *__focused_font,
+                    scr_font_t *__hot_font,
+                    scr_font_t *__hot_focused_font)
 {
   if (!__button)
     {

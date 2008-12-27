@@ -25,7 +25,7 @@
 #define EXIST_QUESTION_TEXT(_y, _format, _args...) \
   { \
     swprintf (buf, BUF_LEN (buf), _(_format), ##_args); \
-    text=widget_create_text (WIDGET_CONTAINER (wnd), buf, 1, _y); \
+    text = widget_create_text (NULL, WIDGET_CONTAINER (wnd), buf, 1, _y); \
     w_text_set_font (text, FONT (CID_WHITE,  CID_RED)); \
   }
 
@@ -34,10 +34,10 @@
  */
 #define EXIST_QUESTION_BUTTON(_y, _caption, _modal_result) \
   { \
-    btn=widget_create_button (WIDGET_CONTAINER (wnd), _(_caption), \
+    btn = widget_create_button (NULL, WIDGET_CONTAINER (wnd), _(_caption), \
       cur_left, _y, 0); \
-    btn->modal_result=_modal_result; \
-    cur_left+=widget_shortcut_length (_(_caption))+5; \
+    btn->modal_result = _modal_result; \
+    cur_left += widget_shortcut_length (_(_caption))+5; \
     w_button_set_fonts (btn, \
       FONT (CID_WHITE,  CID_RED), \
       FONT (CID_BLACK,  CID_GREY), \
@@ -252,24 +252,24 @@ action_copy_create_proc_wnd (BOOL __move, BOOL __total_progress,
   cnt = WIDGET_CONTAINER (res->window);
 
   /* Names of source and destination files */
-  res->source = widget_create_text (cnt, L"", 1, 1);
-  res->target = widget_create_text (cnt, L"", 1, 2);
+  res->source = widget_create_text (NULL, cnt, L"", 1, 1);
+  res->target = widget_create_text (NULL, cnt, L"", 1, 2);
 
   /* Progress bar for current file */
-  widget_create_text (cnt, _(L"File"), 1, 4);
-  res->file_progress = widget_create_progress (cnt, 100, 10, 4, 48, 0);
+  widget_create_text (NULL, cnt, _(L"File"), 1, 4);
+  res->file_progress = widget_create_progress (NULL, cnt, 100, 10, 4, 48, 0);
 
   /* Speed */
   pchar = _(L"Speed:");
-  widget_create_text (cnt, pchar, 1, 6);
-  res->speed_text = widget_create_text (cnt, _(L"-,--Mbps"),
+  widget_create_text (NULL, cnt, pchar, 1, 6);
+  res->speed_text = widget_create_text (NULL, cnt, _(L"-,--Mbps"),
                                         wcswidth (pchar, wcslen (pchar)) + 2,
                                         6);
 
   pchar = _(L"ETA:");
   left = 30;
-  widget_create_text (cnt, pchar, left, 6);
-  res->eta_text = widget_create_text (cnt, L"--:--:--",
+  widget_create_text (NULL, cnt, pchar, left, 6);
+  res->eta_text = widget_create_text (NULL, cnt, L"--:--:--",
                                    wcswidth (pchar, wcslen (pchar)) + left + 1,
                                    6);
 
@@ -280,20 +280,21 @@ action_copy_create_proc_wnd (BOOL __move, BOOL __total_progress,
 
       swprintf (text, BUF_LEN (text), _(L"(%lldKb of %lldKb)"),
                 res->bytes_copied, __listing->size / 1024);
-      widget_create_text (cnt, _(L"Bytes"), 1, 8);
-      res->bytes_digit = widget_create_text (cnt, text,
+      widget_create_text (NULL, cnt, _(L"Bytes"), 1, 8);
+      res->bytes_digit = widget_create_text (NULL, cnt, text,
                                              2 + wcslen (_(L"Bytes")), 8);
-      res->bytes_progress = widget_create_progress (cnt, __listing->size,
+      res->bytes_progress = widget_create_progress (NULL, cnt, __listing->size,
                                                     1, 9, 28,
                                                     WPBS_NOPERCENT);
       res->bytes_total = __listing->size;
 
       swprintf (text, BUF_LEN (text), _(L"(%lld of %lld)"), res->files_copied,
                 __listing->count);
-      widget_create_text (cnt, _(L"Count"), 30, 8);
-      res->count_digit = widget_create_text (cnt, text,
+      widget_create_text (NULL, cnt, _(L"Count"), 30, 8);
+      res->count_digit = widget_create_text (NULL, cnt, text,
                                              31 + wcslen (_(L"Count")), 8);
-      res->count_progress = widget_create_progress (cnt, __listing->count,
+      res->count_progress = widget_create_progress (NULL, cnt,
+                                                    __listing->count,
                                                     30, 9, 28,
                                                     WPBS_NOPERCENT);
       res->files_total = __listing->count;
@@ -303,7 +304,7 @@ action_copy_create_proc_wnd (BOOL __move, BOOL __total_progress,
   left = (cnt->position.width - widget_shortcut_length (_(L"_Skip")) -
                   widget_shortcut_length (_(L"_Abort")) - 9) / 2;
 
-  btn = widget_create_button (cnt, _(L"_Skip"), left,
+  btn = widget_create_button (NULL, cnt, _(L"_Skip"), left,
                               cnt->position.height - 2, 0);
 
   WIDGET_USER_DATA (btn) = res;
@@ -311,7 +312,7 @@ action_copy_create_proc_wnd (BOOL __move, BOOL __total_progress,
   WIDGET_USER_CALLBACK (btn, keydown) = (widget_keydown_proc)button_keydown;
 
   left += widget_shortcut_length (_(L"_Skip")) + 5;
-  btn = widget_create_button (cnt, _(L"_Abort"), left,
+  btn = widget_create_button (NULL, cnt, _(L"_Abort"), left,
                               cnt->position.height - 2, 0);
 
   WIDGET_USER_DATA (btn) = res;
@@ -545,10 +546,10 @@ action_copy_show_dialog (BOOL __move, const file_panel_item_t **__src_list,
 
   /* Create caption for 'To' field */
   get_to_field_caption (__move, __src_list, __count, msg, BUF_LEN (msg));
-  widget_create_text (cnt, msg, 1, 1);
+  widget_create_text (NULL, cnt, msg, 1, 1);
 
   /* Create 'To' field */
-  to = widget_create_edit (cnt, 1, 2, wnd->position.width - 2);
+  to = widget_create_edit (NULL, cnt, 1, 2, wnd->position.width - 2);
   w_edit_set_text (to, *__dst);
   w_edit_set_shaded (to, TRUE);
 
@@ -581,12 +582,12 @@ action_post_move_create_window (void)
   res->window = widget_create_window (_(L"Move"), 0, 0, 60, 6, WMS_CENTERED);
 
   s = _(L"Deleting:");
-  widget_create_text (WIDGET_CONTAINER (res->window), s, 1, 1);
+  widget_create_text (NULL, WIDGET_CONTAINER (res->window), s, 1, 1);
 
-  res->file = widget_create_text (WIDGET_CONTAINER (res->window), L"",
+  res->file = widget_create_text (NULL, WIDGET_CONTAINER (res->window), L"",
                                   wcswidth (s, wcslen (s)) + 2, 1);
 
-  res->progress = widget_create_progress (WIDGET_CONTAINER (res->window),
+  res->progress = widget_create_progress (NULL, WIDGET_CONTAINER (res->window),
                                           100, 1, 3,
                                           res->window->position.width - 2,
                                           WPBS_NOPERCENT);

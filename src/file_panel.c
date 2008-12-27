@@ -429,7 +429,8 @@ panel_creation_newrow_strategy (int __width)
       w_container_drop (WIDGET_CONTAINER (root_grid_parent),
                         WIDGET (root_panels_grid));
 
-      new_root_grid = widget_create_box (WIDGET_CONTAINER (root_grid_parent),
+      new_root_grid = widget_create_box (NULL,
+                                         WIDGET_CONTAINER (root_grid_parent),
                                          0, 0, 0, 0, WBS_HORISONTAL, 1);
 
       /* Append root_panels_grid to the first row of new root grid */
@@ -454,7 +455,8 @@ panel_creation_newrow_strategy (int __width)
 
   new_row = WIDGET_CONTAINER (w_box_append_item (root_panels_grid, -1));
 
-  last_row_grid = widget_create_box (new_row, 0, 0, 0, 0, WBS_VERTICAL, 0);
+  last_row_grid = widget_create_box (NULL, new_row, 0, 0, 0, 0,
+                                     WBS_VERTICAL, 0);
 
   return panel_creation_same_row_strategy (__width);
 }
@@ -485,7 +487,8 @@ panel_creation_ear_strategy (int __width, BOOL __left)
       w_container_drop (WIDGET_CONTAINER (root_grid_parent),
                         WIDGET (root_panels_grid));
 
-      new_root_grid = widget_create_box (WIDGET_CONTAINER (root_grid_parent),
+      new_root_grid = widget_create_box (NULL,
+                                         WIDGET_CONTAINER (root_grid_parent),
                                          0, 0, 0, 0, WBS_VERTICAL, 1);
 
       /* Append root_panels_grid to the first row of new root grid */
@@ -858,8 +861,9 @@ file_panels_init (widget_t *__parent)
   root_grid_parent = __parent;
 
   /* Create grids to manage panels' position */
-  root_panels_grid = widget_create_box (WIDGET_CONTAINER (root_grid_parent),
-                                   0, 0, 0, 0, WBS_VERTICAL, 0);
+  root_panels_grid = widget_create_box (NULL,
+                                        WIDGET_CONTAINER (root_grid_parent),
+                                        0, 0, 0, 0, WBS_VERTICAL, 0);
 
   /* Initially last_row_grid is the same grid as panels_grid */
   last_row_grid = root_panels_grid;
@@ -922,7 +926,8 @@ file_panel_create (int __width, unsigned int __params)
   /****
    * General widget initialization
    */
-  WIDGET_INIT (res->widget, file_panel_widget_t, WT_SINGLE, parent, 0, NULL,
+  WIDGET_INIT (res->widget, file_panel_widget_t, WT_SINGLE, NULL, parent,
+               0, NULL,
                fpd_widget_destructor,
                fpd_draw_widget,
                0, 0, 1, 0, 0);

@@ -58,7 +58,8 @@ typedef struct
  */
 
 w_box_t*
-widget_create_box (w_container_t *__parent, int __x, int __y, int __w, int __h,
+widget_create_box (const wchar_t *__name, w_container_t *__parent,
+                   int __x, int __y, int __w, int __h,
                    unsigned int __style, unsigned int __count);
 
 void

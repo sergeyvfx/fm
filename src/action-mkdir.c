@@ -38,10 +38,10 @@ get_directory_name (void)
                               0, 0, MIN (50, SCREEN_WIDTH * 0.8), 6,
                               WMS_CENTERED);
 
-  widget_create_text (WIDGET_CONTAINER (wnd), _(L"Enter directory name:"),
-                      1, 1);
+  widget_create_text (NULL, WIDGET_CONTAINER (wnd),
+                      _(L"Enter directory name:"), 1, 1);
 
-  edit = widget_create_edit (WIDGET_CONTAINER (wnd), 1, 2,
+  edit = widget_create_edit (NULL, WIDGET_CONTAINER (wnd), 1, 2,
                              wnd->position.width - 2);
 
   /* Create buttons */

@@ -64,7 +64,8 @@ typedef struct
 
 /* Create new list widget */
 w_list_t*
-widget_create_list (w_container_t *__parent, const wchar_t *__caption,
+widget_create_list (const wchar_t *__name, w_container_t *__parent,
+                    const wchar_t *__caption,
                     int __x, int __y, int __w, int __h);
 
 /* Insert item to list */

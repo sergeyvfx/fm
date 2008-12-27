@@ -181,6 +181,7 @@ checkbox_shortcut (w_checkbox_t *__checkbox)
 /**
  * Create new checkbox
  *
+ * @param __name - name of widget
  * @param __parent - parent of the checkbox. Should be container.
  * @param __caption - caption on checkbox
  * @param __x, __y - coordinates  of checkbox
@@ -189,7 +190,8 @@ checkbox_shortcut (w_checkbox_t *__checkbox)
  * @return a pointer to checkbox object if successful, otherwise NULL
  */
 w_checkbox_t*
-widget_create_checkbox (w_container_t *__parent, const wchar_t *__caption,
+widget_create_checkbox (const wchar_t *__name, w_container_t *__parent,
+                        const wchar_t *__caption,
                         int __x, int __y, BOOL __check, unsigned int __style)
 {
   w_checkbox_t *widget;
@@ -202,7 +204,8 @@ widget_create_checkbox (w_container_t *__parent, const wchar_t *__caption,
   /* Create context for checkbox widgets */
   checkbox_context = hotkey_create_context (L"checkbox-class-context", 0);
 
-  WIDGET_INIT (widget, w_checkbox_t, WT_CHECKBOX, __parent, WF_NOLAYOUT,
+  WIDGET_INIT (widget, w_checkbox_t, WT_CHECKBOX, __name, __parent,
+               WF_NOLAYOUT,
                checkbox_context,
                checkbox_destructor, checkbox_drawer,
                __x, __y, 1, wcslen(__caption) + 4, 1);

@@ -36,8 +36,8 @@ show_dialog (const wchar_t *__item, wchar_t **__content)
   buf = malloc (1024 * sizeof (wchar_t));
   fit_filename (__item, 20, fit);
   swprintf (buf, 1024, _(L"Symlink \"%ls\" pints to:"), fit);
-  widget_create_text (WIDGET_CONTAINER (wnd), buf, 1, 1);
-  e_cnt = widget_create_edit (WIDGET_CONTAINER (wnd), 1, 2,
+  widget_create_text (NULL, WIDGET_CONTAINER (wnd), buf, 1, 1);
+  e_cnt = widget_create_edit (NULL, WIDGET_CONTAINER (wnd), 1, 2,
                               wnd->position.width - 2);
   w_edit_set_text (e_cnt, *__content);
   w_edit_set_shaded (e_cnt, TRUE);

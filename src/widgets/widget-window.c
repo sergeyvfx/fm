@@ -430,7 +430,10 @@ widget_create_window (const wchar_t *__caption,
       __y = CENTRE_Y (__h);
     }
 
-  WIDGET_INIT (res, w_window_t, WT_WINDOW, 0, 0,
+  /*
+   * TODO: Need we named windows?
+   */
+  WIDGET_INIT (res, w_window_t, WT_WINDOW, NULL, 0, 0,
                window_context,
                window_destructor, window_drawer,
                __x, __y, 0, __w, __h);

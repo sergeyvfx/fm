@@ -76,7 +76,8 @@ typedef struct
 
 /* Create new edit box */
 w_edit_t*
-widget_create_edit (w_container_t *__parent, int __x, int __y, int __width);
+widget_create_edit (const wchar_t *__name, w_container_t *__parent,
+                    int __x, int __y, int __width);
 
 /* Get text of edit box */
 void

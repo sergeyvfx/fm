@@ -188,17 +188,17 @@ create_proc_wnd (const wchar_t *__caption, const wchar_t *__desc,
        * NOTE: Real maximum progress bar's position will
        *       be set later in chown'ing stuff
        */
-      res->progress = widget_create_progress (cnt, 100, 1, 4,
+      res->progress = widget_create_progress (NULL, cnt, 100, 1, 4,
                                               cnt->position.width - 2, 0);
     }
 
-  widget_create_text (cnt, __desc, 1, 1);
-  res->text = widget_create_text (cnt, L"", 1, 2);
+  widget_create_text (NULL, cnt, __desc, 1, 1);
+  res->text = widget_create_text (NULL, cnt, L"", 1, 2);
 
   /* Create button */
   dummy = (cnt->position.width -
            widget_shortcut_length (_(L"_Abort")) - 6) / 2;
-  btn = widget_create_button (cnt, _(L"_Abort"),
+  btn = widget_create_button (NULL, cnt, _(L"_Abort"),
                               dummy, cnt->position.height - 2, WBS_DEFAULT);
   btn->modal_result = MR_ABORT;
   WIDGET_USER_DATA (btn) = res;

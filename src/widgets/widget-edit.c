@@ -673,6 +673,7 @@ sort_variants (w_edit_t *__edit)
 /**
  * Create new edit box
  *
+ * @param __name - name of widget
  * @param __parent - parent of edit. Should be CONTAINER
  * @param __x, __y - coordinates of edit
  * @param __width - width of edit
@@ -680,7 +681,7 @@ sort_variants (w_edit_t *__edit)
  * @return pointer to a edit object
  */
 w_edit_t*
-widget_create_edit (w_container_t *__parent,
+widget_create_edit (const wchar_t *__name, w_container_t *__parent,
                     int __x, int __y, int __width)
 {
   w_edit_t *res;
@@ -694,7 +695,7 @@ widget_create_edit (w_container_t *__parent,
   /* Create context for edit widgets */
   edit_context = hotkey_create_context (L"edit-class-context", 0);
 
-  WIDGET_INIT (res, w_edit_t, WT_EDIT, __parent, WF_NOLAYOUT,
+  WIDGET_INIT (res, w_edit_t, WT_EDIT, __name, __parent, WF_NOLAYOUT,
                edit_context,
                edit_destructor, edit_drawer,
                __x, __y, 1, __width, 1);

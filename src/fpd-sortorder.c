@@ -51,7 +51,7 @@ create_window (void)
    * TODO: Insert a smart stuff here
    */
 
-  btn = widget_create_button (WIDGET_CONTAINER (wnd), _ (L"_Ok"),
+  btn = widget_create_button (NULL, WIDGET_CONTAINER (wnd), _ (L"_Ok"),
                               WIDTH / 2 - 4, HEIGHT - 2, WBS_DEFAULT);
   btn->modal_result = MR_OK;
 

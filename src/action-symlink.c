@@ -54,16 +54,16 @@ show_dialog (wchar_t **__content, wchar_t **__fn)
 
   wnd = widget_create_window (_(L"Symbolic link"), 0, 0, 60, 9, WMS_CENTERED);
 
-  widget_create_text (WIDGET_CONTAINER (wnd), _(L"Existing filename "
+  widget_create_text (NULL, WIDGET_CONTAINER (wnd), _(L"Existing filename "
                       "(filename symlink will point to):"), 1, 1);
-  e_cnt = widget_create_edit (WIDGET_CONTAINER (wnd), 1, 2,
+  e_cnt = widget_create_edit (NULL, WIDGET_CONTAINER (wnd), 1, 2,
                               wnd->position.width - 2);
   w_edit_set_text (e_cnt, *__content);
   w_edit_set_shaded (e_cnt, TRUE);
 
-  widget_create_text (WIDGET_CONTAINER (wnd), _(L"Symbolic link filename:"),
-                      1, 4);
-  e_fn = widget_create_edit (WIDGET_CONTAINER (wnd), 1, 5,
+  widget_create_text (NULL, WIDGET_CONTAINER (wnd),
+                      _(L"Symbolic link filename:"), 1, 4);
+  e_fn = widget_create_edit (NULL, WIDGET_CONTAINER (wnd), 1, 5,
                              wnd->position.width - 2);
   w_edit_set_text (e_fn, *__fn);
   w_edit_set_shaded (e_fn, TRUE);

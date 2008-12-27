@@ -166,13 +166,13 @@ create_checkbox (w_window_t *__window, w_edit_t *__bitmask,
   /* Create information, associated with checkbox */
   MALLOC_ZERO (info, sizeof (checkbox_info_t));
   info->initial_state = state;
-  info->text = widget_create_text (WIDGET_CONTAINER (__window), L"",
+  info->text = widget_create_text (NULL, WIDGET_CONTAINER (__window), L"",
                                    __x - 1, __y);
   info->manage_bit = __bit;
   info->bitmask = __bitmask;
 
   /* Create checkbox */
-  cb = widget_create_checkbox (WIDGET_CONTAINER (__window), __caption,
+  cb = widget_create_checkbox (NULL, WIDGET_CONTAINER (__window), __caption,
                                __x, __y, state, WCBS_WITH_UNDEFINED);
   WIDGET_USER_CALLBACK (cb, property_changed) =
     (widget_propchanged_proc)checkbox_property_changed;
@@ -221,7 +221,8 @@ create_checkboxes (w_window_t *__window, w_edit_t *__bitmask,
     {
       pchar = _(header_column[i]);
       offset_left = MAX (offset_left, wcswidth (pchar, wcslen (pchar)) + 4);
-      widget_create_text (WIDGET_CONTAINER (__window), pchar,  2, offset + i);
+      widget_create_text (NULL, WIDGET_CONTAINER (__window),
+                          pchar,  2, offset + i);
       ++i;
     }
 
@@ -230,7 +231,7 @@ create_checkboxes (w_window_t *__window, w_edit_t *__bitmask,
   while (header_row[j])
     {
       pchar = _(header_row[j]);
-      widget_create_text (WIDGET_CONTAINER (__window), pchar,
+      widget_create_text (NULL, WIDGET_CONTAINER (__window), pchar,
                           left, offset - 1);
       left += wcswidth (pchar, wcslen (pchar)) + 2;
       ++j;
@@ -521,9 +522,9 @@ action_chmod_show_dialog (unsigned int *__mask, unsigned int *__unknown_mask,
 
   /* Create edit box to enter permission by number */
   pchar = _(L"Enter octal permissions:");
-  widget_create_text (WIDGET_CONTAINER (wnd), pchar, 1, 1);
+  widget_create_text (NULL, WIDGET_CONTAINER (wnd), pchar, 1, 1);
   dummy = wcswidth (pchar, wcslen (pchar));
-  octal = widget_create_edit (WIDGET_CONTAINER (wnd),
+  octal = widget_create_edit (NULL, WIDGET_CONTAINER (wnd),
                               dummy + 2, 1, wnd->position.width - dummy - 3);
   WIDGET_USER_CALLBACK (octal, keydown) =
     (widget_keydown_proc)bitmask_edt_keydown;
@@ -535,7 +536,7 @@ action_chmod_show_dialog (unsigned int *__mask, unsigned int *__unknown_mask,
   w_edit_set_shaded (octal, TRUE);
 
   /* Create checkboxes to manage permissions' bits */
-  widget_create_text (WIDGET_CONTAINER (wnd),
+  widget_create_text (NULL, WIDGET_CONTAINER (wnd),
                       _(L"Or use checkboxes to build it:"), 1, 3);
   cb_arr = create_checkboxes (wnd, octal, *__mask, *__unknown_mask);
 
@@ -543,9 +544,10 @@ action_chmod_show_dialog (unsigned int *__mask, unsigned int *__unknown_mask,
 
   if (*__rec)
     {
-      widget_create_text (WIDGET_CONTAINER (wnd), _(L"Additional options:"),
+      widget_create_text (NULL, WIDGET_CONTAINER (wnd),
+                          _(L"Additional options:"),
                           1, wnd->position.height - 5);
-      recursively = widget_create_checkbox (WIDGET_CONTAINER (wnd),
+      recursively = widget_create_checkbox (NULL, WIDGET_CONTAINER (wnd),
                                             _(L"_Recursively"),
                                             4, wnd->position.height - 4,
                                             FALSE, 0);

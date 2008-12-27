@@ -19,7 +19,7 @@
  * @return zero on success, non-zero on failure
  */
 static int
-text_destructor                   (w_text_t *__text)
+text_destructor (w_text_t *__text)
 {
   if (!__text)
     {
@@ -38,9 +38,9 @@ text_destructor                   (w_text_t *__text)
  * @return zero on success, non-zero on failure
  */
 static int
-text_drawer                       (w_text_t *__text)
+text_drawer (w_text_t *__text)
 {
-  scr_window_t layout=WIDGET_LAYOUT (__text);
+  scr_window_t layout = WIDGET_LAYOUT (__text);
 
   /* Widget is invisible or there is no layout */
   if (!WIDGET_VISIBLE (__text) || !layout)
@@ -72,7 +72,7 @@ text_drawer                       (w_text_t *__text)
 static void
 text_clear                        (w_text_t *__text)
 {
-  scr_window_t layout=WIDGET_LAYOUT (__text);
+  scr_window_t layout = WIDGET_LAYOUT (__text);
 
   /* Widget is invisible or there is no layout */
   if (!WIDGET_VISIBLE (__text) || !layout)
@@ -87,10 +87,12 @@ text_clear                        (w_text_t *__text)
   /* Draw text */
   if (__text->text)
     {
-      size_t i, len=wcslen (__text->text);
+      size_t i, len = wcslen (__text->text);
       scr_wnd_font (layout, *__text->font);
-      for (i=0; i<len; i++)
-        scr_wnd_putch (layout, ' ');
+      for (i = 0; i < len; i++)
+        {
+          scr_wnd_putch (layout, ' ');
+        }
     }
 
   scr_wnd_attr_restore (layout);
@@ -109,9 +111,8 @@ text_clear                        (w_text_t *__text)
  * @return a pointer to text object
  */
 w_text_t*
-widget_create_text                (w_container_t *__parent,
-                                   const wchar_t *__text,
-                                   int __x, int __y)
+widget_create_text (const wchar_t *__name, w_container_t *__parent,
+                    const wchar_t *__text, int __x, int __y)
 {
   w_text_t *res;
 
@@ -123,8 +124,8 @@ widget_create_text                (w_container_t *__parent,
 
   w=wcslen (__text);
 
-  WIDGET_INIT (res, w_text_t, WT_TEXT, __parent, WF_NOLAYOUT | WF_UNFOCUSABE,
-               NULL,
+  WIDGET_INIT (res, w_text_t, WT_TEXT, __name, __parent,
+               WF_NOLAYOUT | WF_UNFOCUSABE, NULL,
                text_destructor, text_drawer, __x, __y, 1, w, 1);
 
   res->text = wcsdup (__text);
@@ -143,7 +144,7 @@ widget_create_text                (w_container_t *__parent,
  * @param __font - font of text
  */
 void
-w_text_set_font                   (w_text_t *__text, scr_font_t *__font)
+w_text_set_font (w_text_t *__text, scr_font_t *__font)
 {
   if (!__text)
     {
@@ -162,7 +163,7 @@ w_text_set_font                   (w_text_t *__text, scr_font_t *__font)
  * @param __text - new text of widget
  */
 void
-w_text_set                        (w_text_t *__w_text, const wchar_t *__text)
+w_text_set (w_text_t *__w_text, const wchar_t *__text)
 {
   int w;
 

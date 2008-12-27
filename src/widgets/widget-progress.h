@@ -57,7 +57,8 @@ typedef struct
  */
 
 w_progress_t*
-widget_create_progress (w_container_t *__parent, unsigned long __max_pos,
+widget_create_progress (const wchar_t *__name, w_container_t *__parent,
+                        unsigned long __max_pos,
                         int __x, int __y, int __w, unsigned int __style);
 
 void
