@@ -35,7 +35,7 @@ int
 dynstruct_add_field (dynstruct_t *, const wchar_t *, void *, size_t );
 
 int
-dynstruct_get_field_val (const dynstruct_t *, const wchar_t *, void **);
+dynstruct_get_field_val (const dynstruct_t *, const wchar_t *, void *);
 
 int
 dynstruct_remove_field (dynstruct_t *, const wchar_t *);

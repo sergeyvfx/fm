@@ -157,7 +157,7 @@ dynstruct_add_field (dynstruct_t *__dstruct,
  */
 int
 dynstruct_get_field_val (const dynstruct_t *__dstruct,
-                         const wchar_t *__field_name, void **__field_val)
+                         const wchar_t *__field_name, void *__field_val)
 {
   field_t *val = (field_t *) hashmap_get (__dstruct->fields, __field_name);
   if (val == NULL)
@@ -165,7 +165,8 @@ dynstruct_get_field_val (const dynstruct_t *__dstruct,
       return DYNST_FIELD_NFOUND;
     }
 
-  *__field_val = val->value;
+  memcpy (__field_val, val->value, val->size);
+
   return DYNST_OK;
 }
 

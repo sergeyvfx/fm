@@ -34,11 +34,11 @@
 
 /* Gets next and previous sub-menus */
 #define SUBMENU_NEXT(__sub_menu) \
-  (&((__sub_menu)->menu->sub_menus.data[((__sub_menu)->index+1)% \
+  (((__sub_menu)->menu->sub_menus.data[((__sub_menu)->index+1)% \
   (__sub_menu)->menu->sub_menus.length]))
 
 #define SUBMENU_PREV(__sub_menu) \
-  (&((__sub_menu)->menu->sub_menus.data[((__sub_menu)->index-1)>=0?\
+  (((__sub_menu)->menu->sub_menus.data[((__sub_menu)->index-1)>=0?\
     ((__sub_menu)->index-1):(__sub_menu)->menu->sub_menus.length-1]))
 
 #define POP_CONTEXT(__context) \
@@ -62,6 +62,43 @@ hide_menu (w_menu_t *__menu);
  */
 
 /**
+ * Free memory used by one item of sub-menu
+ *
+ * @param __item - item to be freed
+ */
+static void
+free_submenu_item (w_sub_menu_item_t *__item)
+{
+  if (!__item)
+    {
+      return;
+    }
+
+  SAFE_FREE (__item->caption);
+
+  free (__item);
+}
+
+/**
+ * Free memory used by all items of sub-menu
+ *
+ * @param __sub_menu - sub-menu from which items will be freed
+ */
+void
+free_submenu_items (w_sub_menu_t *__sub_menu)
+{
+  unsigned short i;
+
+  for (i = 0; i < __sub_menu->items.length; ++i)
+    {
+      free_submenu_item (__sub_menu->items.data[i]);
+    }
+
+  SAFE_FREE (__sub_menu->items.data);
+  __sub_menu->items.length = 0;
+}
+
+/**
  * Destructor of sub-menu
  *
  * @param __submenu - submenu to be destroyed
@@ -78,6 +115,10 @@ submenu_destructor (w_sub_menu_t *__submenu)
     {
       free (__submenu->caption);
     }
+
+  free_submenu_items (__submenu);
+
+  free (__submenu);
 }
 
 /**
@@ -99,7 +140,7 @@ menu_destructor (w_menu_t *__menu)
   /* Destroy all sub-menus */
   for (i = 0; i < __menu->sub_menus.length; i++)
     {
-      submenu_destructor (&__menu->sub_menus.data[i]);
+      submenu_destructor (__menu->sub_menus.data[i]);
     }
 
   /* Hide menu before deleting to minimize blinking of screen */
@@ -161,11 +202,11 @@ menu_drawer (w_menu_t *__menu)
 
   for (i = 0; i < __menu->sub_menus.length; i++)
     {
-      focused = &__menu->sub_menus.data[i] == __menu->cur_submenu;
+      focused = __menu->sub_menus.data[i] == __menu->cur_submenu;
 
       SUBMENU_PADDING ();
 
-      widget_shortcut_print (layout, __menu->sub_menus.data[i].caption,
+      widget_shortcut_print (layout, __menu->sub_menus.data[i]->caption,
                      focused ? *__menu->focused_font : *__menu->font,
                      focused ? *__menu->hot_focused_font : *__menu->hot_font);
 
@@ -195,7 +236,7 @@ draw_submenu_item (const w_sub_menu_t *__sub_menu, short __index)
   scr_window_t layout = __sub_menu->menu->submenu_layout;
   w_menu_t *menu = __sub_menu->menu;
   short i;
-  BOOL separator = __sub_menu->items.data[__index].flags&SMI_SEPARATOR;
+  BOOL separator = __sub_menu->items.data[__index]->flags & SMI_SEPARATOR;
 
   if (!layout)
     {
@@ -218,7 +259,7 @@ draw_submenu_item (const w_sub_menu_t *__sub_menu, short __index)
       scr_wnd_move_caret (layout, SUBMENU_ITEM_PADDING + 1, __index + 1);
 
       /* Draw caption of item */
-      widget_shortcut_print (layout, __sub_menu->items.data[__index].caption,
+      widget_shortcut_print (layout, __sub_menu->items.data[__index]->caption,
               __index == __sub_menu->cur_item_index ? *menu->focused_font :
               *menu->font,
               __index == __sub_menu->cur_item_index ? *menu->hot_focused_font :
@@ -310,6 +351,7 @@ submenu_position (const w_sub_menu_t *__sub_menu)
 {
   int i, n;
   widget_position_t res = {0, 0, 0, 0};
+  wchar_t *caption;
 
   res.x = SUMBENUS_LEFT;
   res.y = 1;
@@ -320,21 +362,21 @@ submenu_position (const w_sub_menu_t *__sub_menu)
   /* Calculate the `x` coordinate */
   for (i = 0, n = __sub_menu->menu->sub_menus.length; i < n; ++i)
     {
-      if (&__sub_menu->menu->sub_menus.data[i] == __sub_menu)
+      if (__sub_menu->menu->sub_menus.data[i] == __sub_menu)
         {
           break;
         }
-      res.x += widget_shortcut_length (
-                                    __sub_menu->menu->sub_menus.data[i].caption
-                                    ) + SUBMENU_CAPTION_PADDING * 2;
+
+      caption = __sub_menu->menu->sub_menus.data[i]->caption;
+      res.x += widget_shortcut_length (caption) + SUBMENU_CAPTION_PADDING * 2;
     }
 
   /* Calculate width */
   for (i = 0, n = __sub_menu->items.length; i < n; ++i)
     {
-      res.width = MAX (res.width,
-                   widget_shortcut_length (__sub_menu->items.data[i].caption) +
-                   2 + SUBMENU_ITEM_PADDING * 2);
+      caption = __sub_menu->items.data[i]->caption;
+      res.width = MAX (res.width, widget_shortcut_length (caption) + 2 +
+                       SUBMENU_ITEM_PADDING * 2);
     }
 
   return res;
@@ -358,7 +400,7 @@ submenu_item_first (const w_sub_menu_t *__sub_menu)
 
   for (i = 0; i < n; ++i)
     {
-      if (!(__sub_menu->items.data[i].flags & SMI_SEPARATOR))
+      if (!(__sub_menu->items.data[i]->flags & SMI_SEPARATOR))
         {
           return i;
         }
@@ -386,7 +428,7 @@ submenu_item_next (const w_sub_menu_t *__sub_menu)
 
   for (i = 0; i < n; ++i)
     {
-      if (__sub_menu->items.data[res].flags & SMI_SEPARATOR)
+      if (__sub_menu->items.data[res]->flags & SMI_SEPARATOR)
         {
           res = (res + 1) % n;
         }
@@ -396,7 +438,7 @@ submenu_item_next (const w_sub_menu_t *__sub_menu)
         }
     }
 
-  if (__sub_menu->items.data[res].flags & SMI_SEPARATOR)
+  if (__sub_menu->items.data[res]->flags & SMI_SEPARATOR)
     {
       return -1;
     }
@@ -428,7 +470,7 @@ submenu_item_prev (const w_sub_menu_t *__sub_menu)
 
   for (i = 0; i < n; ++i)
     {
-      if (__sub_menu->items.data[res].flags & SMI_SEPARATOR)
+      if (__sub_menu->items.data[res]->flags & SMI_SEPARATOR)
         {
           res = res > 0 ? res - 1 : n - 1;
         }
@@ -438,7 +480,7 @@ submenu_item_prev (const w_sub_menu_t *__sub_menu)
         }
     }
 
-  if (__sub_menu->items.data[res].flags & SMI_SEPARATOR)
+  if (__sub_menu->items.data[res]->flags & SMI_SEPARATOR)
     {
       return -1;
     }
@@ -620,11 +662,12 @@ menu_keydown (w_menu_t *__menu, wint_t __ch)
           if (__menu->cur_submenu &&
               (cur_index = __menu->cur_submenu->cur_item_index) >= 0 &&
               cur_index < __menu->cur_submenu->items.length &&
-              (callback = __menu->cur_submenu->items.data[cur_index].callback)
+              (callback = __menu->cur_submenu->items.data[cur_index]->callback)
               )
             {
               void *user_data;
-              user_data = __menu->cur_submenu->items.data[cur_index].user_data;
+              user_data = __menu->cur_submenu->
+                items.data[cur_index]->user_data;
 
 #ifdef END_MENU_ON_CALLBACK
               end_menu (__menu);
@@ -666,7 +709,7 @@ menu_keydown (w_menu_t *__menu, wint_t __ch)
             w_sub_menu_item_t *item;
             for (i = 0; i < __menu->cur_submenu->items.length; ++i)
               {
-                item = &__menu->cur_submenu->items.data[i];
+                item = __menu->cur_submenu->items.data[i];
                 if (item->shortcut == tmp)
                   {
                     found = TRUE;
@@ -682,9 +725,9 @@ menu_keydown (w_menu_t *__menu, wint_t __ch)
           {
             for (i = 0; i < __menu->sub_menus.length; i++)
               {
-                if (__menu->sub_menus.data[i].shortcut == tmp)
+                if (__menu->sub_menus.data[i]->shortcut == tmp)
                   {
-                    switch_to_submenu (&__menu->sub_menus.data[i]);
+                    switch_to_submenu (__menu->sub_menus.data[i]);
                     return 0;
                   }
               }
@@ -726,7 +769,7 @@ menu_focused (w_menu_t *__menu)
       show_menu (__menu);
       widget_add_root (WIDGET (__menu));
 
-      __menu->cur_submenu = &__menu->sub_menus.data[0];
+      __menu->cur_submenu = __menu->sub_menus.data[0];
     }
 
   return 0;
@@ -830,6 +873,59 @@ widget_create_menu (unsigned int __style)
 }
 
 /**
+ * Insert new submenu to menu
+ *
+ * @param __menu - menu where new submenu have to be appended
+ * @param __caption - caption of submenu
+ * @param __pos - position of new sub-menu
+ * @return pointer to new submenu
+ */
+w_sub_menu_t*
+w_menu_insert_submenu (w_menu_t *__menu, const wchar_t *__caption,
+                       unsigned short __pos)
+{
+  w_sub_menu_t *res;
+  int i;
+
+  if (!__menu)
+    {
+      return 0;
+    }
+
+  __pos = MIN (__pos, __menu->sub_menus.length);
+
+  __menu->sub_menus.data = realloc (__menu->sub_menus.data,
+                                    (__menu->sub_menus.length + 1) *
+                                    sizeof (*__menu->sub_menus.data));
+
+  MALLOC_ZERO (res, sizeof (w_sub_menu_t));
+
+  /* Shift array */
+  for (i = __menu->sub_menus.length; i > __pos; --i)
+    {
+      __menu->sub_menus.data[i] = __menu->sub_menus.data[i - 1];
+      __menu->sub_menus.data[i]->index = i;
+    }
+
+  __menu->sub_menus.data[__pos] = res;
+
+  if (__caption)
+    {
+      res->caption = wcsdup (__caption);
+      res->shortcut = widget_shortcut_key (__caption);
+    }
+
+  res->index = __pos;
+  res->menu = __menu;
+
+  ++__menu->sub_menus.length;
+
+  widget_redraw (WIDGET (__menu));
+
+  return res;
+}
+
+/**
  * Append new submenu to menu
  *
  * @param __menu - menu where new submenu have to be appended
@@ -839,35 +935,52 @@ widget_create_menu (unsigned int __style)
 w_sub_menu_t*
 w_menu_append_submenu (w_menu_t *__menu, const wchar_t *__caption)
 {
-  w_sub_menu_t *res;
+  return w_menu_insert_submenu (__menu, __caption, __menu->sub_menus.length);
+}
 
-  if (!__menu)
+/**
+ *  Remove sub-menu from menu
+ *
+ * @param __menu - menu from which sub-menu will be removed
+ * @param __sub_menu - sub-menu to be removed. All memory used by it
+ * will be freed
+ */
+void
+w_menu_remove_submenu (w_menu_t *__menu, w_sub_menu_t *__sub_menu)
+{
+  unsigned short i;
+  BOOL found = FALSE;
+
+  if (!__menu || !__sub_menu)
     {
-      return 0;
+      return;
     }
 
-  __menu->sub_menus.data = realloc (__menu->sub_menus.data,
-                                    (__menu->sub_menus.length + 1) *
-                                    sizeof (*__menu->sub_menus.data));
-
-  res = &__menu->sub_menus.data[__menu->sub_menus.length];
-  memset (res, 0, sizeof (*res));
-
-  if (__caption)
+  /* Find sub-menu in array */
+  for (i = 0; i < __menu->sub_menus.length; ++i)
     {
-      res->caption = wcsdup (__caption);
-      res->shortcut = widget_shortcut_key (__caption);
+      if (__menu->sub_menus.data[i] == __sub_menu)
+        {
+          found = TRUE;
+          break;
+        }
     }
 
-  res->index = __menu->sub_menus.length;
+  if (found)
+    {
+      unsigned short j;
 
-  res->menu = __menu;
+      for (j = i; j < __menu->sub_menus.length - 1; ++j)
+        {
+          __menu->sub_menus.data[j] = __menu->sub_menus.data[j + 1];
+        }
 
-  __menu->sub_menus.length++;
+      __menu->sub_menus.data = realloc (__menu->sub_menus.data,
+                                        (__menu->sub_menus.length - 1) *
+                                        sizeof (*__menu->sub_menus.data));
 
-  widget_redraw (WIDGET (__menu));
-
-  return res;
+      submenu_destructor (__sub_menu);
+    }
 }
 
 /**
@@ -882,34 +995,36 @@ w_sub_menu_item_t*
 w_submenu_append_item (w_sub_menu_t *__sub_menu, const wchar_t *__caption,
                        menu_item_callback __callback, unsigned int __flags)
 {
-  short index; /* For some optimization of deference */
+  w_sub_menu_item_t *res;
 
   if (!__sub_menu)
-    return 0;
+    {
+      return 0;
+    }
 
   __sub_menu->items.data = realloc (__sub_menu->items.data,
-                                    ((index = __sub_menu->items.length) + 1) *
-                                    sizeof (w_sub_menu_item_t));
+                                    (__sub_menu->items.length + 1) *
+                                    sizeof (w_sub_menu_item_t*));
 
-  memset (&__sub_menu->items.data[index], 0,
-          sizeof (__sub_menu->items.data[index]));
+  MALLOC_ZERO (res, sizeof (w_sub_menu_item_t));
+  __sub_menu->items.data[__sub_menu->items.length] = res;
 
   if (__caption && !(__flags & SMI_SEPARATOR))
     {
-      __sub_menu->items.data[index].caption = wcsdup (__caption);
-      __sub_menu->items.data[index].shortcut = widget_shortcut_key (__caption);
+      res->caption = wcsdup (__caption);
+      res->shortcut = widget_shortcut_key (__caption);
     }
 
-  __sub_menu->items.data[index].flags = __flags;
-  __sub_menu->items.data[index].callback = __callback;
+  res->flags = __flags;
+  res->callback = __callback;
 
   __sub_menu->items.length++;
 
-  return &__sub_menu->items.data[index];
+  return res;
 }
 
 /**
- * HIde menu
+ * Hide menu
  *
  * @param __mennu - menu to be hidden
  */
@@ -918,3 +1033,15 @@ w_menu_hide (w_menu_t *__menu)
 {
   end_menu (__menu);
 }
+
+/**
+ * Remove all items from sub-menu
+ *
+ * @param __sub_menu - sub-menu from which items will be removed
+ */
+void
+w_submenu_clear_items (w_sub_menu_t *__sub_menu)
+{
+  free_submenu_items (__sub_menu);
+}
+

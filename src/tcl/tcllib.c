@@ -131,8 +131,7 @@ _file_associations_hook (dynstruct_t *__callData)
   extension_action_t *ext;
   wchar_t *executecmd, *filename, *cwd;
 
-  if (dynstruct_get_field_val (__callData,
-                               L"filename", (void *) &filename) != DYNST_OK)
+  if (dynstruct_get_field_val (__callData, L"filename", &filename) != DYNST_OK)
     {
       message_box (L"Hook `open-file-hook' error",
                    L"variable `filename' not found", MB_OK|MB_CRITICAL);
@@ -148,8 +147,7 @@ _file_associations_hook (dynstruct_t *__callData)
     }
   else
     {
-      if (dynstruct_get_field_val (__callData,
-                                   L"cwd", (void *) &cwd) != DYNST_OK)
+      if (dynstruct_get_field_val (__callData, L"cwd", cwd) != DYNST_OK)
         {
           message_box (L"Hook `open-file-hook' error",
                        L"variable `cwd' not found", MB_OK|MB_CRITICAL);

@@ -859,15 +859,14 @@ set_default_userdata (file_panel_t *__panel)
 static int
 open_file (file_panel_t *__panel, file_panel_item_t *__item)
 {
+  /* Need this because name is a static array in file_t structure */
+  /* and we want to save pointer to this static buffer */
+  wchar_t *name = __item->file->name;
+
   dynstruct_t *hookdata =
     dynstruct_create (L"ofh-struct",
-
-                      L"filename", __item->file->name,
-                      sizeof (wchar_t) * (wcslen (__item->file->name) + 1),
-
-                      L"cwd", __panel->cwd.data,
-                      sizeof (wchar_t) * (wcslen (__panel->cwd.data) + 1),
-
+                      L"filename", &name, sizeof (wchar_t*),
+                      L"cwd",      &__panel->cwd.data, sizeof (wchar_t*),
                       NULL);
 
   if (hook_call (L"open-file-hook", hookdata) != HOOK_SUCCESS)

@@ -305,6 +305,7 @@ typedef struct
  * Global variables
  */
 extern file_panel_t *current_panel;
+extern int panels_count;
 
 /********
  * Common stuff
@@ -392,6 +393,14 @@ file_panel_make_action (file_panel_t *__panel,
 /* Make action on current file pane; */
 int
 file_panel_cur_make_action (file_panel_action __action);
+
+/* Get descriptor of left file panel */
+file_panel_t*
+file_panel_get_left (void);
+
+/* Get descriptor of right file panel */
+file_panel_t*
+file_panel_get_right (void);
 
 END_HEADER
 

@@ -54,7 +54,7 @@ typedef struct
 
   struct
   {
-    w_sub_menu_item_t *data;
+    w_sub_menu_item_t **data;
     unsigned short length;
   } items;
 
@@ -96,8 +96,8 @@ typedef struct w_menu_t_entry
 
   struct
   {
-    w_sub_menu_t *data;
-    unsigned int length;
+    w_sub_menu_t **data;
+    unsigned short length;
   } sub_menus;
 
   /****
@@ -124,17 +124,34 @@ typedef struct w_menu_t_entry
  *
  */
 
+/* Create menu with specified style */
 w_menu_t*
 widget_create_menu (unsigned int __style);
 
+/* Insert new submenu to menu */
+w_sub_menu_t*
+w_menu_insert_submenu (w_menu_t *__menu, const wchar_t *__caption,
+                       unsigned short __pos);
+
+/* Append new submenu to menu */
 w_sub_menu_t*
 w_menu_append_submenu (w_menu_t *__menu, const wchar_t *__caption);
 
+/* Remove sub-menu from menu */
+void
+w_menu_remove_submenu (w_menu_t *__menu, w_sub_menu_t *__sub_menu);
+
+/* Hide menu */
 void
 w_menu_hide (w_menu_t *__menu);
 
+/* Append an item to submenu */
 w_sub_menu_item_t*
 w_submenu_append_item (w_sub_menu_t *__sub_menu, const wchar_t *__caption,
                        menu_item_callback __callback, unsigned int __flags);
+
+/* Remove all items from sub-menu */
+void
+w_submenu_clear_items (w_sub_menu_t *__sub_menu);
 
 #endif

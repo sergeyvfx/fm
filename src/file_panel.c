@@ -27,13 +27,13 @@ static widget_t *root_grid_parent; /* Parent of root grid  for file panels */
 static w_box_t *root_panels_grid, /* Root grid for file panels */
                *last_row_grid; /* Grid for which panels of */
                                /* last row are belong to */
-static int panels_count = 0;
 
 /* Count of panels which will be created */
 /* during initialization of panels stuff */
 static int default_panels_count = 2;
 
 file_panel_t *current_panel = NULL;
+int panels_count = 0;
 
 /********
  * Some helpful macroses
@@ -500,7 +500,7 @@ panel_creation_ear_strategy (int __width, BOOL __left)
 
       /*
        * NOTE: The rest steps of strategy is the same as the
-       *       vertical-oriented root grrid.
+       *       vertical-oriented root grid.
        */
     }
 
@@ -831,6 +831,30 @@ file_panel_focused (file_panel_widget_t *__panel_widget)
   return 1;
 }
 
+/**
+ * Common brain for getting left and right panels
+ *
+ * @param __direction - direction of DFS
+ * @return descriptor of file panel
+ */
+static file_panel_t*
+get_leftright_panel_entry (int __direction)
+{
+  widget_t *w = WIDGET(root_panels_grid);
+  int pos = 0;
+
+  while (WIDGET_IS_CONTAINER (w))
+    {
+      if (__direction)
+        {
+          pos = WIDGET_CONTAINER_LENGTH (w) - 1;
+        }
+      w = WIDGET_CONTAINER_DATA (w)[pos];
+    }
+
+  return (file_panel_t*)WIDGET_USER_DATA (w);
+}
+
 /********
  * User's backend
  */
@@ -911,6 +935,7 @@ file_panel_create (int __width, unsigned int __params)
   file_panel_t *res;
   BOOL prev;
   widget_t *parent;
+  dynstruct_t *hook_struct;
 
   /* Allocate memory for panel and its widget */
   MALLOC_ZERO (res, sizeof (file_panel_t));
@@ -980,6 +1005,14 @@ file_panel_create (int __width, unsigned int __params)
       file_panel_redraw (res);
     }
 
+  /* Call hook file-panel-created-hook */
+  hook_struct = dynstruct_create (L"file-panel-created-struct",
+                                  L"file-panel", &res,
+                                  sizeof (file_panel_t*),
+                                  NULL);
+  hook_call (L"file-panel-created-hook", hook_struct);
+  dynstruct_destroy (&hook_struct);
+
   return res;
 }
 
@@ -1040,8 +1073,7 @@ file_panel_set_cwd (file_panel_t *__panel, const wchar_t *__cwd)
     {
       dynstruct_t *cwd_hook_struct =
         dynstruct_create (L"cwd.changed.struct",
-                          L"cwd", __cwd,
-                          sizeof (wchar_t) * (wcslen(__cwd) + 1), NULL);
+                          L"cwd", &__cwd, sizeof (wchar_t*), NULL);
 
       if (wcscmp (__panel->vfs, VFS_LOCALFS_PLUGIN) == 0)
         {
@@ -1078,6 +1110,8 @@ file_panel_set_cwd (file_panel_t *__panel, const wchar_t *__cwd)
 void
 file_panel_set_focus (file_panel_t *__panel)
 {
+  file_panel_t *old_focused = current_panel;
+
   if (!__panel)
     {
       return;
@@ -1112,6 +1146,16 @@ file_panel_set_focus (file_panel_t *__panel)
 
   /* Store last focused panel */
   last_focused = __panel;
+
+  if (old_focused != __panel)
+    {
+      dynstruct_t *hook_struct = dynstruct_create (L"file-panel-focused-struct",
+                                                   L"file-panel", &__panel,
+                                                   sizeof (file_panel_t*),
+                                                   NULL);
+      hook_call (L"file-panel-focused-hook", hook_struct);
+      dynstruct_destroy (&hook_struct);
+    }
 }
 
 /**
@@ -1504,4 +1548,36 @@ int
 file_panel_cur_make_action (file_panel_action __action)
 {
   return file_panel_make_action (NULL, __action);
+}
+
+/**
+ * If tehere are two panels, get descriptor of left file panel
+ *
+ * @return descriptor of left file panel
+ */
+file_panel_t*
+file_panel_get_left (void)
+{
+  if (panels_count != 2)
+    {
+      return NULL;
+    }
+
+  return get_leftright_panel_entry (0);
+}
+
+/**
+ * If tehere are two panels, get descriptor of right file panel
+ *
+ * @return descriptor of left file panel
+ */
+file_panel_t*
+file_panel_get_right (void)
+{
+  if (panels_count != 2)
+    {
+      return NULL;
+    }
+
+  return get_leftright_panel_entry (1);
 }
