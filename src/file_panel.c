@@ -1154,7 +1154,7 @@ file_panel_set_cwd (file_panel_t *__panel, const wchar_t *__cwd)
   if (__panel == current_panel)
     {
       dynstruct_t *cwd_hook_struct =
-        dynstruct_create (L"cwd.changed.struct",
+        dynstruct_create (L"cwd-changed-struct",
                           L"cwd", &__cwd, sizeof (wchar_t*), NULL);
 
       if (wcscmp (__panel->vfs, VFS_LOCALFS_PLUGIN) == 0)
