@@ -77,6 +77,12 @@ fpd_menu_sortorder_callback (void *__user_data)
 
   FPD_CHECK_PANEL_ASSOCIATED ();
 
+  if (!(wnd = create_window ()))
+    {
+      MESSAGE_ERROR (L"Error creating window");
+      return -1;
+    }
+
   panel = __user_data;
 
   w_window_show_modal (wnd);
