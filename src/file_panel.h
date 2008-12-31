@@ -305,7 +305,6 @@ typedef struct
  * Global variables
  */
 extern file_panel_t *current_panel;
-extern int panels_count;
 
 /********
  * Common stuff
@@ -322,6 +321,10 @@ file_panels_done (void);
 /* Create new file panel */
 file_panel_t*
 file_panel_create (int __width, unsigned int __params);
+
+/* Destroy file panel */
+void
+file_panel_destroy (file_panel_t *__file_panel);
 
 /* Set name of VFS */
 int

@@ -20,6 +20,7 @@ BEGIN_HEADER
 
 #include "file_panel.h"
 #include "hotkeys.h"
+#include "fpd-menu.h"
 
 /*
  * NOTE: To reduce lengths of symbols from this module,
@@ -104,9 +105,6 @@ int
 fpd_scroll_to_item (file_panel_t *__panel, wchar_t *__name);
 
 int
-fpd_fill_submenu (file_panel_t *__panel, w_sub_menu_t *__submenu);
-
-int
 fpd_save_selection (file_panel_t *__panel);
 
 int
@@ -114,13 +112,6 @@ fpd_restore_selection (file_panel_t *__panel);
 
 int
 fpd_free_saved_selection (file_panel_t *__panel);
-
-/********
- *
- */
-
-int
-fpd_sortorder_menu_callback (void *__user_data);
 
 END_HEADER
 

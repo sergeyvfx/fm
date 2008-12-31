@@ -99,6 +99,12 @@ msgstr "_Настройки"
 msgid "_Panel"
 msgstr "_Панель"
 
+msgid "_Left"
+msgstr "_Левая"
+
+msgid "_Right"
+msgstr "_Правая"
+
 msgid "_Listing mode..."
 msgstr "_Формат списка..."
 
@@ -107,6 +113,9 @@ msgstr "_Порядок сортировки..."
 
 msgid "_Rescan"
 msgstr "_Обновить список..."
+
+msgid "_Close panel"
+msgstr "_Закрыть панель"
 
 msgid "_Help"
 msgstr "_Помощь"
@@ -120,6 +129,11 @@ msgstr "_О программе..."
 
 msgid "Sort order"
 msgstr "Порядок сортировки"
+
+# Close panel
+
+msgid "You cannot close the only file panel"
+msgstr "Нельзя закрывать единственную файловую панель"
 
 ## VFS
 

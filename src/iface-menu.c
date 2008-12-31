@@ -19,6 +19,10 @@
 
 #include <widget.h>
 
+#define _HOOK(_name) \
+  hook_register (_name, fill_file_panel_menu_hook, 0)
+
+
 /********
  * Variables
  */
@@ -113,7 +117,7 @@ create_panel_submenu (file_panel_t *__panel)
   static w_sub_menu_t *sm = NULL;
   static w_sub_menu_t *two_sm[] = {NULL, NULL};
 
-  if (panels_count != 2)
+  if (file_panel_get_count () != 2)
     {
       /* Remove sub-menus used to manage two panels separately */
       w_menu_remove_submenu (menu, two_sm[0]);
@@ -192,15 +196,15 @@ fill_menu_items (void)
 static int
 fill_file_panel_menu_hook (dynstruct_t *__call_data)
 {
-  file_panel_t *current_panel;
+  file_panel_t *panel;
 
   if (dynstruct_get_field_val (__call_data, L"file-panel",
-                               (void**)&current_panel) != DYNST_OK)
+                               (void**)&panel) != DYNST_OK)
     {
-      return HOOK_FAILURE;
+      panel = current_panel;
     }
 
-  create_panel_submenu (current_panel);
+  create_panel_submenu (panel);
 
   return HOOK_SUCCESS;
 }
@@ -226,8 +230,9 @@ iface_create_menu (void)
 
   fill_menu_items ();
 
-  hook_register (L"file-panel-focused-hook", fill_file_panel_menu_hook, 0);
-  hook_register (L"file-panel-created-hook", fill_file_panel_menu_hook, 0);
+  _HOOK (L"file-panel-focused-hook");
+  _HOOK (L"file-panel-created-hook");
+  _HOOK (L"file-panel-after-destroy-hook");
 
   /* Register callback to show the menu */
   hotkey_bind (L".",  L"F9", menu_hotkey_callback);

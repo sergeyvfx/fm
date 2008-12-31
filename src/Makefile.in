@@ -32,7 +32,8 @@ SOURCES = \
 	i18n.c \
 	file_panel.c \
 	file_panel-defact.c \
-	fpd-sortorder.c \
+	fpd-menu.c \
+	fpd-menu-sortorder.c \
 	file.c \
 	dir.c \
 	util.c \

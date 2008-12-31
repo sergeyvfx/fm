@@ -11,6 +11,7 @@
  */
 
 #include "file_panel-defact.h"
+#include "fpd-menu.h"
 #include "i18n.h"
 #include "messages.h"
 #include "file_panel.h"
@@ -69,22 +70,12 @@ create_window (void)
  * @return zero if callback hasn't handled received character
  */
 int
-fpd_sortorder_menu_callback (void *__user_data)
+fpd_menu_sortorder_callback (void *__user_data)
 {
   w_window_t *wnd;
   file_panel_t *panel;
 
-  if (!__user_data)
-    {
-      MESSAGE_ERROR (L"File panel isn't associated with menu item");
-      return -1;
-    }
-
-  if (!(wnd = create_window ()))
-    {
-      MESSAGE_ERROR (L"Error creating window");
-      return -1;
-    }
+  FPD_CHECK_PANEL_ASSOCIATED ();
 
   panel = __user_data;
 

@@ -196,6 +196,7 @@ menu_drawer (w_menu_t *__menu)
   scr_wnd_attr_backup (layout);
 
   scr_wnd_bkg (layout, *__menu->font);
+  scr_wnd_erase (layout);
 
   /* Move caret to position of left submenu */
   scr_wnd_move_caret (layout, SUMBENUS_LEFT, 0);
@@ -973,11 +974,14 @@ w_menu_remove_submenu (w_menu_t *__menu, w_sub_menu_t *__sub_menu)
       for (j = i; j < __menu->sub_menus.length - 1; ++j)
         {
           __menu->sub_menus.data[j] = __menu->sub_menus.data[j + 1];
+          --__menu->sub_menus.data[j]->index;
         }
 
       __menu->sub_menus.data = realloc (__menu->sub_menus.data,
                                         (__menu->sub_menus.length - 1) *
                                         sizeof (*__menu->sub_menus.data));
+
+      --__menu->sub_menus.length;
 
       submenu_destructor (__sub_menu);
     }

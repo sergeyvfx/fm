@@ -31,9 +31,9 @@ static w_box_t *root_panels_grid, /* Root grid for file panels */
 /* Count of panels which will be created */
 /* during initialization of panels stuff */
 static int default_panels_count = 2;
+static int panels_count = 0;
 
 file_panel_t *current_panel = NULL;
-int panels_count = 0;
 
 /********
  * Some helpful macroses
@@ -990,7 +990,7 @@ file_panel_create (int __width, unsigned int __params)
   if (panels_count == 3)
     {
       /* Need this because while there were less than three panels */
-      /* they didn't draw theri numbers. */
+      /* they didn't draw their numbers. */
       widget_redraw (WIDGET (root_panels_grid));
     }
 
@@ -1014,6 +1014,88 @@ file_panel_create (int __width, unsigned int __params)
   dynstruct_destroy (&hook_struct);
 
   return res;
+}
+
+/**
+ * Destroy file panel
+ *
+ * @param __file_panel - file panel to be destroyed
+ */
+void
+file_panel_destroy (file_panel_t *__file_panel)
+{
+  file_panel_widget_t *widget;
+  w_box_item_t *box_item;
+  w_box_t *box;
+  int number, new_number;
+  file_panel_t *cur_panel;
+  iterator_t *iter = NULL;
+  dynstruct_t *hook_struct;
+
+  /*
+   * TODO: Should be debugged in case the last panel is deleting
+   */
+
+  if (!__file_panel || panels_count <= 1)
+    {
+      return;
+    }
+
+  /* Call hook file-panel-before-destroy-hook */
+  hook_struct = dynstruct_create (L"file-panel-before-destroy-struct",
+                                  L"file-panel", &__file_panel,
+                                  sizeof (file_panel_t*),
+                                  NULL);
+  hook_call (L"file-panel-before-destroy-hook", hook_struct);
+  dynstruct_destroy (&hook_struct);
+
+  widget = __file_panel->widget;
+  box_item = (w_box_item_t*)widget->parent;
+  box = (w_box_t*)box_item->parent;
+
+  w_container_drop (WIDGET_CONTAINER (box_item), WIDGET (widget));
+  w_box_delete_item (box, box_item);
+
+  while (WIDGET_CONTAINER_LENGTH (box) == 0 && box != root_panels_grid)
+    {
+      box_item = (w_box_item_t*)box->parent;
+      box = (w_box_t*)box_item->parent;
+      w_box_delete_item (box, box_item);
+    }
+
+  /* Store number of file panel which will be destroyed */
+  number = __file_panel->number;
+
+  /* Get number of file panel which will gain a focus */
+  new_number = number + 1;
+  if (new_number == panels_count)
+    {
+      new_number = number - 1;
+    }
+
+  deque_foreach (panels, cur_panel);
+    if (cur_panel == __file_panel)
+      {
+        iter = deque_foreach_iterator;
+      }
+
+    if (cur_panel->number == new_number)
+      {
+        file_panel_set_focus (cur_panel);
+      }
+
+    if (cur_panel->number > number)
+      {
+        --cur_panel->number;
+      }
+  deque_foreach_done;
+
+  deque_remove (panels, iter, file_panel_destructor);
+
+  /* Call hook file-panel-after-destroy-hook */
+  hook_struct = dynstruct_create (L"file-panel-after-destroy-struct", NULL);
+  hook_call (L"file-panel-after-destroy-hook", hook_struct);
+  dynstruct_destroy (&hook_struct);
 }
 
 /**
@@ -1123,26 +1205,23 @@ file_panel_set_focus (file_panel_t *__panel)
       return;
     }
 
+  /* Focus new panel and redraw it */
+  __panel->focused = TRUE;
+  widget_set_focus (WIDGET (__panel->widget));
+  current_panel = __panel;
+  file_panel_redraw (__panel);
+
   /* Clear focused flag of previous focused file panel */
   /* and redraw this panel */
   if (last_focused && last_focused != __panel)
     {
-      last_focused->focused = last_focused->widget->focused = FALSE;
+      last_focused->focused = FALSE;
 
       if (__panel->actions.onrefresh)
         __panel->actions.onrefresh (__panel);
 
       file_panel_redraw (last_focused);
     }
-
-  /* Focus new panel and redraw it */
-  __panel->focused = TRUE;
-
-  widget_set_focus (WIDGET (__panel->widget));
-
-  current_panel = __panel;
-
-  file_panel_redraw (__panel);
 
   /* Store last focused panel */
   last_focused = __panel;

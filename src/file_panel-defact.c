@@ -12,6 +12,7 @@
 
 #include "file_panel.h"
 #include "file_panel-defact.h"
+#include "fpd-menu.h"
 #include "dir.h"
 #include "util.h"
 #include "messages.h"
@@ -49,11 +50,6 @@
  */
 
 #define PANEL_DATA(_panel)   ((fpd_data_t*)(_panel->user_data))
-#define _CREATE_MENU_ITEM(_caption, _callback) \
-  item=w_submenu_append_item (__submenu, _(_caption), _callback, 0); \
-  if (!item) \
-    return -1; \
-  item->user_data=__panel;
 
 #define _REGISTER_HOTKEY(_sequence, _callback) \
   hotkey_register_at_context_full (class_hotkey_context, _sequence, \
@@ -1766,30 +1762,6 @@ fpd_scroll_to_item (file_panel_t *__panel, wchar_t *__name)
   cursor_to_item (__panel, __name);
   update_scroll_data (__panel);
   file_panel_redraw (__panel);
-
-  return 0;
-}
-
-/**
- * Fill submenu with panel-related items
- *
- * @param __panel - for which panel this method has been called
- * @param __submenu - in which submenu items will be added
- * @return zero on success, non-zero on failure
- */
-int
-fpd_fill_submenu (file_panel_t *__panel, w_sub_menu_t *__submenu)
-{
-  w_sub_menu_item_t *item;
-
-  if (!__panel || !__submenu)
-    {
-      return -1;
-    }
-
-  _CREATE_MENU_ITEM (L"_Listing mode...", 0);
-  w_submenu_append_item (__submenu, 0, 0, SMI_SEPARATOR);
-  _CREATE_MENU_ITEM (L"_Sort order...", fpd_sortorder_menu_callback);
 
   return 0;
 }
