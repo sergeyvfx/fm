@@ -312,3 +312,45 @@ action_is_directory_selected (const file_panel_item_t **__list,
 
   return FALSE;
 }
+
+/**
+ * Centre cursor to specified item on file panel
+ *
+ * @param __panel - on which panel item will be centred
+ * @param __item_name - full name of item to centre to
+ */
+void
+action_centre_to_item (file_panel_t *__panel, const wchar_t *__item_name)
+{
+  wchar_t *n_dir, *cwd;
+
+  /* Get full normalized item name */
+  n_dir = vfs_normalize (__item_name);
+
+  /* Get CWD of panel */
+  cwd = file_panel_get_full_cwd (__panel);
+
+  if (wcsncmp (cwd, n_dir, wcslen (cwd)) == 0)
+    {
+      wchar_t *rel_dir = n_dir + wcslen (cwd);
+
+      /* Get name of item to select */
+      if (rel_dir[0] == '/')
+        {
+          long i, len = 0;
+          wchar_t name[MAX_FILENAME_LEN + 1] = {0};
+          ++rel_dir;
+
+          i = 0;
+          while (rel_dir[i] && rel_dir[i] != '/')
+            {
+              name[len++] = rel_dir[i++];
+            }
+          name[len] = 0;
+
+          FILE_PANEL_ACTION_CALL (__panel, centre_to_item, name);
+        }
+    }
+
+  free (n_dir);
+}

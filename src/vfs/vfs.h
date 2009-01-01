@@ -27,6 +27,7 @@ BEGIN_HEADER
 #include "errcode.h"
 
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #define VFS_MAX_FILENAME_LEN 256
 

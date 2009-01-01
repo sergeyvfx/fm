@@ -149,6 +149,10 @@ action_chmod (file_panel_t *__panel);
 int
 action_find (file_panel_t *__panel);
 
+/* Create file operation */
+int
+action_create_file (file_panel_t *__panel);
+
 /* Chooses file panel for action */
 file_panel_t*
 action_choose_file_panel (const wchar_t *__caption,
@@ -200,6 +204,10 @@ action_operate (const wchar_t *__caption, const wchar_t *__desc,
 BOOL
 action_is_directory_selected (const file_panel_item_t **__list,
                               unsigned long __count);
+
+/* Centre cursor to specified item on file panel */
+void
+action_centre_to_item (file_panel_t *__panel, const wchar_t *__item_name);
 
 END_HEADER
 

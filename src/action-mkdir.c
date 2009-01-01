@@ -103,52 +103,6 @@ do_create_directory (const wchar_t *__base_dir, const wchar_t *__dir_name,
   return res;
 }
 
-/**
- * Centre cursor to created item
- *
- * @param __panel - on which panel item was created
- * @param __basedir - base directory of __dir_name
- * @param __dir_name - created directory name
- */
-static void
-make_centre (file_panel_t *__panel, const wchar_t *__basedir,
-             const wchar_t *__dir_name)
-{
-  wchar_t *n_dir, *full_dir, *cwd;
-
-  /* Get full normalized directory name */
-  full_dir = wcdircatsubdir (__basedir, __dir_name);
-  n_dir = vfs_normalize (full_dir);
-
-  /* Get CWD of panel */
-  cwd = file_panel_get_full_cwd (__panel);
-
-  if (wcsncmp (cwd, n_dir, wcslen (cwd)) == 0)
-    {
-      wchar_t *rel_dir = n_dir + wcslen (cwd);
-
-      /* Get name of item to select */
-      if (rel_dir[0] == '/')
-        {
-          long i, len = 0;
-          wchar_t name[MAX_FILENAME_LEN + 1] = {0};
-          ++rel_dir;
-
-          i = 0;
-          while (rel_dir[i] && rel_dir[i] != '/')
-            {
-              name[len++] = rel_dir[i++];
-            }
-          name[len] = 0;
-
-          FILE_PANEL_ACTION_CALL (__panel, centre_to_item, name);
-        }
-    }
-
-  free (n_dir);
-  free (full_dir);
-}
-
 /********
  * User's backend
  */
@@ -213,9 +167,13 @@ action_mkdir (file_panel_t *__panel)
     }
   else
     {
+      wchar_t *full_name = vfs_abs_path (dir_name, basedir);
+
       /* Rescan panel and set cursor to created item */
       file_panel_rescan (__panel);
-      make_centre (__panel, basedir, dir_name);
+      action_centre_to_item (__panel, full_name);
+
+      free (full_name);
     }
 
   /* Free all used memory */

@@ -43,6 +43,7 @@ SOURCES = \
 	dynstruct.c \
 	actions.c \
 	action-choose_panel.c \
+	action-create_file.c \
 	action-listing.c \
 	action-chmod.c \
 	action-chmod-iface.c \

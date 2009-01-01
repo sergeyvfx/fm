@@ -1190,6 +1190,9 @@ fpd_create (file_panel_t *__panel)
       _REGISTER_HOTKEY (L"C-x o",   action_chown);
       _REGISTER_HOTKEY (L"C-x c",   action_chmod);
       _REGISTER_HOTKEY (L"M-?",     action_find);
+
+      /* This hotkeys are for debug actions */
+      _REGISTER_HOTKEY (L"C-d C-n",     action_create_file);
     }
 
   widget_replace_class_context (WIDGET (__panel->widget),

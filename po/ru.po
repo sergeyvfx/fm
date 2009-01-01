@@ -538,6 +538,15 @@ msgstr "Поиск завершен. Найдено %ld файлов "
 msgid "Searching in: %ls"
 msgstr "Поиск в: %ls"
 
+msgid "Create file"
+msgstr "Создать файл"
+
+msgid "Name of file to create:"
+msgstr "Имя создаваемого файла:"
+
+msgid "Cannot create file \"%ls\":\n%ls"
+msgstr "Невозможно создать файл \"%ls\":\n%ls"
+
 ##
 # POSIX errors
 
