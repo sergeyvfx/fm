@@ -16,12 +16,37 @@
 #include "file_panel.h"
 #include "hook.h"
 #include "dynstruct.h"
+#include "actions.h"
 
 #include <widget.h>
 
 #define _HOOK(_name) \
   hook_register (_name, fill_file_panel_menu_hook, 0)
 
+#define BEGIN_MENU_DEF \
+  w_sub_menu_t *sm;
+
+#define DEFINE_MENU_ENTRY(_caption) \
+  sm = w_menu_append_submenu (menu, _(_caption))
+
+#define DEFINE_MENU_SEPARATOR \
+  w_submenu_append_item (sm, 0, 0, SMI_SEPARATOR);
+
+#define DEFINE_MENU_ITEM(_caption, _handler) \
+  w_submenu_append_item (sm, _(_caption), _handler, 0);
+
+#define DEFINE_MENU_CURRENT_PANEL_ACTION(_caption, _action,_args...) \
+  int \
+  menu_callback##_action (void *__reg_data ATTR_UNUSED) \
+    { \
+      file_panel_t *panel = current_panel; \
+      _action (panel, ##_args); \
+      return 0; \
+    }; \
+  DEFINE_MENU_ITEM (_caption, menu_callback##_action);
+
+#define END_MENU_DEF \
+  create_panel_submenu (current_panel);
 
 /********
  * Variables
@@ -167,24 +192,34 @@ create_panel_submenu (file_panel_t *__panel)
 static void
 fill_menu_items (void)
 {
-  w_sub_menu_t *sm;
+  BEGIN_MENU_DEF
 
-  /* Creating of submenu 'File' */
-  sm = w_menu_append_submenu (menu, _(L"_File"));
-  w_submenu_append_item (sm, 0, 0, SMI_SEPARATOR);
-  w_submenu_append_item (sm, _(L"_Exit"), menu_exit_clicked, 0);
+    /* Creating of submenu 'File' */
+    DEFINE_MENU_ENTRY (L"_File");
+    DEFINE_MENU_CURRENT_PANEL_ACTION (L"_Copy",         action_copy);
+    DEFINE_MENU_CURRENT_PANEL_ACTION (L"C_hmod",        action_chmod);
+    DEFINE_MENU_CURRENT_PANEL_ACTION (L"_Symlink",      action_symlink);
+    DEFINE_MENU_CURRENT_PANEL_ACTION (L"Edit s_ymlink", action_editsymlink);
+    DEFINE_MENU_CURRENT_PANEL_ACTION (L"Ch_own",        action_chown);
+    DEFINE_MENU_CURRENT_PANEL_ACTION (L"_Rename/move",  action_move);
+    DEFINE_MENU_CURRENT_PANEL_ACTION (L"_Mkdir",        action_mkdir);
+    DEFINE_MENU_CURRENT_PANEL_ACTION (L"_Delete",       action_delete);
+    DEFINE_MENU_SEPARATOR
+    DEFINE_MENU_ITEM (L"_Exit", menu_exit_clicked);
 
-  /* Creating of submenu 'Command' */
-  sm = w_menu_append_submenu (menu, _(L"_Command"));
+    /* Creating of submenu 'Command' */
+    DEFINE_MENU_ENTRY (L"_Command");
 
-  /* Creating of submenu 'Command' */
-  sm = w_menu_append_submenu (menu, _(L"_Options"));
+    DEFINE_MENU_CURRENT_PANEL_ACTION (L"_Find file", action_find);
 
-  /* Creating of submenu 'Help' */
-  sm = w_menu_append_submenu (menu, _(L"_Help"));
-  w_submenu_append_item (sm, _(L"_About..."), 0, 0);
+    /* Creating of submenu 'Options' */
+    DEFINE_MENU_ENTRY (L"_Options");
 
-  create_panel_submenu (current_panel);
+    /* Creating of submenu 'Help' */
+    DEFINE_MENU_ENTRY (L"_Help");
+    DEFINE_MENU_ITEM (L"_About...", NULL);
+
+  END_MENU_DEF
 }
 
 /**
