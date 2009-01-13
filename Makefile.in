@@ -41,6 +41,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(top_srcdir)/mk/init.mk.in \
 	$(top_srcdir)/mk/rules.mk.in $(top_srcdir)/po/Makefile.in \
 	$(top_srcdir)/src/Makefile.in \
+	$(top_srcdir)/src/actions/Makefile.in \
 	$(top_srcdir)/src/tcl/Makefile.in \
 	$(top_srcdir)/src/vfs/Makefile.in \
 	$(top_srcdir)/src/vfs/plugins/localfs/Makefile.in \
@@ -58,8 +59,9 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = mk/rules.mk mk/init.mk src/Makefile \
-	src/widgets/Makefile src/tcl/Makefile src/vfs/Makefile \
-	src/vfs/plugins/localfs/Makefile t/vfs/Makefile po/Makefile
+	src/widgets/Makefile src/actions/Makefile src/tcl/Makefile \
+	src/vfs/Makefile src/vfs/plugins/localfs/Makefile \
+	t/vfs/Makefile po/Makefile
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -279,6 +281,8 @@ src/Makefile: $(top_builddir)/config.status $(top_srcdir)/src/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 src/widgets/Makefile: $(top_builddir)/config.status $(top_srcdir)/src/widgets/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
+src/actions/Makefile: $(top_builddir)/config.status $(top_srcdir)/src/actions/Makefile.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 src/tcl/Makefile: $(top_builddir)/config.status $(top_srcdir)/src/tcl/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 src/vfs/Makefile: $(top_builddir)/config.status $(top_srcdir)/src/vfs/Makefile.in
@@ -452,7 +456,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/mk $(distdir)/po $(distdir)/src $(distdir)/src/tcl $(distdir)/src/vfs $(distdir)/src/vfs/plugins/localfs $(distdir)/src/widgets $(distdir)/t/vfs
+	$(mkdir_p) $(distdir)/mk $(distdir)/po $(distdir)/src $(distdir)/src/actions $(distdir)/src/tcl $(distdir)/src/vfs $(distdir)/src/vfs/plugins/localfs $(distdir)/src/widgets $(distdir)/t/vfs
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

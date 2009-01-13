@@ -230,7 +230,18 @@ $(OBJECTIVE_LIBS): $(OBJECTS)
 	if [ "x$(OBJECTS)" != "x" ]; then \
 		$(MAKE) $(OBJECTS) || exit;		\
 		printf "%10s     %-20s\n" LINK $@; \
-		$(AR) cr $@ $(OBJECTS); \
+		mkdir .libs; \
+		cd .libs; \
+		objs="${OBJECTS}"; \
+		if [ "x$(LDADD)" != "x" ]; then \
+			for lib in $(LDADD); do \
+				$(AR) x ../$$lib; \
+			done; \
+			objs+=" .libs/*"; \
+		fi; \
+		cd ..; \
+		$(AR) cr $@ $$objs; \
+		rm -rf .libs; \
 	fi
 
 $(OBJECTIVE_BINS): $(OBJECTS)

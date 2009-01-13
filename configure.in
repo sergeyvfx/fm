@@ -175,6 +175,7 @@ mk/rules.mk
 mk/init.mk
 src/Makefile
 src/widgets/Makefile
+src/actions/Makefile
 src/tcl/Makefile
 src/vfs/Makefile
 src/vfs/plugins/localfs/Makefile
