@@ -196,6 +196,19 @@ wcs2mbs (char **__dest, const wchar_t *__source)
   return wcstombs (*__dest, __source, len);
 }
 
+/**
+ * Sideeffect analog wcs2mbs
+ *
+ * @param __string - string from convertion
+ * @return allocated multibyte characters string
+ */
+char *
+to_multibyte (const wchar_t *__string)
+{
+  char *result;
+  size_t length = wcs2mbs (&result, __string);
+  return length > 0 ? result : NULL;
+}
 
 /**
  * Convert a multibyte string to a wide character string
@@ -209,6 +222,20 @@ mbs2wcs (wchar_t **__dest, const char *__source)
 
   *__dest = malloc (sizeof (wchar_t) * (len + 2));
   return mbstowcs (*__dest, __source, len + 1);
+}
+
+/**
+ * Sideeffect analog mbs2wcs
+ *
+ * @param __string - string from convertion
+ * @return allocated wide characters string
+ */
+wchar_t *
+to_widestring (const char *__string)
+{
+  wchar_t *result;
+  size_t length = mbs2wcs (&result, __string);
+  return length > 0 ? result : NULL;
 }
 
 /**

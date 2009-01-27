@@ -34,5 +34,11 @@ tcllib_init_commands (Tcl_Interp *__interp)
       return TCL_ERROR;
     }
 
+  if (_tcl_bind_init_commands (__interp) != TCL_OK)
+    {
+      /* TODO: added error message */
+      return TCL_ERROR;
+    }
+
   return TCL_OK;
 }

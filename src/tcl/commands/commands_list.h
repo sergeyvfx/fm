@@ -55,11 +55,15 @@ int
 tcllib_init_commands (Tcl_Interp *);
 
 /* Private function */
+
 int
 _tcl_ext_init_commands (Tcl_Interp *);
 
 int
 _tcl_iface_init_commands (Tcl_Interp *);
+
+int
+_tcl_bind_init_commands (Tcl_Interp *);
 
 END_HEADER
 

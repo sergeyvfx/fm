@@ -45,8 +45,14 @@ wcsrep (wchar_t *__str, const wchar_t *__substr, const wchar_t *__newsubstr);
 size_t
 wcs2mbs (char **__dest, const wchar_t *__source);
 
+char *
+to_multibyte (const wchar_t *__string);
+
 size_t
 mbs2wcs (wchar_t **__dest, const char *__source);
+
+wchar_t *
+to_widestring (const char *__string);
 
 /* Get the number of seconds and microseconds since the Epoch */
 timeval_t

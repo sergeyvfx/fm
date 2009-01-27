@@ -19,6 +19,7 @@ SOURCES = \
 	commands/commands_list.c \
 	commands/ext_cmd.c \
 	commands/iface_cmd.c \
+	commands/bind_cmd.c \
 	commands/makeensemble.c
 
 OBJECTS = ${SOURCES:.c=.o}

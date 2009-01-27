@@ -10,13 +10,13 @@
  * See the file COPYING.
  */
 
+#include <stdlib.h>
+
 #include "iface.h"
 #include "i18n.h"
 #include "messages.h"
 #include "tcl/tcllib.h"
 #include "signals.h"
-
-#include <stdlib.h>
 
 int
 main (int __argc, char **__argv)

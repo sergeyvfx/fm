@@ -1,4 +1,4 @@
-#
+
 # ${project-name} - a GNU/Linux console-based file manager
 #
 # Main configuration file
@@ -15,6 +15,19 @@
 #
 
 set escdelay 2000
+
+# ::config::bind . <F12> { ::core::exit }
+::config::bind . <F1> {
+    ::iface::message_box -title "Exit" -message "A u ready?" -type yesno
+}
+
+# ::config::bind . <C-x><C-c> { ::core::exit }
+
+::config::bind <<edit-class-context>> <C-x> {
+    ::iface::message_box -title "Message" -message "test" -type yesno
+}
+
+# ::config::bind . <M-f> { ::core::exit }
 
 #::iface::message_box -title "Это просто Title" \
 #    -message "Используй Силу!" -type yesno
