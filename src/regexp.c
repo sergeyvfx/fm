@@ -378,7 +378,7 @@ regexp_replace_iterator (const regexp_t *__re,
   if (vector_count <= 0)
     {
       /* No matched sub-strings */
-      return 0;
+      return NULL;
     }
 
   /* Get named sub-strings */
@@ -845,7 +845,7 @@ wpreg_replace (const wchar_t *__regexp,
   re = wregexp_compile (__regexp);
   if (!re)
     {
-      return FALSE;
+      return NULL;
     }
 
   dummy = wregexp_replace (re, __s, __mask);
