@@ -4,19 +4,21 @@ top_builddir = ..
 
 include ${top_builddir}/mk/rules.mk
 include ${top_builddir}/mk/init.mk
+include ${top_builddir}/mk/objective.mk
 
-SUBDIRS = widgets vfs tcl
+SUBDIRS = widgets vfs tcl actions
 
 OBJECTIVE_BINS = fm
 
-CFLAGS += -I./widgets -I/usr/include/tcl8.5
-LIBADD = -ldl @SCREENLIBS@ -lm -Lwidgets -lwidgets -Lvfs -lvfs -ltcl8.5 -Ltcl -ltcllib
+CFLAGS += -I./actions -I./widgets -I/usr/include/tcl8.5
+LDFLAGS = -ldl -lncursesw -lpanel -lm -ltcl8.5
+LDADD = widgets/libwidgets.a tcl/libtcllib.a actions/libactions.a vfs/libvfs.a
 
 # Check for PCRE's usage and append compiler's and
 # linker's attributes if needed
-ifeq (@USE_PCRE@,true)
-	CFLAGS += @PCRE_CFLAGS@
-	LIBADD += @PCRE_LIBS@
+ifeq (true,true)
+	CFLAGS +=  
+	LDFLAGS += -lpcre  
 endif
 
 HEADERS =
@@ -41,25 +43,6 @@ SOURCES = \
 	hashmap.c \
 	hook.c \
 	dynstruct.c \
-	actions.c \
-	action-choose_panel.c \
-	action-create_file.c \
-	action-listing.c \
-	action-chmod.c \
-	action-chmod-iface.c \
-	action-chown.c \
-	action-chown-iface.c \
-	action-copymove.c \
-	action-copymove-iface.c \
-	action-copy.c \
-	action-delete.c \
-	action-editsymlink.c \
-	action-find.c \
-	action-find-iface.c \
-	action-move.c \
-	action-mkdir.c \
-	action-operate.c \
-	action-symlink.c \
 	shared.c \
 	regexp.c \
 	usergroup.c \
@@ -67,4 +50,7 @@ SOURCES = \
 
 OBJECTS = ${SOURCES:.c=.o}
 
-include ${top_builddir}/mk/objective.mk
+
+fm: $(OBJECTS) $(LDADD)
+	@printf "%10s     %-20s\n" LINK $@
+	$(CC) $(LDFLAGS) $(OBJECTS) $(LDADD) -o $@

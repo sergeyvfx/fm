@@ -1,0 +1,41 @@
+.SILENT:
+
+top_builddir = ../..
+
+include ${top_builddir}/mk/rules.mk
+include ${top_builddir}/mk/init.mk
+
+SUBDIRS = 
+
+OBJECTIVE_LIBS_NOINST = libactions.a
+CFLAGS += -I../widgets
+LDADD = ../widgets/libwidgets.a
+LDFLAGS += -Wl,-export-dynamic
+
+SOURCES = \
+	actions.c \
+	action-choose_panel.c \
+	action-create_file.c \
+	action-listing.c \
+	action-chmod.c \
+	action-chmod-iface.c \
+	action-chown.c \
+	action-chown-iface.c \
+	action-copymove.c \
+	action-copymove-iface.c \
+	action-copy.c \
+	action-delete.c \
+	action-editsymlink.c \
+	action-find.c \
+	action-find-iface.c \
+	action-move.c \
+	action-mkdir.c \
+	action-operate.c \
+	action-symlink.c
+
+OBJECTS = ${SOURCES:.c=.o}
+
+all:
+	rm -f ../fm
+
+include ${top_builddir}/mk/objective.mk
