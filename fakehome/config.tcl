@@ -16,16 +16,16 @@
 
 set escdelay 2000
 
-# ::config::bind . <F12> { ::core::exit }
-::config::bind . <F1> {
-    ::iface::message_box -title "Exit" -message "A u ready?" -type yesno
-}
+::config::bind . <C-x><C-f> { ::actions::find }
+# ::config::bind . <F1> {
+#     ::iface::message_box -title "Exit" -message "A u ready?" -type yesno
+# }
 
 # ::config::bind . <C-x><C-c> { ::core::exit }
 
-::config::bind <<edit-class-context>> <C-x> {
-    ::iface::message_box -title "Message" -message "test" -type yesno
-}
+# ::config::bind <<edit-class-context>> <C-x> {
+#     ::iface::message_box -title "Message" -message "test" -type yesno
+# }
 
 # ::config::bind . <M-f> { ::core::exit }
 

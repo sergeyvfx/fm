@@ -127,17 +127,11 @@ wrongargs:
 int
 _tcl_ext_init_commands (Tcl_Interp *__interp)
 {
-  const ensemblecmd_t subcommands[] = {
-      {"create", _tcl_create_ext_cmd},
-      {"set",    _tcl_set_ext_cmd},
-      {NULL, NULL}
-  };
+  TCL_DEFSYM_ENS_BEGIN (ext)
+    TCL_DEFSYM ("create", _tcl_create_ext_cmd),
+    TCL_DEFSYM ("set", _tcl_set_ext_cmd),
+  TCL_DEFSYM_ENS_END
 
-  if (__interp == NULL)
-    {
-      return TCL_ERROR;
-    }
-
-  tcllib_make_ensemble (__interp, "ext", subcommands);
+  TCL_MAKE_ENSEMBLE (ext, __interp);
   return TCL_OK;
 }

@@ -65,6 +65,9 @@ _tcl_iface_init_commands (Tcl_Interp *);
 int
 _tcl_bind_init_commands (Tcl_Interp *);
 
+int
+_tcl_actions_init_commands (Tcl_Interp *);
+
 END_HEADER
 
-#endif // _TCL_COMMANDS_COMMANDS_H_
+#endif // _TCL_COMMANDS_COMMANDS_LIST_H_

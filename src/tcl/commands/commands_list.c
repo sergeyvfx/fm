@@ -22,22 +22,23 @@
 int
 tcllib_init_commands (Tcl_Interp *__interp)
 {
-  if (_tcl_ext_init_commands (__interp) != TCL_OK)
-    {
-      /* TODO: added error message */
-      return TCL_ERROR;
-    }
+  typedef int (*init_commands_t) (Tcl_Interp *);
 
-  if (_tcl_iface_init_commands (__interp) != TCL_OK)
-    {
-      /* TODO: added error message */
-      return TCL_ERROR;
-    }
+  init_commands_t commands[] = {
+      _tcl_ext_init_commands, _tcl_iface_init_commands,
+      _tcl_bind_init_commands, _tcl_actions_init_commands,
 
-  if (_tcl_bind_init_commands (__interp) != TCL_OK)
+      NULL /* Terminate NULL */
+  };
+
+  init_commands_t *p = commands;
+
+  for (; *p != NULL; ++p)
     {
-      /* TODO: added error message */
-      return TCL_ERROR;
+      if ((*p) (__interp) != TCL_OK)
+        {
+          return TCL_ERROR;
+        }
     }
 
   return TCL_OK;

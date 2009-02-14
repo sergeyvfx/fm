@@ -17,7 +17,7 @@
 
 BEGIN_HEADER
 
-typedef struct ensemblecmd_t
+typedef struct ensemblecmd
 {
   const char     *name; /* The name of the subcommand */
   Tcl_ObjCmdProc *proc; /* The implementation of the subcommand */
@@ -27,6 +27,17 @@ Tcl_Command
 tcllib_make_ensemble (Tcl_Interp *interp,
                       const char *cmdname,
                       const ensemblecmd_t *subcommand);
+
+#define TCL_DEFSYM_ENS_BEGIN(ensemble_name) \
+  const ensemblecmd_t _##ensemble_name##_ensemble_cmds[] = {
+
+#define TCL_DEFSYM_ENS_END \
+    {NULL, NULL}\
+  };
+
+#define TCL_MAKE_ENSEMBLE(ensemble_name, interpreter) \
+  tcllib_make_ensemble (interpreter, #ensemble_name,\
+                        _##ensemble_name##_ensemble_cmds);
 
 END_HEADER
 

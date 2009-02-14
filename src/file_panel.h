@@ -405,6 +405,10 @@ file_panel_get_left (void);
 file_panel_t*
 file_panel_get_right (void);
 
+/* Get descriptor of current file panel */
+file_panel_t*
+file_panel_get_current_panel (void);
+
 END_HEADER
 
 #endif

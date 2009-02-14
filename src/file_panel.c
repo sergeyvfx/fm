@@ -1660,3 +1660,14 @@ file_panel_get_right (void)
 
   return get_leftright_panel_entry (1);
 }
+
+/**
+ * Get current file panel
+ *
+ * @return descriptor of current file panel
+ */
+file_panel_t*
+file_panel_get_current_panel (void)
+{
+  return current_panel;
+}
