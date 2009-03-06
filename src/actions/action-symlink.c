@@ -52,7 +52,8 @@ show_dialog (wchar_t **__content, wchar_t **__fn)
   w_window_t *wnd;
   w_edit_t *e_cnt, *e_fn;
 
-  wnd = widget_create_window (_(L"Symbolic link"), 0, 0, 60, 9, WMS_CENTERED);
+  wnd = widget_create_window (NULL, _(L"Symbolic link"),
+                              0, 0, 60, 9, WMS_CENTERED);
 
   widget_create_text (NULL, WIDGET_CONTAINER (wnd), _(L"Existing filename "
                       "(filename symlink will point to):"), 1, 1);

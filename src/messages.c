@@ -242,7 +242,11 @@ message_box (const wchar_t *__caption, const wchar_t *__text,
   short defbutton = MB_DEFBUTTON (__flags);
   BOOL critical = FALSE;
 
-  wnd = widget_create_window (__caption, 0, 0,
+  /*
+   * TODO: Generate random prefix for widget name?
+   *       Example: message_box_window1234567890
+   */
+  wnd = widget_create_window (NULL, __caption, 0, 0,
                               pos.width, pos.height, WMS_CENTERED);
 
   /* Reset default fonts if message is critical */

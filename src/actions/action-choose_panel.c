@@ -135,7 +135,7 @@ show_list (const wchar_t *__caption, const wchar_t *__short_msg)
   /* Create window */
   pos = window_dimensions (__caption, __short_msg);
 
-  wnd = widget_create_window (__caption, 0, 0, pos.width, pos.height,
+  wnd = widget_create_window (NULL, __caption, 0, 0, pos.width, pos.height,
                               WMS_CENTERED);
   list = widget_create_list (NULL, WIDGET_CONTAINER (wnd), __short_msg, 1, 1,
                              wnd->position.width - 2,

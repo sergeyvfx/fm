@@ -409,13 +409,14 @@ window_onresize (w_window_t *__window)
 /**
  * Create new window with specified caption and position
  *
+ * @param __name - name of widget
  * @param __caption - caption of window
  * @param __x, __y - coordinates of window
  * @param __w, __h - width and height of window
  * @return a pointer to window object
  */
 w_window_t*
-widget_create_window (const wchar_t *__caption,
+widget_create_window (const wchar_t *__name, const wchar_t *__caption,
                       int __x, int __y, int __w, int __h,
                       unsigned int __style)
 {
@@ -430,10 +431,7 @@ widget_create_window (const wchar_t *__caption,
       __y = CENTRE_Y (__h);
     }
 
-  /*
-   * TODO: Need we named windows?
-   */
-  WIDGET_INIT (res, w_window_t, WT_WINDOW, NULL, 0, 0,
+  WIDGET_INIT (res, w_window_t, WT_WINDOW, __name, 0, 0,
                window_context,
                window_destructor, window_drawer,
                __x, __y, 0, __w, __h);

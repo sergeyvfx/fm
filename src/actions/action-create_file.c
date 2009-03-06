@@ -26,7 +26,7 @@ static wchar_t*
 get_file_name (void)
 {
   wchar_t *res = NULL;
-  w_window_t *wnd = widget_create_window (_(L"Create file"), 0, 0,
+  w_window_t *wnd = widget_create_window (NULL, _(L"Create file"), 0, 0,
                                           MIN (50, SCREEN_WIDTH * 0.8), 6,
                                           WMS_CENTERED);
   w_edit_t *edt;

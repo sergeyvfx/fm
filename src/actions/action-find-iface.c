@@ -209,7 +209,8 @@ action_find_show_dialog (action_find_options_t *__options)
   w_checkbox_t *cb_find_recursive, *cb_follow_symlinks;
   w_checkbox_t *cb_find_directories;
 
-  wnd = widget_create_window (_(L"Find file"), 0, 0, 60, 15, WMS_CENTERED);
+  wnd = widget_create_window (NULL, _(L"Find file"),
+                              0, 0, 60, 15, WMS_CENTERED);
   cnt = WIDGET_CONTAINER (wnd);
 
   middle = wnd->position.width / 2 - 2;
@@ -349,7 +350,7 @@ action_find_create_res_wnd (void)
 
   MALLOC_ZERO (result, sizeof (action_find_res_wnd_t));
 
-  result->window = widget_create_window (_(L"Find file"),
+  result->window = widget_create_window (NULL, _(L"Find file"),
                                          0, 0,
                                          SCREEN_WIDTH - 4, SCREEN_HEIGHT - 4,
                                          WMS_CENTERED);

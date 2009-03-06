@@ -177,7 +177,7 @@ create_proc_wnd (const wchar_t *__caption, const wchar_t *__desc,
 
   MALLOC_ZERO (res, sizeof (process_window_t));
 
-  res->window = widget_create_window (__caption, 0, 0,
+  res->window = widget_create_window (NULL, __caption, 0, 0,
                                       50, 5 + (__total_progress ? 3 : 0),
                                       WMS_CENTERED);
   cnt = WIDGET_CONTAINER (res->window);

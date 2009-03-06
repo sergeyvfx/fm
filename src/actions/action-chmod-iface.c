@@ -517,7 +517,7 @@ action_chmod_show_dialog (unsigned int *__mask, unsigned int *__unknown_mask,
 
   dim = get_dialog_dimensions (*__rec);
 
-  wnd = widget_create_window (_(L"Permissions"), 0, 0,
+  wnd = widget_create_window (NULL, _(L"Permissions"), 0, 0,
                               dim.width, dim.height, WMS_CENTERED);
 
   /* Create edit box to enter permission by number */

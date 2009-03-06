@@ -83,8 +83,9 @@ w_window_end_modal (w_window_t *__window, int __modal_result);
 
 /* Creates new window */
 w_window_t*
-widget_create_window (const wchar_t *__caption, int __x, int __y,
-                      int __w, int __h, unsigned int __style);
+widget_create_window (const wchar_t *__name, const wchar_t *__caption,
+                      int __x, int __y, int __w, int __h,
+                      unsigned int __style);
 
 /* Show window */
 void

@@ -34,7 +34,7 @@ get_directory_name (void)
   wchar_t *res = NULL;
 
   /* Create window */
-  wnd = widget_create_window (_(L"Create a new directory"),
+  wnd = widget_create_window (NULL, _(L"Create a new directory"),
                               0, 0, MIN (50, SCREEN_WIDTH * 0.8), 6,
                               WMS_CENTERED);
 

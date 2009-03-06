@@ -247,8 +247,8 @@ action_copy_create_proc_wnd (BOOL __move, BOOL __total_progress,
       height = 10;
     }
 
-  res->window = widget_create_window (__move?_(L"Move"):_(L"Copy"), 0, 0,
-                                      59, height, WMS_CENTERED);
+  res->window = widget_create_window (NULL, __move?_(L"Move"):_(L"Copy"),
+                                      0, 0, 59, height, WMS_CENTERED);
   cnt = WIDGET_CONTAINER (res->window);
 
   /* Names of source and destination files */
@@ -469,7 +469,7 @@ action_copy_exists_dialog (const wchar_t *__src, const wchar_t *__dst,
     }
 
   /* Create question window */
-  wnd = widget_create_window (_(L"File exists"), 0, 0, width,
+  wnd = widget_create_window (NULL, _(L"File exists"), 0, 0, width,
                               13, WMS_CENTERED);
   w_window_set_fonts (wnd, FONT (CID_WHITE, CID_RED),
                       FONT (CID_YELLOW, CID_RED));
@@ -540,7 +540,7 @@ action_copy_show_dialog (BOOL __move, const file_panel_item_t **__src_list,
   w_container_t *cnt;
   wchar_t msg[1024];
 
-  wnd = widget_create_window (__move?_(L"Move"):_(L"Copy"),
+  wnd = widget_create_window (NULL, __move?_(L"Move"):_(L"Copy"),
                               0, 0, 50, 6, WMS_CENTERED);
   cnt = WIDGET_CONTAINER (wnd);
 
@@ -579,7 +579,8 @@ action_post_move_create_window (void)
   wchar_t *s;
 
   MALLOC_ZERO (res, sizeof (post_move_window_t));
-  res->window = widget_create_window (_(L"Move"), 0, 0, 60, 6, WMS_CENTERED);
+  res->window = widget_create_window (NULL, _(L"Move"),
+                                      0, 0, 60, 6, WMS_CENTERED);
 
   s = _(L"Deleting:");
   widget_create_text (NULL, WIDGET_CONTAINER (res->window), s, 1, 1);

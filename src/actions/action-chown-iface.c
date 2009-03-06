@@ -395,7 +395,8 @@ action_chown_dialog (int *__user, int *__group, int *__rec)
   w_checkbox_t *cb = NULL;
 
   /* Create widgets */
-  wnd = widget_create_window (_(L"Change owner"), 0, 0, 55, 20, WMS_CENTERED);
+  wnd = widget_create_window (NULL, _(L"Change owner"),
+                              0, 0, 55, 20, WMS_CENTERED);
   WIDGET_USER_CALLBACK (wnd, property_changed) = window_property_changed;
   WIDGET_USER_DATA(wnd) = editboxes;
   cnt = WIDGET_CONTAINER (wnd);

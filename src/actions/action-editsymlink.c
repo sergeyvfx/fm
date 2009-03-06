@@ -31,7 +31,8 @@ show_dialog (const wchar_t *__item, wchar_t **__content)
   w_edit_t *e_cnt;
   wchar_t *buf, fit[20];
 
-  wnd = widget_create_window (_(L"Edit symlink"), 0, 0, 60, 6, WMS_CENTERED);
+  wnd = widget_create_window (NULL, _(L"Edit symlink"),
+                              0, 0, 60, 6, WMS_CENTERED);
 
   buf = malloc (1024 * sizeof (wchar_t));
   fit_filename (__item, 20, fit);

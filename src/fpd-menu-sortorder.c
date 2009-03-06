@@ -40,8 +40,8 @@ create_window (void)
   w_window_t *wnd = NULL;
   w_button_t *btn;
 
-  wnd = widget_create_window (_ (L"Sort order"), 0, 0, WIDTH, HEIGHT,
-                              WMS_CENTERED);
+  wnd = widget_create_window (L"sort_order_wnd", _ (L"Sort order"),
+                              0, 0, WIDTH, HEIGHT, WMS_CENTERED);
 
   if (!wnd)
     {
